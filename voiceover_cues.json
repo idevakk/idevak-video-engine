@@ -1,0 +1,317 @@
+[
+  {
+    "id": "cue-01",
+    "scene": 1,
+    "start": 0,
+    "end": 16,
+    "timeLabel": "00:00",
+    "speaker": "SCENE 01 \u00b7 COLD OPEN",
+    "text": "Look at the PHP script on the left side of your screen. It is a single line of code: <?php echo 'pong';. It doesn't connect to a database, call eval(), or even read user input."
+  },
+  {
+    "id": "cue-02",
+    "scene": 1,
+    "start": 16,
+    "end": 31,
+    "timeLabel": "00:16",
+    "speaker": "SCENE 01 \u00b7 COLD OPEN",
+    "text": "If you asked any web developer on earth whether that file could be exploited for unauthenticated remote code execution, they would tell you no. And until October 21st, 2026, that was a reasonable assumption."
+  },
+  {
+    "id": "cue-03",
+    "scene": 1,
+    "start": 31,
+    "end": 48,
+    "timeLabel": "00:31",
+    "speaker": "SCENE 01 \u00b7 COLD OPEN",
+    "text": "But watch what happens when we send a single, unauthenticated HTTP POST request to PHP 8.5.11. Our index.php script never executes\u2014not a single opcode of application code ever runs."
+  },
+  {
+    "id": "cue-04",
+    "scene": 1,
+    "start": 48,
+    "end": 60,
+    "timeLabel": "00:48",
+    "speaker": "SCENE 01 \u00b7 COLD OPEN",
+    "text": "Instead, PHP runs out of memory while parsing the request, aborts before line one, and\u2014inside its own shutdown garbage collector\u2014executes a shell command as www-data, returning HTTP 200 OK in 3.10 seconds. This is PHP2Shell."
+  },
+  {
+    "id": "cue-05",
+    "scene": 2,
+    "start": 60,
+    "end": 78,
+    "timeLabel": "01:00",
+    "speaker": "SCENE 02 \u00b7 BLAST RADIUS",
+    "text": "Before we trace the pointer arithmetic, let's establish the scale of what broke. CVE-2026-109618 and CVE-2026-109619 are not library or plugin bugs\u2014they sit inside the core C runtime of PHP itself."
+  },
+  {
+    "id": "cue-06",
+    "scene": 2,
+    "start": 78,
+    "end": 98,
+    "timeLabel": "01:18",
+    "speaker": "SCENE 02 \u00b7 BLAST RADIUS",
+    "text": "According to W3Techs telemetry, PHP powers 69.3% of all websites whose server-side language is known\u2014including WordPress, Drupal, Joomla, Magento, Laravel, Symfony, MediaWiki, and Nextcloud."
+  },
+  {
+    "id": "cue-07",
+    "scene": 2,
+    "start": 98,
+    "end": 116,
+    "timeLabel": "01:38",
+    "speaker": "SCENE 02 \u00b7 BLAST RADIUS",
+    "text": "Both vulnerabilities carry an official CVSS v4.0 score of 9.2 Critical, and an NVD CVSS v3.1 base score of 9.8. And the vulnerable code path dates all the way back to PHP 5.4.0, released in 2012."
+  },
+  {
+    "id": "cue-08",
+    "scene": 2,
+    "start": 116,
+    "end": 135,
+    "timeLabel": "01:56",
+    "speaker": "SCENE 02 \u00b7 BLAST RADIUS",
+    "text": "Out of 2.23 million internet-facing hosts advertising PHP on Shodan, 883,717 servers\u2014nearly 59% of versioned hosts\u2014run end-of-life branches like PHP 5.x, 7.x, 8.0, and 8.1 that receive no official upstream release."
+  },
+  {
+    "id": "cue-09",
+    "scene": 3,
+    "start": 135,
+    "end": 156,
+    "timeLabel": "02:15",
+    "speaker": "SCENE 03 \u00b7 DISCOVERY & LEAK",
+    "text": "How does a bug class this fundamental survive inside PHP for 14 years, and then detonate in a 48-hour scramble? The story begins in 2024 during PHP's first external audit by Quarkslab, funded by the Sovereign Tech Agency."
+  },
+  {
+    "id": "cue-10",
+    "scene": 3,
+    "start": 156,
+    "end": 176,
+    "timeLabel": "02:36",
+    "speaker": "SCENE 03 \u00b7 DISCOVERY & LEAK",
+    "text": "While fixing a Quarkslab bug in 2024, a PHP core developer spotted the OOM hazard behind CVE-2026-109618. An exploit was theorized, but because every fix risked breaking extensions or compatibility, consensus stalled for nearly two years."
+  },
+  {
+    "id": "cue-11",
+    "scene": 3,
+    "start": 176,
+    "end": 198,
+    "timeLabel": "02:56",
+    "speaker": "SCENE 03 \u00b7 DISCOVERY & LEAK",
+    "text": "Then came August 2026. Under the Patch the Planet program, researcher Ryan Austin\u2014LCFR of Calif.io\u2014reported an unconditional pre-auth RCE on August 11th. Wiz Research reported the bugs on August 24th, and OpenAI followed on September 18th."
+  },
+  {
+    "id": "cue-12",
+    "scene": 3,
+    "start": 198,
+    "end": 225,
+    "timeLabel": "03:18",
+    "speaker": "SCENE 03 \u00b7 DISCOVERY & LEAK",
+    "text": "On October 17th, AWS MadPot caught zero-day attacks in the wild. On October 20th, the CVE IDs leaked on Hacker News, Calif accidentally posted and deleted their PoC video, and on October 21st at 07:41 UTC, Chainguard pushed patched images 6 hours early."
+  },
+  {
+    "id": "cue-13",
+    "scene": 4,
+    "start": 225,
+    "end": 248,
+    "timeLabel": "03:45",
+    "speaker": "SCENE 04 \u00b7 ZEND LONGJMP()",
+    "text": "Now let's look at the C code. Why does running out of memory in PHP lead to remote code execution instead of a clean error page? Because the Zend Engine is written in C, which has no native try/catch exceptions or RAII destructors."
+  },
+  {
+    "id": "cue-14",
+    "scene": 4,
+    "start": 248,
+    "end": 272,
+    "timeLabel": "04:08",
+    "speaker": "SCENE 04 \u00b7 ZEND LONGJMP()",
+    "text": "Every PHP request operates under a memory_limit ceiling. Whenever PHP allocates heap memory for a request variable or array bucket, its internal allocator emalloc() checks whether the request has exceeded memory_limit."
+  },
+  {
+    "id": "cue-15",
+    "scene": 4,
+    "start": 272,
+    "end": 295,
+    "timeLabel": "04:32",
+    "speaker": "SCENE 04 \u00b7 ZEND LONGJMP()",
+    "text": "When an allocation crosses memory_limit, PHP logs a fatal error and invokes zend_bailout()\u2014a macro that calls the C standard library function longjmp(EG(bailout), FAILURE)."
+  },
+  {
+    "id": "cue-16",
+    "scene": 4,
+    "start": 295,
+    "end": 315,
+    "timeLabel": "04:55",
+    "speaker": "SCENE 04 \u00b7 ZEND LONGJMP()",
+    "text": "longjmp() is a non-local goto. It teleports the CPU instruction pointer and stack pointer straight back to the top-level recovery checkpoint\u2014completely skipping the intermediate C stack frames and jumping into request shutdown."
+  },
+  {
+    "id": "cue-17",
+    "scene": 5,
+    "start": 315,
+    "end": 338,
+    "timeLabel": "05:15",
+    "speaker": "SCENE 05 \u00b7 CVE-2026-109618 CODE",
+    "text": "Keep that longjmp() teleportation in mind, and look at how PHP populates the $_POST superglobal. Every PHP array is a C struct called _zend_array, storing elements in a contiguous array of Bucket structs."
+  },
+  {
+    "id": "cue-18",
+    "scene": 5,
+    "start": 338,
+    "end": 362,
+    "timeLabel": "05:38",
+    "speaker": "SCENE 05 \u00b7 CVE-2026-109618 CODE",
+    "text": "Look at these exact four lines inside _zend_hash_str_add_or_update_i() in Zend/zend_hash.c: First, idx = ht->nNumUsed++;. Second, ht->nNumOfElements++;. Third, p = ht->arData + idx;."
+  },
+  {
+    "id": "cue-19",
+    "scene": 5,
+    "start": 362,
+    "end": 385,
+    "timeLabel": "06:02",
+    "speaker": "SCENE 05 \u00b7 CVE-2026-109618 CODE",
+    "text": "Only on line four\u2014after incrementing both counters\u2014does PHP call zend_string_init() to allocate heap memory for the new key. If that 3.5-megabyte key allocation hits memory_limit, zend_string_init() triggers longjmp()."
+  },
+  {
+    "id": "cue-20",
+    "scene": 5,
+    "start": 385,
+    "end": 405,
+    "timeLabel": "06:25",
+    "speaker": "SCENE 05 \u00b7 CVE-2026-109618 CODE",
+    "text": "Because ht->nNumUsed++ already ran on line one, the $_POST hash table header now claims it contains two valid buckets\u2014even though bucket arData[1] was never initialized! Request shutdown then trusts those stale heap bytes as a live zval."
+  },
+  {
+    "id": "cue-21",
+    "scene": 6,
+    "start": 405,
+    "end": 430,
+    "timeLabel": "06:45",
+    "speaker": "SCENE 06 \u00b7 3-STAGE EXPLOIT",
+    "text": "Turning that uninitialized bucket into a single-request shell takes three stages. In Stage 1, the attacker sends an empty-name field with 276 binary bytes. With PHP's string header, it lands in the 320-byte ZendMM slab and is immediately freed."
+  },
+  {
+    "id": "cue-22",
+    "scene": 6,
+    "start": 430,
+    "end": 455,
+    "timeLabel": "07:10",
+    "speaker": "SCENE 06 \u00b7 3-STAGE EXPLOIT",
+    "text": "Next in Stage 1, the field &a=1 allocates backing storage for $_POST, reclaiming that exact 320-byte chunk! Bucket 0 gets a=1, while Bucket 1 retains the attacker's planted bytes. Then a 3.5MB nested array key triggers the OOM bailout."
+  },
+  {
+    "id": "cue-23",
+    "scene": 6,
+    "start": 455,
+    "end": 476,
+    "timeLabel": "07:35",
+    "speaker": "SCENE 06 \u00b7 3-STAGE EXPLOIT",
+    "text": "In Stage 2, to defeat ASLR, researchers chained an OOM Use-After-Free in PHP's session.upload_progress handler that leaks freed worker heap pointers back to the client inside a PHPSESSID response cookie."
+  },
+  {
+    "id": "cue-24",
+    "scene": 6,
+    "start": 476,
+    "end": 495,
+    "timeLabel": "07:56",
+    "speaker": "SCENE 06 \u00b7 3-STAGE EXPLOIT",
+    "text": "In Stage 3, during request shutdown, zend_hash_destroy($_POST) visits the uninitialized Bucket 1, follows its fake IS_ARRAY pointer to a forged HashTable whose pDestructor callback points to glibc system(), and executes system(command)."
+  },
+  {
+    "id": "cue-25",
+    "scene": 7,
+    "start": 495,
+    "end": 518,
+    "timeLabel": "08:15",
+    "speaker": "SCENE 07 \u00b7 CVE-2026-109619 UAF",
+    "text": "Now let's examine its twin: CVE-2026-109619. While CVE-2026-109618 corrupts memory within a single failed request, CVE-2026-109619 breaks isolation across consecutive HTTP requests handled by the same persistent PHP worker."
+  },
+  {
+    "id": "cue-26",
+    "scene": 7,
+    "start": 518,
+    "end": 544,
+    "timeLabel": "08:38",
+    "speaker": "SCENE 07 \u00b7 CVE-2026-109619 UAF",
+    "text": "In mod_php and PHP-FPM, a single worker process serves thousands of requests. Worker-global state temporarily holds pointers into request-owned heap memory. If a longjmp() fatal error aborts before those globals are cleared, the pointer dangles."
+  },
+  {
+    "id": "cue-27",
+    "scene": 7,
+    "start": 544,
+    "end": 570,
+    "timeLabel": "09:04",
+    "speaker": "SCENE 07 \u00b7 CVE-2026-109619 UAF",
+    "text": "When the next request hits that same worker, PHP dereferences the freed memory before initialization resets it\u2014enabling RCE via session.upload_progress (enabled by default), PHP 8.5 fatal-error backtraces, and OPcache type confusion."
+  },
+  {
+    "id": "cue-28",
+    "scene": 8,
+    "start": 570,
+    "end": 590,
+    "timeLabel": "09:30",
+    "speaker": "SCENE 08 \u00b7 PATCH ANATOMY",
+    "text": "How did the PHP team patch a bug embedded across the entire engine? If you diff PHP 8.5.12 against 8.5.11, you'll spot a surprise noted by Datadog Security Labs: _zend_hash_str_add_or_update_i() still increments nNumUsed++ before allocating the key!"
+  },
+  {
+    "id": "cue-29",
+    "scene": 8,
+    "start": 590,
+    "end": 612,
+    "timeLabel": "09:50",
+    "speaker": "SCENE 08 \u00b7 PATCH ANATOMY",
+    "text": "Instead of refactoring every hash table helper, PHP changed how OOM interrupts execution: a new Soft Limit lets the in-progress allocation finish so buckets are fully initialized, deferring the bailout until a safe point."
+  },
+  {
+    "id": "cue-30",
+    "scene": 8,
+    "start": 612,
+    "end": 630,
+    "timeLabel": "10:12",
+    "speaker": "SCENE 08 \u00b7 PATCH ANATOMY",
+    "text": "And if memory crosses a higher Hard Limit, PHP immediately terminates the worker with _exit(137) instead of running destructors over corrupt state\u2014while explicitly resetting global error, session, and serialization state during shutdown."
+  },
+  {
+    "id": "cue-31",
+    "scene": 9,
+    "start": 630,
+    "end": 652,
+    "timeLabel": "10:30",
+    "speaker": "SCENE 09 \u00b7 DEFENSE PLAYBOOK",
+    "text": "Here is your immediate remediation playbook: Upgrade to PHP 8.5.12, 8.4.27, 8.3.36, or 8.2.35, and restart every php-fpm or Apache worker. Verify your web SAPI version via php_sapi_name(), not just php -v on the command line."
+  },
+  {
+    "id": "cue-32",
+    "scene": 9,
+    "start": 652,
+    "end": 672,
+    "timeLabel": "10:52",
+    "speaker": "SCENE 09 \u00b7 DEFENSE PLAYBOOK",
+    "text": "If you cannot patch today, setting session.upload_progress.enabled=0, fatal_error_backtraces=0, and memory_limit=-1 with strict proxy body limits closes specific paths\u2014but as PHP core maintainers warn, only patching is a complete fix."
+  },
+  {
+    "id": "cue-33",
+    "scene": 9,
+    "start": 672,
+    "end": 690,
+    "timeLabel": "11:12",
+    "speaker": "SCENE 09 \u00b7 DEFENSE PLAYBOOK",
+    "text": "Hunt your logs back to October 17th for three correlated signals: 'Allowed memory size exhausted in Unknown on line 0', Apache AH00052 segfault bursts, and any sh or bash child process spawned by apache2 or php-fpm\u2014even on HTTP 200 responses."
+  },
+  {
+    "id": "cue-34",
+    "scene": 10,
+    "start": 690,
+    "end": 706,
+    "timeLabel": "11:30",
+    "speaker": "SCENE 10 \u00b7 OUTRO & TAKEAWAY",
+    "text": "Finally, look at who found these bugs in August and September 2026: Calif.io, Wiz Research using Gemini 4 Argon, and OpenAI using Codex Security. AI is now uncovering deep C state-machine flaws in 30-year-old runtimes at machine speed."
+  },
+  {
+    "id": "cue-35",
+    "scene": 10,
+    "start": 706,
+    "end": 720,
+    "timeLabel": "11:46",
+    "speaker": "SCENE 10 \u00b7 OUTRO & TAKEAWAY",
+    "text": "But when it came time to untangle longjmp() without breaking 69% of the web, a handful of human maintainers had to ship the architecture. Patch your workers, check your line-zero logs, and subscribe for tomorrow's deep dive."
+  }
+]

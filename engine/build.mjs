@@ -1,28 +1,34 @@
-// Build the HyperFrames composition from build/scenes.json.
+// Build the HyperFrames composition from build/scenes.json + build/project.json.
 // Deterministic: all animation state is baked into one paused GSAP timeline.
 import fs from "node:fs/promises";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
-const read = (p) => fs.readFile(path.resolve(p), "utf8");
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const read = (p) => fs.readFile(path.resolve(ROOT, p), "utf8");
 const esc = (s = "") =>
   String(s)
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-
-const scenes = JSON.parse(await read("build/scenes.json"));
-const fontsCss = (await read("build/fonts.local.css")).replace(/url\(fonts\//g, "url(assets/fonts/");
-const CSS = await read("scripts/style.css");
-const JS = await read("scripts/anim.js");
-const total = scenes[scenes.length - 1].end;
-
-const WORDS = (s) => s.split(" ");
-const tok = (s) =>
-  esc(s)
-    .replace(/\n/g, "<br>")
+    .replace(/"/g, "&quot;")
     .replace(/\/\*/g, "&#47;*")
     .replace(/\*\//g, "*&#47;");
+
+const project = JSON.parse(await read("build/project.json"));
+const scenes = JSON.parse(await read("build/scenes.json"));
+const total = scenes[scenes.length - 1].end;
+const compositionId = project.compositionId || project.slug || "video";
+const width = Number(project.width) || 1920;
+const height = Number(project.height) || 1080;
+const fps = Number(project.fps) || 30;
+const audio = project.audio || "content/voiceover.wav";
+const title = project.title || "Untitled video";
+const fontsCss = await read("engine/fonts.css");
+const CSS = await read("engine/style.css");
+const JS = (await read("engine/anim.js")).replace('"__COMPOSITION_ID__"', JSON.stringify(compositionId));
+
+const tok = (s) => esc(s).replace(/\n/g, "<br>");
 
 // ---------------------------------------------------------------- copy helpers
 function splitWords(text) {
@@ -32,14 +38,6 @@ function splitWords(text) {
     .map((w) => `<span class="w"><span class="wi">${esc(w)}</span></span>`)
     .join(" ");
 }
-
-function lineBlock(text, cls = "") {
-  return `<span class="ln ${cls}"><span class="lni">${esc(text)}</span></span>`;
-}
-
-const ACTS = [
-  { id: "act1", label: "Cold open", accent: "#ff3b5c", start: 0 },
-];
 
 // ---------------------------------------------------------------- scene render
 function renderScene(s, i) {
@@ -61,9 +59,10 @@ const eyebrow = (s) => (s.eyebrow ? `<div class="eyebrow"><span class="eyebrow-d
 
 const RENDER = {
   cold(s) {
+    const ghost = s.ghost || project.ghost || String(project.title || "VIDEO").trim().split(/\s+/)[0].toUpperCase();
     return `
     <div class="cold-wrap">
-      <div class="cold-ghost" data-layout-allow-overflow>${esc(s.ghost || "PHP")}</div>
+      <div class="cold-ghost" data-layout-allow-overflow>${esc(ghost)}</div>
       <div class="cold-rule"></div>
       ${s.eyebrow ? `<div class="cold-eyebrow">${esc(s.eyebrow)}</div>` : ""}
       <h1 class="cold-title">${splitWords(s.headline)}</h1>
@@ -75,6 +74,7 @@ const RENDER = {
   },
 
   hero(s) {
+    const mark = s.meta?.mark || String(s.headline || "").trim().split(/\s+/)[0].toUpperCase();
     return `
     <div class="hero-grid">
       <div class="hero-left">
@@ -83,7 +83,7 @@ const RENDER = {
         ${s.subline ? `<p class="hero-sub">${esc(s.subline)}</p>` : ""}
       </div>
       <div class="hero-right">
-        <div class="hero-mark">${esc(s.meta?.mark || "")}</div>
+        <div class="hero-mark">${esc(mark)}</div>
         ${s.meta?.rule ? `<div class="hero-vrule"></div>` : ""}
       </div>
     </div>
@@ -140,39 +140,50 @@ const RENDER = {
   },
 
   code(s) {
-    const lines = (s.meta?.lines || [{ t: s.headline, c: "" }]).map((l, k) => {
+    const source = s.meta?.lines?.length ? s.meta.lines : [{ t: s.headline, k: "code" }];
+    const lines = source.map((l, k) => {
       const kind = l.k || "code";
-      return `<div class="cl cl-${kind}" data-k="${k}"><span class="cl-n">${String(k + 1).padStart(2, "0")}</span><span class="cl-c">${tok(l.t)}</span></div>`;
+      const isKey = l.key || kind === "hot" ? " is-key" : "";
+      return `<div class="cl cl-${kind}${isKey}" data-k="${k}"><span class="cl-n">${String(k + 1).padStart(2, "0")}</span><span class="cl-c">${tok(l.t)}</span></div>`;
     });
-    const announce = s.meta?.announce || "";
+    const callout = s.meta?.announce || s.headline || s.subline || "";
+    const sub = callout === s.subline ? "" : (s.subline || "");
+    const file = s.meta?.file || "source";
+    const tag = s.meta?.tag || "";
+    const foot = callout || sub
+      ? `<div class="code-foot">${callout ? `<div class="code-callout">${esc(callout)}</div>` : ""}${sub ? `<div class="code-sub">${esc(sub)}</div>` : ""}</div>`
+      : "";
     return `
     ${eyebrow(s)}
     <div class="code-shell">
       <div class="code-bar">
-        <span class="code-file">${esc(s.meta?.file || "Zend/zend_hash.c")}</span>
-        <span class="code-tag">${esc(s.meta?.tag || "PHP 8.5.11")}</span>
+        <span class="code-file">${esc(file)}</span>
+        ${tag ? `<span class="code-tag">${esc(tag)}</span>` : ""}
       </div>
       <div class="code-body">${lines.join("")}</div>
       <div class="code-scan"></div>
     </div>
-    <div class="code-foot">
-      <div class="code-callout">${esc(announce)}</div>
-      ${s.subline ? `<div class="code-sub">${esc(s.subline)}</div>` : ""}
-    </div>`;
+    ${foot}`;
   },
 
   diff(s) {
     const lines = (s.meta?.lines || []).map(
       (l, k) => `<div class="df-line df-${l.k}" data-k="${k}"><span class="df-sig">${l.k === "add" ? "+" : l.k === "del" ? "-" : " "}</span><span class="df-t">${tok(l.t)}</span></div>`,
     );
+    const file = s.meta?.file || "source";
+    const ver = s.meta?.ver || "";
+    const callout = s.meta?.announce || s.headline || "";
+    const sub = callout === s.subline ? "" : (s.subline || "");
+    const foot = callout || sub
+      ? `<div class="code-foot">${callout ? `<div class="code-callout">${esc(callout)}</div>` : ""}${sub ? `<div class="code-sub">${esc(sub)}</div>` : ""}</div>`
+      : "";
     return `
     ${eyebrow(s)}
     <div class="diff-shell">
-      <div class="diff-head"><span class="df-file">${esc(s.meta?.file || "Zend/zend_hash.c")}</span><span class="df-ver">${esc(s.meta?.ver || "8.5.11 → 8.5.12")}</span></div>
+      <div class="diff-head"><span class="df-file">${esc(file)}</span>${ver ? `<span class="df-ver">${esc(ver)}</span>` : ""}</div>
       <div class="diff-body">${lines.join("")}</div>
     </div>
-    <div class="code-foot"><div class="code-callout">${esc(s.headline)}</div>
-      ${s.subline ? `<div class="code-sub">${esc(s.subline)}</div>` : ""}</div>`;
+    ${foot}`;
   },
 
   flow(s) {
@@ -202,10 +213,12 @@ const RENDER = {
     const rows = (s.meta?.rows || []).map(
       (r, k) => `<div class="lg-row" data-k="${k}"><span class="lg-k">${esc(r.k)}</span><span class="lg-v ${r.bad ? "is-bad" : ""}">${esc(r.v)}</span></div>`,
     );
+    const head = s.meta?.head || "LEDGER";
+    const live = s.meta?.live === false ? "" : `<span class="lg-live">${esc(s.meta?.live || "LIVE")}</span>`;
     return `
     <div class="lg-grid">
       <div class="lg-card">
-        <div class="lg-head"><span>${esc(s.meta?.head || "REQUEST LEDGER")}</span><span class="lg-live">LIVE</span></div>
+        <div class="lg-head"><span>${esc(head)}</span>${live}</div>
         ${rows.join("")}
         ${s.meta?.stamp ? `<div class="lg-stamp">${esc(s.meta.stamp)}</div>` : ""}
       </div>
@@ -219,18 +232,23 @@ const RENDER = {
   },
 
   memory(s) {
-    const cells = s.meta?.cells || 8;
+    const cells = Math.max(1, Math.min(24, Number(s.meta?.cells) || 8));
     const cellsHtml = Array.from({ length: cells }, (_, k) => `<div class="mc" data-k="${k}"><span class="mc-i">${k}</span><span class="mc-b"></span></div>`).join("");
+    const name = s.meta?.name || "memory";
+    const n = Number(s.meta?.n ?? 2);
+    const ptr = s.meta?.ptr === false ? "" : (s.meta?.ptr || "pointer");
+    const legendOk = s.meta?.legendOk || "active";
+    const legendBad = s.meta?.legendBad || "unused";
     return `
     ${eyebrow(s)}
     <div class="mem-shell">
       <div class="mem-head">
-        <span class="mem-name">${esc(s.meta?.name || "$_POST")}</span>
-        <span class="mem-count"><i>nNumUsed</i> <b class="mem-n" data-n="${s.meta?.n ?? 2}">${s.meta?.n ?? 2}</b></span>
+        <span class="mem-name">${esc(name)}</span>
+        <span class="mem-count"><i>${esc(s.meta?.unit || "live")}</i> <b class="mem-n" data-n="${n}">${n}</b></span>
       </div>
       <div class="mem-cells">${cellsHtml}</div>
-      <div class="mem-ptr"><svg viewBox="0 0 240 60"><path d="M6 8 C 60 8, 90 50, 150 50"/><path class="mpar" d="M138 43 L152 50 L138 57"/></svg><span>${esc(s.meta?.ptr || "arData + 1")}</span></div>
-      <div class="mem-legend"><span class="mgl ok">initialized</span><span class="mgl bad">uninitialized</span></div>
+      ${ptr ? `<div class="mem-ptr"><svg viewBox="0 0 240 60"><path d="M6 8 C 60 8, 90 50, 150 50"/><path class="mpar" d="M138 43 L152 50 L138 57"/></svg><span>${esc(ptr)}</span></div>` : ""}
+      <div class="mem-legend"><span class="mgl ok">${esc(legendOk)}</span><span class="mgl bad">${esc(legendBad)}</span></div>
     </div>
     <div class="mem-side">
       <h2 class="mem-title">${splitWords(s.headline)}</h2>
@@ -262,7 +280,7 @@ const RENDER = {
     return `
     ${eyebrow(s)}
     <div class="tm-shell">
-      <div class="tm-bar"><span>${esc(s.meta?.host || "php-fpm")}</span><span class="tm-led"></span></div>
+      <div class="tm-bar"><span>${esc(s.meta?.host || "terminal")}</span><span class="tm-led"></span></div>
       <div class="tm-body">${lines.join("")}<span class="tm-cursor"></span></div>
     </div>
     <div class="tm-foot">${s.headline ? `<div class="tm-title">${esc(s.headline)}</div>` : ""}${s.subline ? `<div class="tm-sub">${esc(s.subline)}</div>` : ""}</div>`;
@@ -273,13 +291,13 @@ const RENDER = {
     ${eyebrow(s)}
     <div class="cmp-stage">
       <div class="cmp-col cmp-left" data-k="0">
-        <div class="cmp-k">${esc(s.meta?.left?.k || "RUMOR")}</div>
+        <div class="cmp-k">${esc(s.meta?.left?.k || "A")}</div>
         <div class="cmp-t">${esc(s.meta?.left?.t || "")}</div>
         ${(s.meta?.left?.pts || []).map((p) => `<div class="cmp-p">${esc(p)}</div>`).join("")}
       </div>
       <div class="cmp-mid"><span>${esc(s.meta?.vs || "VS")}</span></div>
       <div class="cmp-col cmp-right" data-k="1">
-        <div class="cmp-k">${esc(s.meta?.right?.k || "REALITY")}</div>
+        <div class="cmp-k">${esc(s.meta?.right?.k || "B")}</div>
         <div class="cmp-t">${esc(s.meta?.right?.t || "")}</div>
         ${(s.meta?.right?.pts || []).map((p) => `<div class="cmp-p">${esc(p)}</div>`).join("")}
       </div>
@@ -314,7 +332,7 @@ const RENDER = {
   },
 
   matrix(s) {
-    const n = s.meta?.cells || 160;
+    const n = Math.max(1, Math.min(600, Number(s.meta?.cells) || 160));
     const cells = Array.from({ length: n }, (_, k) => `<span class="mx-c" data-k="${k}"></span>`).join("");
     return `
     <div class="mx-grid">
@@ -323,8 +341,8 @@ const RENDER = {
         <h2 class="mx-title">${splitWords(s.headline)}</h2>
         ${s.subline ? `<p class="mx-sub">${esc(s.subline)}</p>` : ""}
         <div class="mx-legend">
-          <span><i class="mx-sw ok"></i>${esc(s.meta?.legendOk || "patched")}</span>
-          <span><i class="mx-sw bad"></i>${esc(s.meta?.legendBad || "exposed")}</span>
+          <span><i class="mx-sw ok"></i>${esc(s.meta?.legendOk || "ok")}</span>
+          <span><i class="mx-sw bad"></i>${esc(s.meta?.legendBad || "flagged")}</span>
         </div>
       </div>
       <div class="mx-right"><div class="mx-cells">${cells}</div><div class="mx-count">${esc(s.meta?.count || "")}</div></div>
@@ -332,17 +350,21 @@ const RENDER = {
   },
 
   outro(s) {
+    const ghost = s.ghost || s.meta?.ghost || project.ghost || String(project.title || "").trim().split(/\s+/)[0].toUpperCase();
+    const ctaK = s.meta?.cta || project.cta || "Subscribe";
+    const ctaV = s.meta?.ctaSub || project.ctaSub || "More investigations";
+    const channel = s.meta?.channel || project.channel || "";
     return `
     <div class="out-wrap">
-      <div class="out-ghost">PHP</div>
+      <div class="out-ghost">${esc(ghost)}</div>
       ${eyebrow(s)}
       <h2 class="out-title">${splitWords(s.headline)}</h2>
       <div class="out-sub">${esc(s.subline || "")}</div>
       <div class="out-cta">
-        <span class="out-cta-k">Subscribe</span>
-        <span class="out-cta-v">Zero-hype vulnerability autopsies</span>
+        <span class="out-cta-k">${esc(ctaK)}</span>
+        <span class="out-cta-v">${esc(ctaV)}</span>
       </div>
-      <div class="out-ch">${esc(s.meta?.channel || "@channel")}</div>
+      <div class="out-ch">${esc(channel)}</div>
     </div>`;
   },
 };
@@ -354,16 +376,16 @@ const html = `<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=1920, height=1080" />
-<title>PHP2Shell - CVE-2026-109618 / CVE-2026-109619</title>
+<meta name="viewport" content="width=${width}, height=${height}" />
+<title>${esc(title)}</title>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
 <style>
-${fontsCss.replace(/url\(fonts\//g, "url(assets/fonts/")}
+${fontsCss}
 ${CSS}
 </style>
 </head>
 <body>
-<div id="root" data-composition-id="php2shell" data-start="0" data-width="1920" data-height="1080" data-duration="${total.toFixed(3)}">
+<div id="root" data-composition-id="${esc(compositionId)}" data-start="0" data-width="${width}" data-height="${height}" data-duration="${total.toFixed(3)}">
   <div id="bg-base"></div>
   <div id="bg-grid"></div>
   <div id="bg-bloom"></div>
@@ -371,18 +393,32 @@ ${CSS}
   <div id="bg-vignette"></div>
   <div id="cut-rail"></div>
   ${body}
-  <audio id="vo" src="voiceover.wav" data-start="0" data-duration="${total.toFixed(3)}" data-track-index="1" data-volume="1"></audio>
+  <audio id="vo" src="${esc(audio)}" data-start="0" data-duration="${total.toFixed(3)}" data-track-index="1" data-volume="1"></audio>
 </div>
 <script>
-window.__SCENES__ = ${JSON.stringify(scenes.map((s) => ({ start: s.start, end: s.end, type: s.type, accent: s.accent, cue: s.cue || [] })))};
+window.__COMPOSITION_ID__ = ${JSON.stringify(compositionId)};
+window.__SCENES__ = ${JSON.stringify(scenes.map((s) => ({ start: s.start, end: s.end, type: s.type, accent: s.accent, variant: s.variant || 0 })))};
 window.__TOTAL__ = ${total.toFixed(3)};
 ${JS}
 </script>
 </body>
 </html>`;
 
-await fs.writeFile("index.html", html, "utf8");
+const meta = {
+  name: project.slug || compositionId,
+  entry: "index.html",
+  compositionId,
+  width,
+  height,
+  fps,
+  duration: Number(total.toFixed(3)),
+  channel: project.channel || "",
+};
+
+await fs.writeFile(path.resolve(ROOT, "index.html"), html, "utf8");
+await fs.writeFile(path.resolve(ROOT, "hyperframes.json"), JSON.stringify(meta, null, 2) + "\n", "utf8");
 console.log(`index.html written: ${scenes.length} scenes, ${total.toFixed(1)}s`);
+console.log(`hyperframes.json written: ${meta.name}`);
 
 
 

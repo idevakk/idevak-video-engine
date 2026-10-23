@@ -1,0 +1,21 @@
+{
+  "name": "forensic-video-template",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Project-agnostic HyperFrames template for narration-driven forensic videos.",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "validate": "python engine/validate.py",
+    "transcribe": "python engine/transcribe.py",
+    "align": "python engine/align.py",
+    "build": "node engine/build.mjs",
+    "pipeline": "npm run validate && npm run transcribe && npm run align && npm run build",
+    "lint": "npx hyperframes@latest lint",
+    "check": "npx hyperframes@latest check",
+    "preview": "npx hyperframes@latest preview",
+    "render": "npx hyperframes@latest render --quality looks --output renders/video.mp4"
+  }
+}

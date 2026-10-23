@@ -1,0 +1,380 @@
+"""Align a content project to a word-level transcript and emit build data.
+
+The audio is the timing master. Every scene's ``narration`` must match the
+words actually spoken in the voiceover. This script maps the script to the
+transcript with a monotonic dynamic program, then gives every scene a
+contiguous visual window.
+
+Usage:
+    python engine/align.py
+    python engine/align.py content/video.json build/vo.json
+
+Outputs:
+    build/scenes.json   scenes with start/end timings, ready for the builder
+    build/project.json  title, audio path, composition settings, duration
+    build/report.md     human-readable timing and alignment report
+"""
+from __future__ import annotations
+
+import argparse
+import json
+import re
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+DEFAULT_PROJECT = ROOT / "content/video.json"
+DEFAULT_VO = ROOT / "build/vo.json"
+DEFAULT_OUT = ROOT / "build"
+GAP = 0.85
+
+
+def resolve(path: str | Path) -> Path:
+    p = Path(path)
+    return p if p.is_absolute() else (ROOT / p)
+
+
+def load_json(path: Path):
+    if not path.exists():
+        raise SystemExit(f"missing file: {path}")
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def norm(tok: str) -> str:
+    t = tok.lower()
+    t = re.sub(r"[^a-z0-9$]+", "", t)
+    t = t.replace("percent", "%")
+    return t
+
+
+def norm_words(text: str) -> list[str]:
+    return [t for t in (norm(w) for w in re.findall(r"\S+", text or "")) if t]
+
+
+def sim(a: str, b: str) -> float:
+    if a == b:
+        return 0.0
+    if not a or not b:
+        return 1.2
+    if a in b or b in a:
+        return 0.25
+    k = 0
+    for x, y in zip(a, b):
+        if x != y:
+            break
+        k += 1
+    if k >= 4:
+        return 0.45
+    return 1.15
+
+
+def align_words(designed: list[str], transcript: list[str]) -> tuple[dict[int, int], float]:
+    """Monotonic word alignment. Returns designed-index -> transcript-index and cost."""
+    n, m = len(designed), len(transcript)
+    INF = float("inf")
+    prev = [j * GAP for j in range(m + 1)]
+    bt = bytearray((n + 1) * (m + 1))
+    for i in range(1, n + 1):
+        cur = [i * GAP] + [INF] * m
+        di = designed[i - 1]
+        for j in range(1, m + 1):
+            c_sub = prev[j - 1] + sim(di, transcript[j - 1])
+            c_del = prev[j] + GAP
+            c_ins = cur[j - 1] + GAP
+            best, code = c_sub, 0
+            if c_del < best:
+                best, code = c_del, 1
+            if c_ins < best:
+                best, code = c_ins, 2
+            cur[j] = best
+            bt[i * (m + 1) + j] = code
+        prev = cur
+
+    i, j = n, m
+    mapping: dict[int, int] = {}
+    while i > 0 or j > 0:
+        code = bt[i * (m + 1) + j] if i > 0 and j > 0 else (1 if i > 0 else 2)
+        if i > 0 and j > 0 and code == 0:
+            mapping[i - 1] = j - 1
+            i -= 1
+            j -= 1
+        elif i > 0 and (j == 0 or code == 1):
+            i -= 1
+        else:
+            j -= 1
+    return mapping, prev[m]
+
+
+def slugify(text: str) -> str:
+    s = re.sub(r"[^a-z0-9]+", "-", str(text).lower()).strip("-")
+    return s or "video"
+
+
+def normalize_meta(scene: dict) -> dict:
+    meta = dict(scene.get("meta") or {})
+    if scene.get("type") != "stat":
+        return meta
+
+    if "stat" not in meta:
+        raw = meta.get("value", scene.get("headline", ""))
+        raw_s = str(raw).replace(",", "")
+        m = re.search(r"-?\d+(?:\.\d+)?", raw_s)
+        to = float(m.group()) if m else 0.0
+        if "dec" in meta:
+            dec = int(meta["dec"])
+        else:
+            dm = re.search(r"\.(\d+)", raw_s)
+            dec = len(dm.group(1)) if dm else 0
+        meta["stat"] = {
+            "to": to,
+            "dec": dec,
+            "sep": bool(meta.get("sep", "," in str(raw))),
+            "from": meta.get("from", 0),
+            "nocount": bool(meta.get("nocount")),
+        }
+
+    if "display" not in meta:
+        st = meta["stat"]
+        to = float(st.get("to", 0))
+        dec = int(st.get("dec", 0))
+        sep = bool(st.get("sep"))
+        if dec:
+            display = f"{to:,.{dec}f}" if sep else f"{to:.{dec}f}"
+        else:
+            display = f"{int(round(to)):,}" if sep else str(int(round(to)))
+        meta["display"] = display
+
+    if "value" not in meta:
+        meta["value"] = meta["display"]
+    return meta
+
+
+def apply_timing(
+    rows: list[dict],
+    tw: list[dict],
+    audio_end: float,
+    lead_in: float,
+    min_gap: float,
+    min_duration: float,
+) -> float:
+    designed: list[str] = []
+    offsets: list[int] = []
+    acc = 0
+    for row in rows:
+        ws = norm_words(row.get("narration", ""))
+        row["_nw"] = len(ws)
+        offsets.append(acc)
+        acc += len(ws)
+        designed.extend(ws)
+
+    transcript = [norm(w.get("w", "")) for w in tw]
+    if designed:
+        mapping, cost = align_words(designed, transcript)
+    else:
+        mapping, cost = {}, 0.0
+
+    for row, off in zip(rows, offsets):
+        idxs = [mapping.get(off + k) for k in range(row["_nw"])]
+        idxs = [x for x in idxs if x is not None]
+        row["_matched"] = len(idxs)
+        if idxs:
+            row["_start"] = tw[idxs[0]]["s"]
+            row["_end"] = tw[idxs[-1]]["e"]
+        else:
+            row["_start"] = row["_end"] = None
+
+    for k, row in enumerate(rows):
+        if row["_start"] is None:
+            prev_end = next((x["_end"] for x in reversed(rows[:k]) if x["_end"] is not None), 0.0)
+            next_start = next((x["_start"] for x in rows[k + 1 :] if x["_start"] is not None), audio_end)
+            row["_start"] = prev_end
+            row["_end"] = max(prev_end + 0.4, next_start)
+
+    for k, row in enumerate(rows):
+        row["_start"] = max(0.0, float(row["_start"]))
+        row["_end"] = max(float(row["_end"]), row["_start"] + min_duration)
+        if k:
+            row["_start"] = max(row["_start"], rows[k - 1]["_end"] + 0.02)
+
+    starts: list[float] = []
+    prev = 0.0
+    for k, row in enumerate(rows):
+        st = 0.0 if k == 0 else max(prev + min_gap, row["_start"] - lead_in)
+        starts.append(st)
+        prev = st
+
+    for k, row in enumerate(rows):
+        row["start"] = starts[k]
+        row["end"] = starts[k + 1] if k + 1 < len(rows) else max(starts[k] + min_duration, audio_end)
+    return cost
+
+
+def main() -> None:
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("project", nargs="?", default=str(DEFAULT_PROJECT))
+    ap.add_argument("vo", nargs="?", default=str(DEFAULT_VO))
+    ap.add_argument("--out-dir", default=str(DEFAULT_OUT))
+    ap.add_argument("--lead-in", type=float, default=0.3, help="visual lead before the first word")
+    ap.add_argument("--min-gap", type=float, default=0.6, help="minimum time between scene starts")
+    ap.add_argument("--min-duration", type=float, default=0.35, help="minimum scene duration")
+    args = ap.parse_args()
+
+    project_path = resolve(args.project)
+    vo_path = resolve(args.vo)
+    out_dir = resolve(args.out_dir)
+    video = load_json(project_path)
+    vo = load_json(vo_path)
+
+    scenes = video.get("scenes")
+    if not isinstance(scenes, list) or not scenes:
+        raise SystemExit("content/video.json needs a non-empty 'scenes' array")
+
+    tw = [w for seg in vo.get("segments", []) for w in seg.get("words", [])]
+    tw.sort(key=lambda w: w.get("s", 0))
+    if not tw:
+        raise SystemExit("build/vo.json has no word timings. Run engine/transcribe.py first.")
+
+    audio_end = float(vo.get("duration") or tw[-1].get("e", 0.0))
+    if audio_end <= 0:
+        raise SystemExit("could not determine the voiceover duration from build/vo.json")
+
+    acts = {}
+    for act in video.get("acts") or []:
+        if isinstance(act, dict) and act.get("id"):
+            acts[act["id"]] = act
+
+    rows = []
+    for i, scene in enumerate(scenes):
+        scene_type = scene.get("type") or "statement"
+        act = acts.get(scene.get("act"), {})
+        meta = normalize_meta(scene)
+        if "variant" in scene and scene["variant"] is not None:
+            variant = int(scene["variant"])
+        elif scene_type == "statement":
+            variant = i % 3
+        else:
+            variant = 0
+        rows.append(
+            {
+                "index": i + 1,
+                "id": scene.get("id") or f"s{i + 1:03d}",
+                "type": scene_type,
+                "act": scene.get("act") or "",
+                "eyebrow": scene.get("eyebrow") or act.get("name") or "",
+                "headline": scene.get("headline") or "",
+                "subline": scene.get("subline") or "",
+                "accent": scene.get("accent") or act.get("accent") or video.get("defaultAccent") or "#38bdf8",
+                "variant": variant,
+                "ghost": scene.get("ghost") or meta.get("ghost") or "",
+                "meta": meta,
+                "narration": scene.get("narration") or "",
+            }
+        )
+
+    cost = apply_timing(rows, tw, audio_end, args.lead_in, args.min_gap, args.min_duration)
+    total = rows[-1]["end"]
+
+    out_scenes = []
+    for row in rows:
+        out_scenes.append(
+            {
+                "index": row["index"],
+                "id": row["id"],
+                "start": round(row["start"], 3),
+                "end": round(row["end"], 3),
+                "duration": round(row["end"] - row["start"], 3),
+                "type": row["type"],
+                "accent": row["accent"],
+                "eyebrow": row["eyebrow"],
+                "headline": row["headline"],
+                "subline": row["subline"],
+                "variant": row["variant"],
+                "ghost": row["ghost"],
+                "meta": row["meta"],
+                "narration": row["narration"],
+            }
+        )
+
+    composition = video.get("composition") or {}
+    slug = slugify(video.get("slug") or video.get("title") or "video")
+    project = {
+        "title": video.get("title") or "Untitled video",
+        "slug": slug,
+        "compositionId": video.get("compositionId") or slug,
+        "audio": video.get("audio") or "content/voiceover.wav",
+        "channel": video.get("channel") or "",
+        "cta": video.get("cta") or "",
+        "ctaSub": video.get("ctaSub") or "",
+        "ghost": video.get("ghost") or "",
+        "width": int(composition.get("width", 1920)),
+        "height": int(composition.get("height", 1080)),
+        "fps": int(composition.get("fps", 30)),
+        "duration": round(total, 3),
+    }
+
+    out_dir.mkdir(parents=True, exist_ok=True)
+    (out_dir / "scenes.json").write_text(json.dumps(out_scenes, indent=1, ensure_ascii=False), encoding="utf-8")
+    (out_dir / "project.json").write_text(json.dumps(project, indent=1, ensure_ascii=False), encoding="utf-8")
+
+    no_match = [r for r in rows if r.get("_matched", 0) == 0]
+    matched = sum(r.get("_matched", 0) for r in rows)
+    designed = sum(r.get("_nw", 0) for r in rows)
+    pct = (100.0 * matched / designed) if designed else 0.0
+    short = [r for r in rows if r["end"] - r["start"] < 2.0]
+    long = [r for r in rows if r["end"] - r["start"] > 15.0]
+    weak = [r for r in rows if r.get("_nw", 0) >= 4 and r.get("_matched", 0) / max(1, r["_nw"]) < 0.5]
+
+    def cell(value) -> str:
+        return str(value).replace("|", "\\|").replace("\n", " ")
+
+    report = [
+        f"# {project['title']}",
+        "",
+        f"- Audio: `{project['audio']}`",
+        f"- Audio duration: {audio_end:.1f}s",
+        f"- Scenes: {len(out_scenes)}",
+        f"- Video duration: {total:.1f}s",
+        f"- Mean scene: {total / max(1, len(out_scenes)):.1f}s",
+        f"- Alignment cost: {cost:.1f}",
+        f"- Script words matched: {matched}/{designed} ({pct:.1f}%)",
+        "",
+        "| # | Start | End | Dur | Type | Headline | Words | Matched |",
+        "|---:|---:|---:|---:|---|---|---:|---:|",
+    ]
+    for row in rows:
+        report.append(
+            f"| {row['index']} | {row['start']:.2f} | {row['end']:.2f} | {row['end'] - row['start']:.1f} | "
+            f"{row['type']} | {cell(row['headline'])} | {row.get('_nw', 0)} | {row.get('_matched', 0)} |"
+        )
+
+    warnings = []
+    if no_match:
+        warnings.append("No matched words: " + ", ".join(str(r["index"]) for r in no_match))
+    if weak:
+        warnings.append("Weak narration match: " + ", ".join(str(r["index"]) for r in weak))
+    if short:
+        warnings.append("Shorter than 2s: " + ", ".join(str(r["index"]) for r in short))
+    if long:
+        warnings.append("Longer than 15s: " + ", ".join(str(r["index"]) for r in long))
+
+    report.append("")
+    if warnings:
+        report.append("## Warnings")
+        report.append("")
+        report.extend(f"- {w}" for w in warnings)
+    else:
+        report.append("## Warnings")
+        report.append("")
+        report.append("- None")
+    (out_dir / "report.md").write_text("\n".join(report) + "\n", encoding="utf-8")
+
+    print(f"[align] {len(out_scenes)} scenes, audio {audio_end:.1f}s, video {total:.1f}s")
+    print(f"[align] matched {matched}/{designed} script words ({pct:.1f}%), cost {cost:.1f}")
+    if no_match:
+        print(f"[align] WARNING: no matched words in scenes {', '.join(str(r['index']) for r in no_match)}")
+    print(f"[write] {out_dir / 'scenes.json'}")
+    print(f"[write] {out_dir / 'project.json'}")
+    print(f"[write] {out_dir / 'report.md'}")
+
+
+if __name__ == "__main__":
+    main()

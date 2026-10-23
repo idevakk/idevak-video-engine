@@ -1,0 +1,209 @@
+{
+  "title": "How a Rumor Becomes a Headline",
+  "slug": "rumor-to-headline",
+  "compositionId": "rumor-to-headline",
+  "audio": "content/voiceover.wav",
+  "channel": "@yourchannel",
+  "ghost": "RUMOR",
+  "cta": "Subscribe",
+  "ctaSub": "More forensic breakdowns",
+  "composition": {
+    "width": 1920,
+    "height": 1080,
+    "fps": 30
+  },
+  "acts": [
+    {
+      "id": "claim",
+      "name": "THE CLAIM",
+      "accent": "#ff3b5c"
+    },
+    {
+      "id": "path",
+      "name": "THE PATH",
+      "accent": "#f5a524"
+    },
+    {
+      "id": "check",
+      "name": "THE CHECK",
+      "accent": "#22d3ee"
+    }
+  ],
+  "scenes": [
+    {
+      "id": "s001",
+      "type": "cold",
+      "act": "claim",
+      "narration": "A claim is not a fact. But give it enough repetition, and it starts to look like one.",
+      "eyebrow": "COLD OPEN",
+      "headline": "How a Rumor Becomes a Headline",
+      "subline": "The short, boring path from a forum post to a front page.",
+      "ghost": "RUMOR",
+      "meta": {
+        "chips": [
+          "ONE CLAIM",
+          "FOUR REWRITES",
+          "ZERO SOURCES"
+        ],
+        "ghost": "RUMOR"
+      }
+    },
+    {
+      "id": "s002",
+      "type": "statement",
+      "act": "path",
+      "variant": 1,
+      "narration": "The path from a forum post to a headline is shorter than you think.",
+      "eyebrow": "THE PATH",
+      "headline": "A post becomes a thread. A thread becomes a story.",
+      "subline": "Each step adds confidence, not evidence.",
+      "meta": {
+        "ghost": "PATH"
+      }
+    },
+    {
+      "id": "s003",
+      "type": "flow",
+      "act": "path",
+      "narration": "First, a post. Then replies. Then an aggregator picks it up. Then a headline.",
+      "eyebrow": "TRANSMISSION",
+      "headline": "Four hops from claim to front page",
+      "subline": "No new reporting at any hop.",
+      "meta": {
+        "nodes": [
+          {
+            "k": "01",
+            "t": "FORUM POST",
+            "s": "one user, one claim"
+          },
+          {
+            "k": "02",
+            "t": "REPLY THREAD",
+            "s": "repetition starts"
+          },
+          {
+            "k": "03",
+            "t": "AGGREGATOR",
+            "s": "context drops"
+          },
+          {
+            "k": "04",
+            "t": "HEADLINE",
+            "s": "certainty rises"
+          }
+        ]
+      }
+    },
+    {
+      "id": "s004",
+      "type": "timeline",
+      "act": "path",
+      "narration": "In the first hour, the post was a question. By the third hour, it was a warning. By lunch, it was a fact.",
+      "eyebrow": "THE SPREAD",
+      "headline": "Three hours, three rewrites",
+      "subline": "The claim gets shorter and more certain at every step.",
+      "meta": {
+        "events": [
+          {
+            "t": "09:12",
+            "s": "A question is posted"
+          },
+          {
+            "t": "10:05",
+            "s": "A reply drops the question mark"
+          },
+          {
+            "t": "11:20",
+            "s": "An aggregator adds a headline"
+          },
+          {
+            "t": "12:40",
+            "s": "The claim is now a fact"
+          }
+        ]
+      }
+    },
+    {
+      "id": "s005",
+      "type": "compare",
+      "act": "check",
+      "narration": "The original post said a bug might affect some servers. The headline said every server was exposed.",
+      "eyebrow": "THE DRIFT",
+      "headline": "What was said vs. what was published",
+      "subline": "The gap is where the certainty enters.",
+      "meta": {
+        "left": {
+          "k": "THE POST",
+          "t": "A bug might affect some servers",
+          "pts": [
+            "conditional language",
+            "one researcher",
+            "no exploit shown"
+          ]
+        },
+        "right": {
+          "k": "THE HEADLINE",
+          "t": "Every server is exposed",
+          "pts": [
+            "no conditional",
+            "no caveat",
+            "no source"
+          ]
+        },
+        "vs": "VS"
+      }
+    },
+    {
+      "id": "s006",
+      "type": "stat",
+      "act": "check",
+      "narration": "The original post cited zero primary sources. The headline cited the post.",
+      "eyebrow": "THE LEDGER",
+      "headline": "Primary sources in the original claim",
+      "subline": "No interviews, no documents, no data.",
+      "meta": {
+        "value": 0,
+        "dec": 0,
+        "sep": false,
+        "prefix": "",
+        "suffix": ""
+      }
+    },
+    {
+      "id": "s007",
+      "type": "quote",
+      "act": "check",
+      "narration": "A claim repeated is still a claim. Repetition is not verification.",
+      "headline": "A claim repeated is still a claim.",
+      "subline": "The editorial rule this video is built on."
+    },
+    {
+      "id": "s008",
+      "type": "statement",
+      "act": "check",
+      "variant": 2,
+      "narration": "The fix is boring. Open the primary source. Read the method. Check the date. Then decide.",
+      "eyebrow": "THE CHECK",
+      "headline": "The antidote is a primary source.",
+      "subline": "It is slower than sharing. It is also the only thing that stops the loop.",
+      "meta": {
+        "ghost": "SOURCE"
+      }
+    },
+    {
+      "id": "s009",
+      "type": "outro",
+      "act": "check",
+      "narration": "So before you share the next alarming headline, check the source. See you next time.",
+      "eyebrow": "OUTRO",
+      "headline": "Check the source before you share.",
+      "subline": "A claim is not a fact until someone checks it.",
+      "meta": {
+        "channel": "@yourchannel",
+        "cta": "Subscribe",
+        "ctaSub": "More forensic breakdowns",
+        "ghost": "RUMOR"
+      }
+    }
+  ]
+}

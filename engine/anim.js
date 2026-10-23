@@ -388,7 +388,7 @@
   tl.to("#bg-vignette", { opacity: 1, duration: 0.6 }, Math.max(0, TOTAL - 0.8));
 
   window.__timelines = window.__timelines || {};
-  window.__timelines["php2shell"] = tl;
+  window.__timelines["__COMPOSITION_ID__"] = tl;
 })();
 
 

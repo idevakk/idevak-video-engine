@@ -118,7 +118,7 @@ body{width:1920px;height:1080px;overflow:hidden}
 .dl-date{border-left:2px solid var(--ac);padding-left:38px}
 .dl-day{font-size:150px;font-weight:800;line-height:.86;letter-spacing:-.05em;font-variant-numeric:tabular-nums}
 .dl-mon{font-family:var(--mono);font-size:34px;letter-spacing:.22em;color:var(--ac);margin-top:16px;font-weight:600}
-.dl-yr{font-family:var(--mono);font-size:20px;letter-spacing:.34em;color:var(--faint);margin-top:10px}
+.dl-yr{font-family:var(--mono);font-size:20px;letter-spacing:.34em;color:rgba(244,247,251,.52);margin-top:10px}
 .dl-title{font-size:96px;line-height:1.0;font-weight:800;letter-spacing:-.045em;margin:0;max-width:1180px}
 .dl-sub{margin-top:32px;font-size:30px;line-height:1.44;color:var(--dim);max-width:940px}
 .dl-rail{position:absolute;left:128px;right:128px;bottom:88px;height:1px;background:var(--line-soft)}
@@ -183,7 +183,7 @@ body{width:1920px;height:1080px;overflow:hidden}
 .lg-head{display:flex;justify-content:space-between;font-family:var(--mono);font-size:13px;letter-spacing:.24em;color:var(--dim);padding-bottom:18px;border-bottom:1px solid var(--line-soft)}
 .lg-live{color:var(--ac)}
 .lg-row{display:flex;justify-content:space-between;align-items:baseline;padding:21px 2px;border-bottom:1px solid var(--line-soft);position:relative}
-.lg-k{font-family:var(--mono);font-size:16px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint)}
+.lg-k{font-family:var(--mono);font-size:16px;letter-spacing:.14em;text-transform:uppercase;color:rgba(244,247,251,.52)}
 .lg-v{font-family:var(--mono);font-size:30px;font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums}
 .lg-v.is-bad{color:#ff6b81;text-shadow:0 0 22px rgba(255,90,110,.5)}
 .lg-stamp{position:absolute;right:26px;bottom:22px;font-family:var(--mono);font-size:26px;font-weight:800;letter-spacing:.22em;

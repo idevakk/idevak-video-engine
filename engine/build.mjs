@@ -326,6 +326,9 @@ const RENDER = {
   },
 
   compare(s) {
+    const rawVs = s.meta?.vs || "VS";
+    const vs = rawVs === "->" ? "→" : rawVs;
+    const isLong = vs.length > 5;
     return `
     ${eyebrow(s)}
     <div class="cmp-stage">
@@ -334,7 +337,7 @@ const RENDER = {
         <div class="cmp-t">${esc(s.meta?.left?.t || "")}</div>
         ${(s.meta?.left?.pts || []).map((p) => `<div class="cmp-p">${esc(p)}</div>`).join("")}
       </div>
-      <div class="cmp-mid"><span>${esc(s.meta?.vs || "VS")}</span></div>
+      <div class="cmp-mid"><div class="cmp-diamond"><span class="cmp-vs ${isLong ? "is-long" : ""}">${esc(vs)}</span></div></div>
       <div class="cmp-col cmp-right" data-k="1">
         <div class="cmp-k">${esc(s.meta?.right?.k || "B")}</div>
         <div class="cmp-t">${esc(s.meta?.right?.t || "")}</div>

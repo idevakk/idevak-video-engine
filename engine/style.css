@@ -261,9 +261,10 @@ body{width:1920px;height:1080px;overflow:hidden}
 .cmp-right .cmp-k{color:var(--ac)}
 .cmp-t{font-size:44px;font-weight:780;letter-spacing:-.03em;line-height:1.14;margin-bottom:22px}
 .cmp-p{font-size:22px;color:var(--dim);line-height:1.5;padding-top:10px;border-top:1px solid var(--line-soft)}
-.cmp-mid{display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:18px;letter-spacing:.2em;color:var(--dim)}
-.cmp-mid span{border:1px solid var(--line);width:64px;height:64px;display:flex;align-items:center;justify-content:center;transform:rotate(45deg)}
-.cmp-mid span>*{transform:rotate(-45deg)}
+.cmp-mid{display:flex;align-items:center;justify-content:center;font-family:var(--mono);color:var(--dim)}
+.cmp-mid .cmp-diamond,.cmp-mid span{border:1px solid var(--line);width:64px;height:64px;display:flex;align-items:center;justify-content:center;transform:rotate(45deg);background:linear-gradient(135deg,rgba(13,18,33,.95),rgba(7,10,19,.98));flex-shrink:0}
+.cmp-mid .cmp-vs,.cmp-mid span>*{transform:rotate(-45deg);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;letter-spacing:.12em;line-height:1;text-align:center;white-space:nowrap;user-select:none}
+.cmp-mid .cmp-vs.is-long{font-size:11px;letter-spacing:.05em}
 .cmp-cap{margin-top:44px;font-size:40px;font-weight:750;letter-spacing:-.03em}
 .cmp-sub{margin-top:10px;font-size:23px;color:var(--dim)}
 

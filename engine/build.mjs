@@ -32,28 +32,30 @@ const tok = (s) => esc(s).replace(/\n/g, "<br>");
 
 // ---------------------------------------------------------------- mascot assets
 const MASCOT_IMAGES = {};
-const MASCOT_EXPRS = ["neutral", "shocked", "thinking", "solved", "talking", "cool", "happy", "angry", "sad"];
+const MASCOT_EXPRS = [
+  "neutral", "talking", "thinking", "shocked",
+  "cool", "happy", "angry", "sad",
+  "facepalm", "pointing", "panic", "skeptical"
+];
+
 for (const expr of MASCOT_EXPRS) {
   const pngPath = path.resolve(ROOT, `assets/mascot/${expr}.png`);
-  const jpgPath = path.resolve(ROOT, `assets/mascot/${expr}.jpg`);
   try {
     const buf = await fs.readFile(pngPath);
     MASCOT_IMAGES[expr] = `data:image/png;base64,${buf.toString("base64")}`;
   } catch {
-    try {
-      const buf = await fs.readFile(jpgPath);
-      MASCOT_IMAGES[expr] = `data:image/jpeg;base64,${buf.toString("base64")}`;
-    } catch {
-      MASCOT_IMAGES[expr] = "";
-    }
+    MASCOT_IMAGES[expr] = "";
   }
 }
+// Alias legacy 'solved' to 'happy'
+MASCOT_IMAGES["solved"] = MASCOT_IMAGES["happy"];
 
 function renderMascotOverlay(mascot) {
   if (!mascot) return "";
-  const expr = mascot.expression || "neutral";
+  const rawExpr = mascot.expression || "neutral";
+  const expr = rawExpr === "solved" ? "happy" : rawExpr;
   const pos = mascot.position === "bottom-left" ? "pos-bl" : "pos-br";
-  const imgSrc = MASCOT_IMAGES[expr] || "";
+  const imgSrc = MASCOT_IMAGES[expr] || MASCOT_IMAGES["neutral"] || "";
   const bubble = mascot.bubble ? `<div class="m-ov-bubble"><div class="m-ov-btext">${esc(mascot.bubble)}</div></div>` : "";
   return `
   <div class="m-ov ${pos} m-expr-${expr}">
@@ -61,7 +63,6 @@ function renderMascotOverlay(mascot) {
     <div class="m-ov-avatar-wrap">
       <div class="m-ov-ring"></div>
       <img class="m-ov-avatar" src="${imgSrc}" alt="${esc(expr)}" />
-      <span class="m-ov-badge">${esc(expr.toUpperCase())}</span>
     </div>
   </div>`;
 }
@@ -517,7 +518,7 @@ const RENDER = {
           <div class="mascot-scanline"></div>
           <img class="mascot-img" src="${imgSrc}" alt="${esc(expr)}" />
           <div class="mascot-hud-tag">${esc(badge)}</div>
-          <div class="mascot-expr-badge">${esc(expr.toUpperCase())}</div>
+          
         </div>
       </div>
       <div class="mascot-right">

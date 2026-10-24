@@ -104,6 +104,11 @@
       "variant": 0,
       "meta": {
         "ghost": "EIGHT"
+      },
+      "mascot": {
+        "expression": "shocked",
+        "position": "bottom-right",
+        "bubble": "Wait, it gets worse..."
       }
     },
     {
@@ -233,6 +238,11 @@
       "variant": 2,
       "meta": {
         "ghost": "NO"
+      },
+      "mascot": {
+        "expression": "facepalm",
+        "position": "bottom-right",
+        "bubble": "No hack needed. The key was literally 4."
       }
     },
     {
@@ -374,6 +384,11 @@
         "day": "20",
         "mon": "OCT",
         "yr": "2026"
+      },
+      "mascot": {
+        "expression": "panic",
+        "position": "bottom-right",
+        "bubble": "Security engineers lost their minds!"
       }
     },
     {
@@ -548,6 +563,11 @@
       "variant": 0,
       "meta": {
         "ghost": "SIGN"
+      },
+      "mascot": {
+        "expression": "skeptical",
+        "position": "bottom-left",
+        "bubble": "Wait, malware stamped as verified?!"
       }
     },
     {
@@ -840,6 +860,11 @@
             "k": "com"
           }
         ]
+      },
+      "mascot": {
+        "expression": "pointing",
+        "position": "bottom-right",
+        "bubble": "Notice the point scalar formula."
       }
     },
     {
@@ -1064,6 +1089,11 @@
         "day": "30",
         "mon": "APR",
         "yr": "2025"
+      },
+      "mascot": {
+        "expression": "thinking",
+        "position": "bottom-right",
+        "bubble": "A formal key ceremony... with zero entropy?"
       }
     },
     {
@@ -1448,6 +1478,11 @@
         "day": "17",
         "mon": "OCT",
         "yr": "2026"
+      },
+      "mascot": {
+        "expression": "angry",
+        "position": "bottom-left",
+        "bubble": "A critical Saturday afternoon alert."
       }
     },
     {
@@ -1756,6 +1791,11 @@
         "day": "27",
         "mon": "OCT",
         "yr": "2026"
+      },
+      "mascot": {
+        "expression": "sad",
+        "position": "bottom-right",
+        "bubble": "The ultimate death sentence for any CA."
       }
     },
     {
@@ -2138,6 +2178,11 @@
             "k": "out"
           }
         ]
+      },
+      "mascot": {
+        "expression": "cool",
+        "position": "bottom-right",
+        "bubble": "Zero shortcuts. BUILD. SOLVE. DEPLOY."
       }
     },
     {

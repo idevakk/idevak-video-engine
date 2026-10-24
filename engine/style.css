@@ -340,7 +340,7 @@ body{width:1920px;height:1080px;overflow:hidden}
 .m-ov-avatar-wrap{position:relative;width:130px;height:130px;border-radius:50%;padding:4px;background:rgba(4,6,11,.85);border:2px solid var(--ac);box-shadow:0 0 24px -2px var(--ac)}
 .m-ov-ring{position:absolute;inset:-6px;border-radius:50%;border:1px dashed var(--ac);opacity:.45}
 .m-ov-avatar{width:100%;height:100%;border-radius:50%;object-fit:cover;display:block}
-.m-ov-badge{position:absolute;bottom:-6px;left:50%;transform:translateX(-50%);font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.14em;padding:2px 8px;background:var(--ac);color:#04060b;border-radius:3px}
+.m-ov-badge{display:none}
 .m-ov-bubble{max-width:340px;background:rgba(10,15,30,.88);border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:12px 18px;backdrop-filter:blur(10px);box-shadow:0 8px 30px rgba(0,0,0,.5);position:relative;margin-bottom:14px}
 .m-ov-bubble::after{content:"";position:absolute;bottom:-8px;width:12px;height:12px;background:rgba(10,15,30,.88);border-right:1px solid rgba(255,255,255,.14);border-bottom:1px solid rgba(255,255,255,.14)}
 .pos-br .m-ov-bubble::after{right:28px;transform:rotate(45deg)}
@@ -431,7 +431,7 @@ body{width:1920px;height:1080px;overflow:hidden}
 .mascot-hud-corner.br{bottom:6px;right:6px;border-bottom:2px solid;border-right:2px solid}
 .mascot-scanline{position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(0,0,0,.2) 0,rgba(0,0,0,.2) 2px,transparent 2px,transparent 4px);pointer-events:none}
 .mascot-hud-tag{position:absolute;top:14px;left:18px;font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.2em;color:var(--ac);background:rgba(4,6,11,.85);padding:4px 10px;border:1px solid var(--line);border-radius:4px}
-.mascot-expr-badge{position:absolute;bottom:14px;right:18px;font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.14em;color:#04060b;background:var(--ac);padding:4px 10px;border-radius:3px}
+.mascot-expr-badge{display:none}
 .mascot-right{display:flex;flex-direction:column;justify-content:center}
 .mascot-bubble-box{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:42px 48px;position:relative;box-shadow:0 20px 50px rgba(0,0,0,.5);margin-bottom:28px}
 .mascot-bubble-arrow{position:absolute;left:-14px;top:48px;width:14px;height:24px;clip-path:polygon(100% 0, 0 50%, 100% 100%);background:var(--line)}

@@ -44,7 +44,7 @@ TYPES = {
 CODE_KINDS = {"code", "hot", "dim", "str", "com", "fn", "kw", "key", "err", "out"}
 DIFF_KINDS = {"ctx", "add", "del"}
 TERM_KINDS = {"cmd", "out", "err"}
-MASCOT_EXPRESSIONS = {"neutral", "shocked", "thinking", "solved"}
+MASCOT_EXPRESSIONS = {"neutral", "talking", "thinking", "shocked", "cool", "happy", "angry", "sad", "facepalm", "pointing", "panic", "skeptical", "solved"}
 HEX = re.compile(r"^#[0-9a-fA-F]{6}$")
 
 

@@ -328,6 +328,26 @@ def main() -> None:
 
     composition = video.get("composition") or {}
     slug = slugify(video.get("slug") or video.get("title") or "video")
+    aspect = video.get("aspect") or video.get("aspectRatio") or composition.get("aspect") or composition.get("aspectRatio")
+    comp_w = composition.get("width")
+    comp_h = composition.get("height")
+    if not aspect:
+        if comp_w and comp_h and int(comp_h) > int(comp_w):
+            aspect = "9:16"
+        else:
+            aspect = "16:9"
+
+    if aspect == "9:16" and comp_w == 1920 and comp_h == 1080:
+        comp_w, comp_h = 1080, 1920
+    elif aspect == "16:9" and comp_w == 1080 and comp_h == 1920:
+        comp_w, comp_h = 1920, 1080
+
+    default_w = 1080 if aspect == "9:16" else 1920
+    default_h = 1920 if aspect == "9:16" else 1080
+    w = int(comp_w or default_w)
+    h = int(comp_h or default_h)
+    is_portrait = (h > w) or (aspect == "9:16")
+
     project = {
         "title": video.get("title") or "Untitled video",
         "slug": slug,
@@ -337,8 +357,10 @@ def main() -> None:
         "cta": video.get("cta") or "",
         "ctaSub": video.get("ctaSub") or "",
         "ghost": video.get("ghost") or "",
-        "width": int(composition.get("width", 1920)),
-        "height": int(composition.get("height", 1080)),
+        "aspect": "9:16" if is_portrait else "16:9",
+        "isPortrait": is_portrait,
+        "width": w,
+        "height": h,
         "fps": int(composition.get("fps", 30)),
         "duration": round(total, 3),
     }

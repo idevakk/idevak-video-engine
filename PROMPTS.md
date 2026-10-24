@@ -211,3 +211,39 @@ You are the Lead Technical Director and Scriptwriter for the YouTube channel iDe
 
 Output valid JSON matching the schema documented in `engine/SCHEMA.md`.
 ```
+
+---
+
+## 6. Authoring for 9:16 Portrait (YouTube Shorts, Instagram Reels, TikTok)
+
+When prompting an LLM to generate a **Short or Reel**, specify 9:16 aspect:
+
+### Key Differences for 9:16 Short-Form:
+- **Total Duration**: 30 to 60 seconds (75 to 150 words total, 6 to 10 scenes).
+- **Scene Pacing**: Cut rapidly every 3 to 6 seconds (10 to 18 words per scene).
+- **Punchy Headlines**: Keep headlines very short (1 to 3 words) to prevent multi-line clutter on vertical phone screens.
+- **Aspect Flag**: Set `"aspect": "9:16"` at the top level of `content/video.json`. The engine automatically handles vertical 1080x1920 layout and mobile safe zones.
+- **Mascot Emotions**: Use the Series 2 mascot expressions (`shocked`, `panic`, `cool`, `pointing`, `facepalm`, etc.) to dramatize technical twists. Never use redundant speech bubbles like `"Thinking"` or `"Shocked"`—the facial expression already shows the state.
+
+### Master LLM Generation Prompt for 9:16 Shorts / Reels:
+
+```markdown
+You are the Lead Technical Director for iDevak. Write a 45-60 second YouTube Short / Instagram Reel script in the iDevak video engine JSON format (`content/video.json`).
+
+Target Aspect Ratio: 9:16 Portrait (1080x1920) for mobile.
+
+### Instructions:
+1. Top-Level: Set `"aspect": "9:16"`, `"title": "..."`, and `"channel": "youtube.com/channel/UCEbQwm7oWRb1HjfGHMs7AzA"`.
+2. Total Length: 80-120 spoken words across 6-8 scenes (approx 45 seconds).
+3. Pacing: Super snappy! 10-18 words per scene.
+4. Headlines: Ultra-short punchy text (1-3 words) formatted for vertical screens.
+5. Visual Mix:
+   - Scene 1: "cold" open hook with 1-2 chips.
+   - Core beats: mix of "terminal", "code", "cloud", "stat", or "webref".
+   - Dramatic twist: "meme" scene with `punch: true` and an expressive mascot reaction.
+   - Climax / Takeaway: "mascot" scene with `expression: "pointing"` or `"solved"`.
+   - Final scene: "outro" with subscribe CTA.
+6. Mascot rules: Use the expressive Series 2 cloud mascot (`shocked`, `panic`, `facepalm`, `cool`, `pointing`). Let the character's facial expression speak for itself—never use redundant bubble text like "Thinking" or "Shocked".
+
+Output valid JSON matching engine/SCHEMA.md.
+```

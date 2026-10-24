@@ -413,7 +413,10 @@ def validate_scene(
         sfield(meta, "image", where, errors)
         if "stats" in meta:
             st_list = listfield(meta, "stats", where, errors, hi=4)
-            check_items(st_list, f"{where}.meta.stats", errors, ("label", "val"), ("hot",))
+            items = check_items(st_list, f"{where}.meta.stats", errors, ("label", "val"))
+            for k, item in enumerate(items):
+                if "hot" in item and not isinstance(item["hot"], (bool, str)):
+                    errors.append(f"{where}.meta.stats[{k}].hot: must be boolean or string")
 
 
 def main() -> None:
@@ -459,8 +462,23 @@ def main() -> None:
         errors.append("video.composition: must be an object")
         composition = {}
     composition = composition or {}
-    width = composition.get("width", 1920)
-    height = composition.get("height", 1080)
+    aspect = data.get("aspect") or data.get("aspectRatio") or composition.get("aspect") or composition.get("aspectRatio")
+    if aspect is not None and aspect not in ("16:9", "9:16"):
+        warnings.append(f"video.aspect: unknown '{aspect}'; supported values are '16:9' (landscape) and '9:16' (portrait)")
+
+    default_w = 1080 if aspect == "9:16" else 1920
+    default_h = 1920 if aspect == "9:16" else 1080
+    raw_w = composition.get("width")
+    raw_h = composition.get("height")
+
+    if aspect == "9:16" and (raw_w, raw_h) == (1920, 1080):
+        width, height = 1080, 1920
+    elif aspect == "16:9" and (raw_w, raw_h) == (1080, 1920):
+        width, height = 1920, 1080
+    else:
+        width = raw_w if raw_w is not None else default_w
+        height = raw_h if raw_h is not None else default_h
+
     fps = composition.get("fps", 30)
     if not isinstance(width, int) or width <= 0:
         errors.append("video.composition.width: must be a positive integer")
@@ -468,8 +486,8 @@ def main() -> None:
         errors.append("video.composition.height: must be a positive integer")
     if not isinstance(fps, int) or fps <= 0:
         errors.append("video.composition.fps: must be a positive integer")
-    if (width, height) != (1920, 1080):
-        warnings.append("video.composition: this theme is designed for 1920x1080; other sizes need CSS work")
+    if (width, height) not in ((1920, 1080), (1080, 1920)):
+        warnings.append("video.composition: standard presets are 1920x1080 (16:9) and 1080x1920 (9:16 portrait)")
 
     acts_raw = data.get("acts") or []
     if not isinstance(acts_raw, list):

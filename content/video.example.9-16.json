@@ -1,0 +1,159 @@
+{
+  "title": "How One Hardcoded Key Leaked Everything",
+  "slug": "hardcoded-key-short",
+  "aspect": "9:16",
+  "compositionId": "hardcoded-key-short",
+  "audio": "content/voiceover.wav",
+  "channel": "youtube.com/@iDevak",
+  "cta": "Subscribe",
+  "ctaSub": "More Cloud Autopsies",
+  "defaultAccent": "#38bdf8",
+  "composition": {
+    "width": 1080,
+    "height": 1920,
+    "fps": 30
+  },
+  "acts": [
+    {
+      "id": "leak",
+      "name": "THE LEAK",
+      "accent": "#ff3b5c"
+    },
+    {
+      "id": "fix",
+      "name": "THE FIX",
+      "accent": "#00f0ff"
+    }
+  ],
+  "scenes": [
+    {
+      "id": "s001",
+      "type": "cold",
+      "act": "leak",
+      "narration": "This single hardcoded AWS key cost a startup forty thousand dollars in thirty minutes.",
+      "eyebrow": "CLOUD AUTOPSY",
+      "headline": "40K Burned in 30 Minutes",
+      "subline": "How one commit turned an AWS account into a public crypto miner.",
+      "meta": {
+        "chips": [
+          "GIT LEAK",
+          "$40K LOSS",
+          "BOT SCANNERS"
+        ],
+        "ghost": "LEAKED"
+      }
+    },
+    {
+      "id": "s002",
+      "type": "code",
+      "act": "leak",
+      "narration": "A junior engineer accidentally committed production AWS credentials directly into a public GitHub repository.",
+      "eyebrow": "THE ACCIDENT",
+      "headline": "Production Keys in Git",
+      "subline": "Scraping bots cloned the repository within four seconds of the push.",
+      "meta": {
+        "file": "serverless.yml",
+        "tag": "line 14",
+        "announce": "AWS_SECRET_ACCESS_KEY committed directly to master",
+        "lines": [
+          {
+            "t": "provider:",
+            "k": "dim"
+          },
+          {
+            "t": "  name: aws",
+            "k": "dim"
+          },
+          {
+            "t": "  environment:",
+            "k": "dim"
+          },
+          {
+            "t": "    AWS_SECRET_KEY: AKIA_PROD_ROOT_KEY_9921",
+            "k": "hot",
+            "key": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "s003",
+      "type": "meme",
+      "act": "leak",
+      "narration": "Automated scrapers indexed the keys instantly and spun up four hundred GPU instances before the alarm even fired.",
+      "eyebrow": "BOT INVASION",
+      "headline": "400 GPUs in 60 Seconds",
+      "subline": "The bots didn't even read the code.",
+      "mascot": {
+        "expression": "shocked",
+        "position": "bottom-right"
+      },
+      "meta": {
+        "text": "AWS BILL JUST DROPPED",
+        "reaction": "400 GPUS SPINNING UP",
+        "punch": true
+      }
+    },
+    {
+      "id": "s004",
+      "type": "terminal",
+      "act": "fix",
+      "narration": "The immediate fix is revoking the IAM credential and switching to short-lived OpenID Connect role federation.",
+      "eyebrow": "REMEDIATION",
+      "headline": "Revoke and Rotate Immediately",
+      "subline": "Never store static cloud keys in source control.",
+      "meta": {
+        "cmd": "aws iam deactivate-access-key --access-key-id AKIA_PROD_ROOT_KEY_9921",
+        "status": "STATUS: KEY DEACTIVATED IN 120ms",
+        "lines": [
+          { "t": "Rotating IAM root credentials...", "k": "out" },
+          { "t": "Purging stale GitHub cache...", "k": "out" },
+          { "t": "Switching deployment pipeline to AWS OIDC...", "k": "out" }
+        ]
+      }
+    },
+    {
+      "id": "s005",
+      "type": "mascot",
+      "act": "fix",
+      "narration": "Always use GitHub OIDC tokens and IAM roles. Never use long-lived root keys.",
+      "eyebrow": "LESSON",
+      "headline": "Kill Static IAM Keys",
+      "subline": "Temporary STS tokens eliminate leakage risks forever.",
+      "meta": {
+        "expression": "pointing",
+        "badge": "iDevak // BEST PRACTICE",
+        "stats": [
+          {
+            "label": "STATIC KEYS",
+            "val": "FORBIDDEN",
+            "hot": true
+          },
+          {
+            "label": "OIDC ROLES",
+            "val": "ENABLED"
+          },
+          {
+            "label": "BOT RISK",
+            "val": "0%"
+          }
+        ]
+      }
+    },
+    {
+      "id": "s006",
+      "type": "outro",
+      "act": "fix",
+      "narration": "Subscribe to iDevak for more cloud security autopsies and system engineering breakdowns.",
+      "eyebrow": "DEVAK SECURITY",
+      "headline": "Build. Solve. Deploy.",
+      "subline": "Next breakdown: The memory leak that rebooted our production cluster.",
+      "meta": {
+        "ghost": "IDEVAK",
+        "channel": "youtube.com/@iDevak",
+        "cta": "Subscribe",
+        "ctaSub": "youtube.com/@iDevak"
+      }
+    }
+  ]
+}

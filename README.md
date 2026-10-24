@@ -24,6 +24,7 @@ hyperframes check / preview / render
 
 ## What is Included
 
+- **Native 16:9 & 9:16 Support:** Produce standard 16:9 landscape videos (1920x1080) or vertical 9:16 shorts/reels (1080x1920) by simply specifying `"aspect": "9:16"` in `content/video.json`.
 - **Project-Agnostic Clean Template:** Ready to clone and use for any technical explainer video immediately.
 - **21-Scene Visual System:**
   - **Narrative & Core:** `cold`, `hero`, `statement`, `outro`

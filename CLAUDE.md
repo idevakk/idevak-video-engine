@@ -4,6 +4,7 @@ Read `AGENTS.md` and `PROMPTS.md` first. Read `engine/SCHEMA.md` before editing 
 
 ## Short version
 
+- Aspect ratios: `"aspect": "16:9"` (default 1920x1080) or `"aspect": "9:16"` (1080x1920 portrait for YouTube Shorts, Reels, TikTok). Setting `"aspect": "9:16"` automatically configures dimensions, mobile safe zones (160px top, 240px bottom), and responsive stacked layouts.
 - The voiceover is the timing master. `narration` must match the spoken audio.
 - For rapid visual preview before recording audio, use `npm run draft` (`python engine/align.py --draft && node engine/build.mjs`).
 - Use the 21 scene types (including `webref`, `meme`, `cloud`, `mascot`).

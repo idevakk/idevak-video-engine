@@ -31,9 +31,26 @@ engine/build.mjs -> index.html + hyperframes.json
 | `cta` | string | no | Outro CTA label. Defaults to `Subscribe`. |
 | `ctaSub` | string | no | Outro CTA detail. Defaults to `More investigations`. |
 | `defaultAccent` | string | no | `#rrggbb` fallback when neither the scene nor its act has an accent. |
-| `composition` | object | no | `{ "width": 1920, "height": 1080, "fps": 30 }`. The theme is designed for 1920x1080. |
+| `aspect` | string | no | `"16:9"` (default, 1920x1080) or `"9:16"` (1080x1920 portrait for YouTube Shorts, Reels, TikTok). When set to `"9:16"`, the engine automatically configures 1080x1920 resolution, mobile safe zones, single-column stacked grids, and vertical mascot positioning. |
+| `aspectRatio` | string | no | Alias for `aspect` (e.g. `"9:16"`). |
+| `composition` | object | no | `{ "width": 1920, "height": 1080, "fps": 30 }` (or `{ "width": 1080, "height": 1920, "fps": 30 }` for 9:16). Automatically defaulted by `aspect`. |
 | `acts` | array | no | Act objects. Used for eyebrow fallback and accent fallback. |
 | `scenes` | array | yes | Non-empty. Each item is one visual scene. |
+
+## Aspect Ratios & Formats (16:9 Landscape vs 9:16 Portrait)
+
+The engine provides first-class, zero-config support for both landscape videos and vertical mobile shorts:
+
+| Aspect | Resolution | Platforms | Configuration in `video.json` |
+|---|---|---|---|
+| **`16:9`** (Default) | 1920x1080 | YouTube Main, Desktop, Landscape Web | `"aspect": "16:9"` (or omit) |
+| **`9:16`** (Portrait) | 1080x1920 | YouTube Shorts, Instagram Reels, TikTok | `"aspect": "9:16"` |
+
+When an LLM or author specifies `"aspect": "9:16"`:
+1. **Dimensions**: Automatically defaults to 1080x1920 (or read from `composition`).
+2. **Mobile Safe Margins**: Top padding (160px) protects against search bars/status icons; bottom padding (240px) protects against channel pills, sound tags, and interaction buttons.
+3. **Responsive Stacking**: Multi-column scenes (`compare`, `hero`, `stack`, `dateline`, `cloud`, `mascot`) automatically stack vertically without text collision.
+4. **Mascot Placement**: Overlays anchor to `bottom: 240px; right: 48px;` safely above mobile playback controls.
 
 ### Acts
 
@@ -672,7 +689,7 @@ A fast-paced, high-impact dev reaction card with comic recoil shake, glitch swee
 | `text` | string | Bold meme reaction caption. |
 | `subtext` | string | Subtitle or sarcastic commentary. |
 | `reaction` | string | Tag line (e.g. `SKILL ISSUE`, `PAIN`, `WAIT WHAT`, `404 LOGIC`). |
-| `expression` | string | Mascot expression: `neutral`, `shocked`, `thinking`, `solved`. Defaults to `shocked`. |
+| `expression` | string | Mascot expression: `neutral`, `talking`, `thinking`, `shocked`, `cool`, `happy`, `angry`, `sad`, `facepalm`, `pointing`, `panic`, `skeptical`. Defaults to `shocked`. |
 | `image` | string | Optional custom meme image path. Defaults to iDevak mascot with chosen expression. |
 | `punch` | boolean | Enables instant Fireship-style camera recoil punch zoom. |
 
@@ -731,12 +748,16 @@ A dedicated spotlight scene featuring Devak (the iDevak mascot) delivering a tec
 
 | Meta field | Type | Notes |
 |---|---|---|
-| `expression` | string | Mascot expression: `neutral`, `shocked`, `thinking`, `solved`. Defaults to `neutral`. |
+| `expression` | string | Mascot expression: `neutral`, `talking`, `thinking`, `shocked`, `cool`, `happy`, `angry`, `sad`, `facepalm`, `pointing`, `panic`, `skeptical`. Defaults to `neutral`. |
 | `bubble` | string | Speech balloon dialogue text. |
 | `badge` | string | HUD badge tag (e.g. `iDevak // ANALYSIS`). |
 | `stats` | object[] | Up to 4 telemetry chips with `label` and `val`, plus optional `hot: true`. |
 
 ## Universal Mascot Overlay
+
+> [!TIP]
+> Devak's visual expressions are self-explanatory! Avoid redundant speech bubbles like `"Thinking"` or `"Shocked"` just to state the emotion. Let the facial expression tell the emotional story, and reserve speech `bubble` for actual developer commentary or omit `bubble` entirely for silent emotive reactions.
+
 
 You can add the iDevak mascot as an expressive reaction overlay to **ANY** scene in your video:
 
@@ -756,7 +777,7 @@ You can add the iDevak mascot as an expressive reaction overlay to **ANY** scene
 
 | Field | Type | Description |
 |---|---|---|
-| `expression` | string | `neutral`, `shocked`, `thinking`, `solved`. |
+| `expression` | string | `neutral`, `talking`, `thinking`, `shocked`, `cool`, `happy`, `angry`, `sad`, `facepalm`, `pointing`, `panic`, `skeptical`. |
 | `bubble` | string | Optional speech bubble text that pops up with the mascot. |
 | `position` | string | `bottom-right` (default) or `bottom-left`. |
 

@@ -12,7 +12,7 @@
 }
 *{box-sizing:border-box}
 html,body{margin:0;padding:0;background:#04060b}
-body{width:1920px;height:1080px;overflow:hidden}
+body{width:var(--composition-width,1920px);height:var(--composition-height,1080px);overflow:hidden}
 #root{position:relative;width:100%;height:100%;overflow:hidden;background:#04060b;color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased}
 #root *{font-kerning:normal}
 
@@ -446,3 +446,449 @@ body{width:1920px;height:1080px;overflow:hidden}
 
 /* vertical rhythm for new scene types */
 .sc-webref .sc-in,.sc-cloud .sc-in{display:flex;flex-direction:column;justify-content:center}
+
+
+/* ============================================================ 9:16 portrait & shorts responsive */
+@media (max-aspect-ratio: 1/1), .is-portrait {
+  :root {
+    --portrait-pad-top: 160px;
+    --portrait-pad-bot: 240px;
+    --portrait-pad-x: 56px;
+  }
+
+  .sc-in {
+    padding: var(--portrait-pad-top) var(--portrait-pad-x) var(--portrait-pad-bot) !important;
+  }
+
+  /* Safe margins for vertical canvases */
+  .cold-wrap, .stat-wrap, .stat-stage, .q-stage {
+    padding: var(--portrait-pad-top) var(--portrait-pad-x) var(--portrait-pad-bot) !important;
+  }
+
+  /* Eyebrows */
+  .eyebrow {
+    font-size: 13px;
+    letter-spacing: .22em;
+    margin-bottom: 20px;
+  }
+
+  /* Cold Scene */
+  .cold-title {
+    font-size: 80px;
+    line-height: .98;
+    max-width: 100%;
+  }
+  .cold-sub {
+    font-size: 24px;
+    line-height: 1.35;
+    margin-top: 24px;
+    max-width: 100%;
+  }
+  .cold-ghost {
+    font-size: 240px;
+    top: auto;
+    bottom: 260px;
+    right: -10px;
+    opacity: 0.04;
+  }
+  .cold-meta {
+    margin-top: 36px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .chip {
+    font-size: 13px;
+    padding: 8px 14px;
+  }
+
+  /* Hero Scene */
+  .hero-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+    height: auto;
+    align-items: flex-start;
+  }
+  .hero-title {
+    font-size: 68px;
+    line-height: 1.05;
+    max-width: 100%;
+  }
+  .hero-sub {
+    font-size: 24px;
+    margin-top: 24px;
+    max-width: 100%;
+  }
+  .hero-right {
+    justify-content: flex-start;
+    height: auto;
+  }
+  .hero-mark {
+    font-size: 54px;
+    text-align: left;
+    max-width: 100%;
+  }
+  .hero-baseline {
+    left: var(--portrait-pad-x);
+    right: var(--portrait-pad-x);
+    bottom: 230px;
+  }
+
+  /* Statement Scene */
+  .statement {
+    font-size: 64px;
+    line-height: 1.1;
+    max-width: 100%;
+  }
+  .statement-sm {
+    font-size: 52px;
+  }
+  .st-sub {
+    font-size: 24px;
+    margin-top: 24px;
+    max-width: 100%;
+  }
+  .st-ghost {
+    font-size: 180px;
+    right: 20px;
+    bottom: 240px;
+    opacity: 0.05;
+  }
+
+  /* Stat Scene */
+  .stat-number {
+    font-size: 160px;
+    line-height: .92;
+  }
+  .stat-prefix, .stat-suffix {
+    font-size: 54px;
+  }
+  .stat-label {
+    font-size: 34px;
+    margin-top: 24px;
+  }
+  .stat-sub {
+    font-size: 22px;
+    margin-top: 14px;
+  }
+  .stat-ruler {
+    width: 100%;
+    max-width: 100%;
+    margin-top: 36px;
+  }
+  .stat-ghost {
+    font-size: 220px;
+    top: auto;
+    bottom: 240px;
+    left: 20px;
+  }
+
+  /* Dateline Scene */
+  .dl-grid {
+    grid-template-columns: 1fr;
+    gap: 28px;
+    height: auto;
+    align-items: flex-start;
+  }
+  .dl-day {
+    font-size: 100px;
+    line-height: .9;
+  }
+  .dl-mon {
+    font-size: 26px;
+    margin-top: 8px;
+  }
+  .dl-yr {
+    font-size: 16px;
+    margin-top: 6px;
+  }
+  .dl-title {
+    font-size: 54px;
+    line-height: 1.08;
+    max-width: 100%;
+  }
+  .dl-sub {
+    font-size: 22px;
+    margin-top: 18px;
+    max-width: 100%;
+  }
+  .dl-rail {
+    left: var(--portrait-pad-x);
+    right: var(--portrait-pad-x);
+    bottom: 230px;
+  }
+
+  /* Code Scene */
+  .code-bar {
+    padding: 14px 20px;
+  }
+  .code-file {
+    font-size: 14px;
+  }
+  .code-tag {
+    font-size: 11px;
+    padding: 4px 8px;
+  }
+  .code-body {
+    padding: 24px 0;
+  }
+  .cl {
+    padding: 6px 20px;
+    gap: 16px;
+  }
+  .cl-n {
+    font-size: 14px;
+    width: 32px;
+  }
+  .cl-c {
+    font-size: 21px;
+    line-height: 1.4;
+  }
+  .code-foot {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    margin-top: 24px;
+  }
+  .code-callout {
+    font-size: 28px;
+    max-width: 100%;
+  }
+  .code-sub {
+    text-align: left;
+    max-width: 100%;
+  }
+
+  /* Terminal Scene */
+  .term-bar {
+    padding: 12px 18px;
+  }
+  .tl-cmd {
+    font-size: 20px;
+  }
+  .tl-out {
+    font-size: 18px;
+  }
+  .term-foot {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    margin-top: 24px;
+  }
+  .term-title {
+    font-size: 28px;
+  }
+  .term-sub {
+    text-align: left;
+    max-width: 100%;
+  }
+
+  /* Compare Scene (Vertical Stacking) */
+  .cmp-stage {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    align-items: center;
+    margin-top: 8px;
+  }
+  .cmp-col {
+    width: 100%;
+    min-height: auto;
+    padding: 24px 22px;
+    border-radius: 10px;
+  }
+  .cmp-t {
+    font-size: 26px;
+    margin-bottom: 12px;
+  }
+  .cmp-p {
+    font-size: 16px;
+    padding-top: 8px;
+  }
+  .cmp-mid {
+    margin: -4px 0;
+    z-index: 5;
+  }
+  .cmp-mid .cmp-diamond, .cmp-mid span {
+    width: 46px;
+    height: 46px;
+  }
+  .cmp-mid .cmp-vs, .cmp-mid span>* {
+    font-size: 12px;
+  }
+  .cmp-cap {
+    font-size: 30px;
+    margin-top: 24px;
+  }
+  .cmp-sub {
+    font-size: 18px;
+    margin-top: 8px;
+  }
+
+  /* Stack Scene (Vertical Stacking) */
+  .stk-grid {
+    grid-template-columns: 1fr;
+    gap: 24px;
+    height: auto;
+    align-items: flex-start;
+  }
+  .stk-title {
+    font-size: 54px;
+    max-width: 100%;
+  }
+  .stk-sub {
+    font-size: 22px;
+    margin-top: 16px;
+    max-width: 100%;
+  }
+  .stk-layer {
+    padding: 16px 20px;
+    gap: 16px;
+    margin-bottom: 10px;
+  }
+  .stk-t {
+    font-size: 20px;
+  }
+
+  /* Quote Scene */
+  .q-stage {
+    padding: 0 var(--portrait-pad-x) !important;
+  }
+  .q-mark {
+    font-size: 180px;
+    left: 20px;
+    top: 140px;
+  }
+  .q-text {
+    font-size: 46px;
+    line-height: 1.15;
+    max-width: 100%;
+  }
+  .q-by {
+    font-size: 14px;
+    margin-top: 24px;
+  }
+
+  /* Matrix Scene */
+  .mx-stage {
+    grid-template-columns: 1fr;
+    gap: 24px;
+    height: auto;
+  }
+  .mx-title {
+    font-size: 44px;
+  }
+
+  /* Webref Scene */
+  .web-shell {
+    margin: 14px 0 20px;
+  }
+  .web-doc-title {
+    font-size: 26px;
+  }
+  .web-p {
+    font-size: 16px;
+  }
+  .web-foot-title {
+    font-size: 28px;
+  }
+
+  /* Meme Scene */
+  .meme-stage {
+    padding: 0;
+  }
+  .meme-caption {
+    font-size: 44px;
+  }
+  .meme-sub {
+    font-size: 20px;
+  }
+  .meme-ghost {
+    font-size: 140px;
+  }
+
+  /* Cloud Topology Scene (Vertical Stack) */
+  .cloud-nodes {
+    flex-direction: column;
+    gap: 12px;
+  }
+  .cloud-node {
+    width: 100%;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px;
+    text-align: left;
+  }
+  .cloud-edge {
+    transform: rotate(90deg);
+    height: 18px;
+  }
+  .cloud-title {
+    font-size: 32px;
+  }
+
+  /* Flow Scene (Vertical Flow) */
+  .fl-nodes {
+    flex-direction: column;
+    gap: 12px;
+  }
+  .fl-node {
+    width: 100%;
+  }
+  .fl-edge {
+    transform: rotate(90deg);
+    height: 18px;
+  }
+
+  /* Mascot Spotlight Scene */
+  .mascot-stage {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  .mascot-hud-frame {
+    width: 280px;
+    height: 280px;
+    margin: 0 auto;
+  }
+  .mascot-bubble-box {
+    padding: 24px 26px;
+    margin-bottom: 18px;
+  }
+  .mascot-bubble-text {
+    font-size: 36px;
+  }
+  .mascot-sub {
+    font-size: 18px;
+  }
+
+  /* Outro Scene */
+  .out-wrap {
+    padding: 0 var(--portrait-pad-x) !important;
+  }
+  .out-title {
+    font-size: 58px;
+    line-height: 1.05;
+  }
+  .out-ghost {
+    font-size: 180px;
+  }
+
+  /* Universal Mascot Overlay Safe Zone Position for Mobile */
+  .m-ov.pos-br {
+    right: 48px;
+    bottom: 240px; /* Sits comfortably above YouTube Shorts / IG Reels bottom pill and actions */
+  }
+  .m-ov.pos-bl {
+    left: 48px;
+    bottom: 240px;
+  }
+  .m-ov-avatar-wrap {
+    width: 100px;
+    height: 100px;
+  }
+  .m-ov-bubble {
+    max-width: 270px;
+    padding: 10px 14px;
+  }
+  .m-ov-btext {
+    font-size: 13.5px;
+  }
+}

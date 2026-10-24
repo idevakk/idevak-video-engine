@@ -21,6 +21,7 @@ const total = scenes[scenes.length - 1].end;
 const compositionId = project.compositionId || project.slug || "video";
 const width = Number(project.width) || 1920;
 const height = Number(project.height) || 1080;
+const isPortrait = Boolean(project.isPortrait || height > width || project.aspect === "9:16");
 const fps = Number(project.fps) || 30;
 const audio = project.audio || "content/voiceover.wav";
 const title = project.title || "Untitled video";
@@ -564,12 +565,24 @@ const html = `<!doctype html>
 <title>${esc(title)}</title>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
 <style>
+:root {
+  --composition-width: ${width}px;
+  --composition-height: ${height}px;
+}
 ${fontsCss}
 ${CSS}
+body {
+  width: ${width}px;
+  height: ${height}px;
+}
+#root {
+  width: ${width}px;
+  height: ${height}px;
+}
 </style>
 </head>
 <body>
-<div id="root" data-composition-id="${esc(compositionId)}" data-start="0" data-width="${width}" data-height="${height}" data-duration="${total.toFixed(3)}">
+<div id="root" class="${isPortrait ? "is-portrait" : "is-landscape"}" data-aspect="${isPortrait ? "9:16" : "16:9"}" data-composition-id="${esc(compositionId)}" data-start="0" data-width="${width}" data-height="${height}" data-duration="${total.toFixed(3)}">
   <div id="bg-base"></div>
   <div id="bg-grid"></div>
   <div id="bg-bloom"></div>

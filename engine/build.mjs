@@ -32,13 +32,20 @@ const tok = (s) => esc(s).replace(/\n/g, "<br>");
 
 // ---------------------------------------------------------------- mascot assets
 const MASCOT_IMAGES = {};
-for (const expr of ["neutral", "shocked", "thinking", "solved"]) {
-  const p = path.resolve(ROOT, `assets/mascot/${expr}.jpg`);
+const MASCOT_EXPRS = ["neutral", "shocked", "thinking", "solved", "talking", "cool", "happy", "angry", "sad"];
+for (const expr of MASCOT_EXPRS) {
+  const pngPath = path.resolve(ROOT, `assets/mascot/${expr}.png`);
+  const jpgPath = path.resolve(ROOT, `assets/mascot/${expr}.jpg`);
   try {
-    const buf = await fs.readFile(p);
-    MASCOT_IMAGES[expr] = `data:image/jpeg;base64,${buf.toString("base64")}`;
-  } catch (e) {
-    MASCOT_IMAGES[expr] = "";
+    const buf = await fs.readFile(pngPath);
+    MASCOT_IMAGES[expr] = `data:image/png;base64,${buf.toString("base64")}`;
+  } catch {
+    try {
+      const buf = await fs.readFile(jpgPath);
+      MASCOT_IMAGES[expr] = `data:image/jpeg;base64,${buf.toString("base64")}`;
+    } catch {
+      MASCOT_IMAGES[expr] = "";
+    }
   }
 }
 

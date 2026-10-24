@@ -1,0 +1,153 @@
+{
+  "title": "Your Video Title Here",
+  "slug": "your-video-slug",
+  "compositionId": "your-video-slug",
+  "audio": "content/voiceover.wav",
+  "channel": "youtube.com/@iDevak",
+  "ghost": "IDEVAK",
+  "cta": "Subscribe",
+  "ctaSub": "BUILD. SOLVE. DEPLOY.",
+  "composition": {
+    "width": 1920,
+    "height": 1080,
+    "fps": 30
+  },
+  "acts": [
+    {
+      "id": "hook",
+      "name": "THE HOOK",
+      "accent": "#38bdf8"
+    },
+    {
+      "id": "core",
+      "name": "THE BREAKDOWN",
+      "accent": "#f59e0b"
+    },
+    {
+      "id": "solution",
+      "name": "THE SOLUTION",
+      "accent": "#4ade80"
+    }
+  ],
+  "scenes": [
+    {
+      "id": "s001",
+      "type": "cold",
+      "act": "hook",
+      "narration": "What if one small configuration bug brought down an entire cloud infrastructure in seconds?",
+      "eyebrow": "COLD OPEN",
+      "headline": "The Silent Outage",
+      "subline": "A single line of configuration. Millions of requests dropped.",
+      "meta": {
+        "chips": [
+          "AWS CLOUD",
+          "KUBERNETES",
+          "POSTMORTEM"
+        ],
+        "ghost": "ZERO"
+      }
+    },
+    {
+      "id": "s002",
+      "type": "hero",
+      "act": "hook",
+      "narration": "Today we are dissecting how modern distributed systems fail, and how to design them so they never do.",
+      "eyebrow": "ARCHITECTURE",
+      "headline": "How Distributed Systems Fail",
+      "subline": "Resilience is not an afterthought. It is an engineering discipline.",
+      "meta": {
+        "mark": "CLOUD",
+        "rule": true
+      },
+      "mascot": {
+        "expression": "pointing",
+        "position": "bottom-right",
+        "bubble": "Let's break down the architecture step by step."
+      }
+    },
+    {
+      "id": "s003",
+      "type": "terminal",
+      "act": "core",
+      "narration": "When the connection pool exhausted, every container node began throwing cascading connection timeouts.",
+      "eyebrow": "THE FAILURE",
+      "headline": "Cascading Pool Exhaustion",
+      "subline": "Max connections reached. Health checks failed.",
+      "meta": {
+        "host": "prod-cluster / us-east-1",
+        "lines": [
+          {
+            "t": "kubectl get pods -n production",
+            "k": "cmd"
+          },
+          {
+            "t": "api-gateway-7f8d   0/1   CrashLoopBackOff   12m",
+            "k": "err"
+          },
+          {
+            "t": "db-pool-worker-34  0/1   OOMKilled          4m",
+            "k": "err"
+          },
+          {
+            "t": "[CRITICAL] Connection pool limit 500 exceeded",
+            "k": "out"
+          }
+        ]
+      },
+      "mascot": {
+        "expression": "panic",
+        "position": "bottom-right",
+        "bubble": "Every node is in CrashLoopBackOff!"
+      }
+    },
+    {
+      "id": "s004",
+      "type": "compare",
+      "act": "solution",
+      "narration": "Instead of blind retries that stampede your database, modern systems implement exponential backoff with jitter and circuit breaking.",
+      "eyebrow": "THE PATTERN",
+      "headline": "Thundering Herd versus Circuit Breakers",
+      "subline": "Graceful degradation under catastrophic load spikes.",
+      "meta": {
+        "left": {
+          "k": "NAIVE RETRIES",
+          "t": "Immediate retry on error",
+          "pts": [
+            "amplifies backend load",
+            "thundering herd collapse",
+            "cascading timeouts"
+          ]
+        },
+        "right": {
+          "k": "CIRCUIT BREAKER",
+          "t": "Exponential backoff and jitter",
+          "pts": [
+            "fast-fail protection",
+            "sheds excess traffic",
+            "instant recovery"
+          ]
+        },
+        "vs": "->"
+      },
+      "mascot": {
+        "expression": "cool",
+        "position": "bottom-left",
+        "bubble": "Circuit breakers protect your database."
+      }
+    },
+    {
+      "id": "s005",
+      "type": "outro",
+      "act": "solution",
+      "narration": "If you build, solve, and deploy modern cloud software, subscribe for more real-world production autopsies.",
+      "eyebrow": "NEXT STEPS",
+      "headline": "BUILD. SOLVE. DEPLOY.",
+      "subline": "Architecture breakdowns, cloud engineering, and AI automation every week.",
+      "meta": {
+        "ghost": "IDEVAK",
+        "cta": "Subscribe",
+        "ctaSub": "youtube.com/@iDevak"
+      }
+    }
+  ]
+}

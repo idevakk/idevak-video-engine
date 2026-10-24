@@ -1,8 +1,8 @@
 # iDevak Video Engine (`idevak-video-engine`)
 
-A high-retention, Fireship-style video generation engine for **iDevak** — Cloud Engineering, AI Automation, DevOps, and Software Architecture. 
+A clean, project-agnostic, high-retention video generation engine for **iDevak** — Cloud Engineering, AI Automation, DevOps, and Software Architecture.
 
-The repo couples an authoritative 21-scene visual system, word-level audio alignment, a responsive 2D mascot (**Devak**) with emotional audio sync, and deterministic GSAP composition rendering to 1080p 60fps MP4.
+The repo couples an authoritative 21-scene visual system, word-level audio alignment, a responsive 2D Cloud Mascot with 12 expressive poses, and deterministic GSAP composition rendering to 1080p 60fps MP4.
 
 ```text
 content/video.json + content/voiceover.wav
@@ -24,17 +24,22 @@ hyperframes check / preview / render
 
 ## What is Included
 
+- **Project-Agnostic Clean Template:** Ready to clone and use for any technical explainer video immediately.
 - **21-Scene Visual System:**
   - **Narrative & Core:** `cold`, `hero`, `statement`, `outro`
   - **Technical & Code:** `code`, `diff`, `terminal`, `webref` (browser & doc reference with cursor highlight)
   - **Cloud & Architecture:** `cloud` (topology with animated data packets), `flow`, `stack`, `timeline`
   - **Evidence & Numbers:** `stat`, `compare`, `ledger`, `memory`, `matrix`
-  - **Humor & Takeaways:** `meme` (Fireship-style kinetic comic recoil & punch zoom), `mascot` (Devak spotlight), `quote`
-- **Universal Mascot Overlay System:** Attach the **Devak** mascot (`neutral`, `shocked`, `thinking`, `solved`) to **ANY** scene with speech bubble dialogues and reactive visor/ring pulses.
+  - **Humor & Takeaways:** `meme` (kinetic comic recoil & punch zoom), `mascot` (spotlight breakdown), `quote`
+- **12-Pose Series 2 Cloud Mascot:**
+  - 12 expressive poses: `neutral`, `talking`, `thinking`, `shocked`, `cool`, `happy`, `angry`, `sad`, `facepalm`, `pointing`, `panic`, `skeptical`
+  - Dual format: transparent `.png` cutouts for HTML engine + `#00FF00` chroma green `.jpg` for video editors (Premiere, Resolve, CapCut, OBS).
+  - Dynamic audio-sync lip flap between `neutral` and `talking` during speech.
 - **Fast-Track Prototyping (`--draft`):** Author scripts and preview the animated composition in your browser immediately using word-count timing estimation before recording voiceover.
 - **Automated Audio-Master Alignment:** Transcribes your exact voiceover with Whisper and monotonically aligns every scene down to the millisecond.
 - **Deterministic 1080p Render Pipeline:** Uses HyperFrames and GSAP with 100% reproducible frame capture.
 - **Production Prompting Guide:** See `PROMPTS.md` for the exact LLM prompt instructions to script high-retention tech explainer videos.
+- **Archived Reference Projects:** See `projects/` for full production examples (including the 90-scene `emudhra-key-was-four` investigation).
 
 ---
 
@@ -50,104 +55,35 @@ hyperframes check / preview / render
 
 ---
 
-## Quick Start
+## Quick Start (Clean Template)
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/idevakk/idevak-video-engine.git
+git clone https://github.com/idevakk/php2shell-video.git idevak-video-engine
 cd idevak-video-engine
 
-# 2. Write your script in content/video.json (Read engine/SCHEMA.md & PROMPTS.md)
+# 2. Install dependencies
+npm install
 
-# 3. Fast Draft Preview (instant visual preview before recording audio)
+# 3. Test and preview the clean starter template immediately (no audio needed)
 npm run draft
 npm run preview
 
-# 4. Final Production Render (when you have your voiceover at content/voiceover.wav)
+# 4. Edit your script in content/video.json (Read engine/SCHEMA.md & PROMPTS.md)
+npm run validate
+
+# 5. When voiceover is recorded, place it in content/voiceover.wav and run the full pipeline:
 npm run pipeline
-npm run check
+
+# 6. Render final 1080p 60fps MP4
 npm run render
 ```
 
 ---
 
-## Renaming Remote Repository
+## Project Organization
 
-To update your GitHub remote to match this new engine name:
-
-```bash
-gh repo rename idevak-video-engine --repo idevakk/php2shell-video
-git remote set-url origin https://github.com/idevakk/idevak-video-engine.git
-```
-
----
-
-## Scene Types & Catalog
-
-| Type | Best Used For |
-|---|---|
-| `webref` | **Official specs, RFCs, AWS/Cloud docs, GitHub PRs, and CVE advisories with cursor spotlight** |
-| `meme` | **Fireship-style punchlines, dev blunders, Friday deploys, and reality checks with camera recoil** |
-| `cloud` | **Cloud architecture topologies, microservices, and animated data packet transmission** |
-| `mascot` | **Devak mascot delivering technical autopsies, takeaways, and security recommendations** |
-| `cold` | Full-screen cinematic title card and hook |
-| `hero` | Giant editorial claim with side mark |
-| `statement` | Core premise or impactful thesis |
-| `code` | Syntax-highlighted code excerpt with scanline and hot lines |
-| `diff` | Unified git patch with additions and deletions |
-| `terminal` | Shell terminal session with commands and output |
-| `stat` | Large counter number with ticker animation |
-| `flow` | Sequential 2-4 step pipeline |
-| `timeline` | Chronological incident or release history |
-| `compare` | Direct A vs B comparison |
-| `stack` | Stacked architectural layers |
-| `ledger` | Table of findings, hashes, or audit rows |
-| `memory` | Memory buffer corruption or pointer grid |
-| `matrix` | Large grid scan showing scale or compromised nodes |
-| `quote` | Pull quote with attribution |
-| `outro` | Call-to-action, channel link, and subscribe card |
-
----
-
-## Mascot System: Devak
-
-The engine comes pre-packaged with 4 high-resolution expressions for the **iDevak** mascot (**Devak**) located in `assets/mascot/`:
-1. `neutral`: Confident, analytical, explaining technical architecture.
-2. `shocked`: Wide-eyed alert with red HUD warning (for zero-days, CVEs, catastrophic blunders).
-3. `thinking`: Contemplative with holographic logic gates and calculation HUD.
-4. `solved`: Smug victory smirk with green "DEPLOY SUCCESS 200 OK" status badge.
-
-### Adding Devak to Any Scene
-In `content/video.json`:
-```json
-{
-  "type": "terminal",
-  "headline": "AWS Bill Arrived",
-  "narration": "They left an unbounded Lambda loop running over the weekend.",
-  "mascot": {
-    "expression": "shocked",
-    "bubble": "Wait... that's a $52,000 AWS bill!",
-    "position": "bottom-right"
-  },
-  "meta": { ... }
-}
-```
-
----
-
-## Validation & Verification
-
-Before rendering:
-```bash
-# 1. Verify schema and scene integrity
-npm run validate
-
-# 2. Verify HyperFrames standards, performance, and deterministic motion
-npm run check
-```
-
----
-
-## License
-
-MIT © [iDevak](https://youtube.com/channel/UCEbQwm7oWRb1HjfGHMs7AzA)
+* **`content/video.json`**: The active project source of truth.
+* **`content/video.example.json`**: Fresh starter template to reset back to anytime.
+* **`projects/`**: Archived video episodes (e.g. `projects/emudhra-key-was-four/`).
+* **`assets/mascot/`**: The complete 12-pose mascot asset library (transparent PNGs and chroma green).

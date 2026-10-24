@@ -1,0 +1,2205 @@
+{
+  "title": "The Key Was Four",
+  "slug": "emudhra-key-was-four",
+  "compositionId": "emudhra-key-was-four",
+  "audio": "content/voiceover.wav",
+  "channel": "youtube.com/channel/UCEbQwm7oWRb1HjfGHMs7AzA",
+  "ghost": "FOUR",
+  "cta": "Subscribe",
+  "ctaSub": "zero-day autopsy",
+  "composition": {
+    "width": 1920,
+    "height": 1080,
+    "fps": 30
+  },
+  "acts": [
+    {
+      "id": "number",
+      "name": "THE NUMBER",
+      "accent": "#ff3b5c"
+    },
+    {
+      "id": "trust",
+      "name": "THE TRUST MACHINE",
+      "accent": "#f5a524"
+    },
+    {
+      "id": "math",
+      "name": "THE MATH",
+      "accent": "#5b9dff"
+    },
+    {
+      "id": "ceremony",
+      "name": "THE CEREMONY",
+      "accent": "#fb923c"
+    },
+    {
+      "id": "disclosure",
+      "name": "THE DISCLOSURE",
+      "accent": "#22d3ee"
+    },
+    {
+      "id": "gap",
+      "name": "THE GAP",
+      "accent": "#a78bfa"
+    },
+    {
+      "id": "lesson",
+      "name": "THE LESSON",
+      "accent": "#4ade80"
+    }
+  ],
+  "scenes": [
+    {
+      "id": "s001",
+      "type": "cold",
+      "act": "number",
+      "narration": "Four. Not a password that starts with four. Not four followed by a hundred random symbols.",
+      "eyebrow": "COLD OPEN",
+      "headline": "The Key Was Four",
+      "subline": "A publicly trusted certificate authority. A private key you can guess in three seconds.",
+      "meta": {
+        "chips": [
+          "APR 2025",
+          "8 CA KEYS",
+          "1 BYTE"
+        ],
+        "ghost": "FOUR"
+      }
+    },
+    {
+      "id": "s002",
+      "type": "stat",
+      "act": "number",
+      "narration": "Just the single digit four. For 17 months, from April 2025 until October 17th, 2026,",
+      "eyebrow": "THE NUMBER",
+      "headline": "The master key, in full",
+      "subline": "No password. No phrase. No padding. Just 4.",
+      "meta": {
+        "value": 4,
+        "display": "4"
+      }
+    },
+    {
+      "id": "s003",
+      "type": "hero",
+      "act": "number",
+      "narration": "that single number was the master cryptographic secret protecting a publicly trusted certificate",
+      "eyebrow": "THE NUMBER",
+      "headline": "One integer guarded a certificate authority",
+      "subline": "For 17 months, the public key was the only thing anyone could see.",
+      "meta": {
+        "mark": "CA",
+        "rule": true
+      }
+    },
+    {
+      "id": "s004",
+      "type": "statement",
+      "act": "number",
+      "narration": "authority on the internet. Wait, it gets worse. There wasn't just one of these broken master keys.",
+      "eyebrow": "THE NUMBER",
+      "headline": "It was not one key. It was eight.",
+      "subline": "Every one of them was smaller than 256.",
+      "variant": 0,
+      "meta": {
+        "ghost": "EIGHT"
+      },
+      "mascot": {
+        "expression": "shocked",
+        "position": "bottom-right",
+        "bubble": "Wait, it gets worse..."
+      }
+    },
+    {
+      "id": "s005",
+      "type": "stat",
+      "act": "number",
+      "narration": "There were eight, and every single one of them was a whole number smaller than 256.",
+      "eyebrow": "THE NUMBER",
+      "headline": "Intermediate CA keys",
+      "subline": "Each one was a whole number below 256.",
+      "meta": {
+        "value": 8,
+        "display": "8"
+      }
+    },
+    {
+      "id": "s006",
+      "type": "code",
+      "act": "number",
+      "narration": "4. 56. 66. 115. 155. 156. 230. And 237.",
+      "eyebrow": "THE EIGHT",
+      "headline": "The eight intermediate keys",
+      "subline": "Every key fits in a single byte.",
+      "meta": {
+        "file": "eight-intermediates.txt",
+        "tag": "values",
+        "announce": "Eight values. One byte each.",
+        "lines": [
+          {
+            "t": "intermediate[0].d = 0x04   //   4",
+            "k": "code",
+            "key": true
+          },
+          {
+            "t": "intermediate[1].d = 0x38   //  56",
+            "k": "code"
+          },
+          {
+            "t": "intermediate[2].d = 0x42   //  66",
+            "k": "code"
+          },
+          {
+            "t": "intermediate[3].d = 0x73   // 115",
+            "k": "code"
+          },
+          {
+            "t": "intermediate[4].d = 0x9B   // 155",
+            "k": "code"
+          },
+          {
+            "t": "intermediate[5].d = 0x9C   // 156",
+            "k": "code"
+          },
+          {
+            "t": "intermediate[6].d = 0xE6   // 230",
+            "k": "code"
+          },
+          {
+            "t": "intermediate[7].d = 0xED   // 237",
+            "k": "code"
+          }
+        ]
+      }
+    },
+    {
+      "id": "s007",
+      "type": "compare",
+      "act": "number",
+      "narration": "To put that into perspective, a cryptographic key of this type is supposed to be a random number 115 digits long.",
+      "eyebrow": "THE CONTRAST",
+      "headline": "A 115-digit secret versus a one-byte value",
+      "subline": "The key generation was not random. It was barely a key.",
+      "meta": {
+        "left": {
+          "k": "P-384 KEY",
+          "t": "A random 115-digit integer",
+          "pts": [
+            "2^384 possibilities",
+            "48 bytes of entropy"
+          ]
+        },
+        "right": {
+          "k": "EMUDHRA KEY",
+          "t": "A whole number below 256",
+          "pts": [
+            "one byte",
+            "255 guesses"
+          ]
+        },
+        "vs": "VS"
+      }
+    },
+    {
+      "id": "s008",
+      "type": "statement",
+      "act": "number",
+      "narration": "A number so astronomically huge that if every supercomputer on Earth guessed billions of combinations every second until the heat death of the universe, they still wouldn't come close to cracking it.",
+      "eyebrow": "THE CONTRAST",
+      "headline": "Every supercomputer on Earth would still lose",
+      "subline": "Billions of guesses per second. The universe ends first.",
+      "variant": 1,
+      "meta": {
+        "ghost": "2^384"
+      }
+    },
+    {
+      "id": "s009",
+      "type": "hero",
+      "act": "number",
+      "narration": "Instead, a major global authority called eMudra accidentally locked the front door of internet trust with a number you can count to on your fingers in three seconds.",
+      "eyebrow": "THE COMPANY",
+      "headline": "eMudhra locked the front door with 4",
+      "subline": "A global certificate authority. A key you can count to in three seconds.",
+      "meta": {
+        "mark": "CA",
+        "rule": true
+      }
+    },
+    {
+      "id": "s010",
+      "type": "statement",
+      "act": "number",
+      "narration": "Nobody had to hack their servers. Nobody breached a firewall. Nobody stole a thing.",
+      "eyebrow": "THE NUMBER",
+      "headline": "No hack. No breach. No theft.",
+      "subline": "There was nothing to steal. The key was simply wrong.",
+      "variant": 2,
+      "meta": {
+        "ghost": "NO"
+      },
+      "mascot": {
+        "expression": "facepalm",
+        "position": "bottom-right",
+        "bubble": "No hack needed. The key was literally 4."
+      }
+    },
+    {
+      "id": "s011",
+      "type": "terminal",
+      "act": "number",
+      "narration": "Anyone with a regular laptop could crack all eight master keys in less than a millisecond.",
+      "eyebrow": "THE PROOF",
+      "headline": "All eight keys in under a millisecond",
+      "subline": "A regular laptop was enough.",
+      "meta": {
+        "host": "laptop / recovery",
+        "lines": [
+          {
+            "t": "python recover_keys.py --curve P-384",
+            "k": "cmd"
+          },
+          {
+            "t": "[+] 04 -> 4",
+            "k": "out"
+          },
+          {
+            "t": "[+] 38 -> 56",
+            "k": "out"
+          },
+          {
+            "t": "[+] 42 -> 66",
+            "k": "out"
+          },
+          {
+            "t": "[+] 73 -> 115",
+            "k": "out"
+          },
+          {
+            "t": "[+] ED -> 237",
+            "k": "out"
+          },
+          {
+            "t": "8/8 recovered in < 1 ms",
+            "k": "out"
+          }
+        ]
+      }
+    },
+    {
+      "id": "s012",
+      "type": "flow",
+      "act": "number",
+      "narration": "and use them to impersonate almost any website on earth, intercept encrypted traffic, or digitally sign Windows malware so your computer trusts it completely.",
+      "eyebrow": "THE IMPACT",
+      "headline": "One key. Three ways to break trust.",
+      "subline": "Impersonate a site, intercept traffic, or sign malware.",
+      "meta": {
+        "nodes": [
+          {
+            "k": "01",
+            "t": "MINT A CERT",
+            "s": "any domain"
+          },
+          {
+            "k": "02",
+            "t": "INTERCEPT TLS",
+            "s": "read the traffic"
+          },
+          {
+            "k": "03",
+            "t": "SIGN MALWARE",
+            "s": "Windows trusts it",
+            "hot": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "s013",
+      "type": "hero",
+      "act": "number",
+      "narration": "This is the story of the October 2026 eMudra catastrophe. How a single script error bypassed military-grade hardware.",
+      "eyebrow": "THE INCIDENT",
+      "headline": "The October 2026 eMudhra catastrophe",
+      "subline": "One script error got past military-grade hardware.",
+      "meta": {
+        "mark": "2026",
+        "rule": true
+      }
+    },
+    {
+      "id": "s014",
+      "type": "statement",
+      "act": "number",
+      "narration": "How a mysterious researcher named Wayne pulled off the ultimate mic drop disclosure. And why, even though Chrome and Firefox blocked it in record time,",
+      "eyebrow": "THE DISCLOSURE",
+      "headline": "A researcher named Wayne pulled the ultimate mic drop",
+      "subline": "No breach. No exploit. Just a scan that saw the math.",
+      "variant": 0,
+      "meta": {
+        "ghost": "WAYNE"
+      }
+    },
+    {
+      "id": "s015",
+      "type": "compare",
+      "act": "number",
+      "narration": "millions of backend servers and developer tools are still wide open right now.",
+      "eyebrow": "STILL OPEN",
+      "headline": "Blocked in browsers. Still trusted in backends.",
+      "subline": "The emergency response did not reach every trust store.",
+      "meta": {
+        "left": {
+          "k": "BROWSERS",
+          "t": "Chrome and Firefox blocked it",
+          "pts": [
+            "~100 minutes",
+            "OneCRL in under two hours",
+            "billions of users protected"
+          ]
+        },
+        "right": {
+          "k": "BACKENDS",
+          "t": "Millions of tools still trust it",
+          "pts": [
+            "static CA bundles",
+            "no CT check",
+            "no live revocation"
+          ]
+        },
+        "vs": "STILL"
+      }
+    },
+    {
+      "id": "s016",
+      "type": "dateline",
+      "act": "number",
+      "narration": "To understand why security engineers across the world lost their minds on October 20th, when Mozilla bug 2083-449 went public,",
+      "eyebrow": "THE DISCLOSURE",
+      "headline": "Bugzilla 2083449 goes public",
+      "subline": "The report that made security engineers lose their minds.",
+      "meta": {
+        "day": "20",
+        "mon": "OCT",
+        "yr": "2026"
+      },
+      "mascot": {
+        "expression": "panic",
+        "position": "bottom-right",
+        "bubble": "Security engineers lost their minds!"
+      }
+    },
+    {
+      "id": "s017",
+      "type": "hero",
+      "act": "trust",
+      "narration": "you first have to understand how trust actually works on the internet.",
+      "eyebrow": "THE TRUST MACHINE",
+      "headline": "First, how trust actually works",
+      "subline": "The web runs on a short list of roots.",
+      "meta": {
+        "mark": "TRUST",
+        "rule": true
+      }
+    },
+    {
+      "id": "s018",
+      "type": "flow",
+      "act": "trust",
+      "narration": "When you open your browser and type in your bank's website, or log into your email, or download a software update,",
+      "eyebrow": "THE EVERYDAY",
+      "headline": "Every secure session starts with a question",
+      "subline": "A bank. An inbox. A software update.",
+      "meta": {
+        "nodes": [
+          {
+            "k": "01",
+            "t": "BANK",
+            "s": "a login"
+          },
+          {
+            "k": "02",
+            "t": "EMAIL",
+            "s": "a session"
+          },
+          {
+            "k": "03",
+            "t": "UPDATE",
+            "s": "a download"
+          }
+        ]
+      }
+    },
+    {
+      "id": "s019",
+      "type": "compare",
+      "act": "trust",
+      "narration": "how does your device know it is actually talking to the real server and not a hacker sitting on your coffee shop Wi-Fi, or a rogue internet provider intercepting your connection?",
+      "eyebrow": "THE QUESTION",
+      "headline": "Is this the real server, or the one in the middle?",
+      "subline": "Coffee-shop Wi-Fi and rogue ISPs can both intercept the connection.",
+      "meta": {
+        "left": {
+          "k": "REAL SERVER",
+          "t": "The server you asked for",
+          "pts": [
+            "matching certificate",
+            "trusted chain",
+            "correct key"
+          ]
+        },
+        "right": {
+          "k": "ATTACKER",
+          "t": "The server in the middle",
+          "pts": [
+            "coffee-shop Wi-Fi",
+            "rogue ISP",
+            "intercepted traffic"
+          ]
+        },
+        "vs": "OR"
+      }
+    },
+    {
+      "id": "s020",
+      "type": "hero",
+      "act": "trust",
+      "narration": "The answer is Certificate Authorities, or CAs. Every browser and operating system on Earth comes pre-installed with a secret VIP list of root certificate authorities.",
+      "eyebrow": "THE TRUST MACHINE",
+      "headline": "Certificate Authorities",
+      "subline": "Every browser ships with a pre-installed VIP list of roots.",
+      "meta": {
+        "mark": "CA",
+        "rule": true
+      }
+    },
+    {
+      "id": "s021",
+      "type": "flow",
+      "act": "trust",
+      "narration": "Those root CAs don't usually sign website certificates directly. Instead, they sign what are called Intermediate CAs, which are the workhorses that issue the digital passports, known as TLS certificates, to millions of websites.",
+      "eyebrow": "THE CHAIN",
+      "headline": "Roots sign intermediates. Intermediates sign websites.",
+      "subline": "The digital passport is a TLS certificate.",
+      "meta": {
+        "nodes": [
+          {
+            "k": "01",
+            "t": "ROOT CA",
+            "s": "in the trust store"
+          },
+          {
+            "k": "02",
+            "t": "INTERMEDIATE",
+            "s": "the workhorse",
+            "hot": true
+          },
+          {
+            "k": "03",
+            "t": "TLS CERT",
+            "s": "the passport"
+          },
+          {
+            "k": "04",
+            "t": "BROWSER",
+            "s": "checks the chain"
+          }
+        ]
+      }
+    },
+    {
+      "id": "s022",
+      "type": "statement",
+      "act": "trust",
+      "narration": "If you hold the private key to an intermediate CA, you don't just control one website. You hold a blank check for the entire internet.",
+      "eyebrow": "THE POWER",
+      "headline": "An intermediate key is a blank check for the internet",
+      "subline": "Not one website. Any website.",
+      "variant": 1,
+      "meta": {
+        "ghost": "BLANK CHECK"
+      }
+    },
+    {
+      "id": "s023",
+      "type": "compare",
+      "act": "trust",
+      "narration": "You can mint a cryptographically valid certificate for almost any domain on earth. Google, your bank, a software repository.",
+      "eyebrow": "THE POWER",
+      "headline": "A valid certificate for almost any domain",
+      "subline": "The browser sees a trusted padlock. It has no reason to doubt it.",
+      "meta": {
+        "left": {
+          "k": "YOU CAN MINT",
+          "t": "A cryptographically valid certificate",
+          "pts": [
+            "google.com",
+            "your bank",
+            "a package repository"
+          ]
+        },
+        "right": {
+          "k": "BROWSER SEES",
+          "t": "A trusted padlock",
+          "pts": [
+            "no warning",
+            "no exception",
+            "no clue"
+          ]
+        },
+        "vs": "->"
+      }
+    },
+    {
+      "id": "s024",
+      "type": "statement",
+      "act": "trust",
+      "narration": "And if that intermediate key is a code signing CA, you can stamp malicious Windows executables",
+      "eyebrow": "THE CODE-SIGNING KEY",
+      "headline": "A code-signing key can stamp malware",
+      "subline": "The executable inherits the CA's trust.",
+      "variant": 0,
+      "meta": {
+        "ghost": "SIGN"
+      },
+      "mascot": {
+        "expression": "skeptical",
+        "position": "bottom-left",
+        "bubble": "Wait, malware stamped as verified?!"
+      }
+    },
+    {
+      "id": "s025",
+      "type": "terminal",
+      "act": "trust",
+      "narration": "so Microsoft Windows looks at your malware and says, yep, looks totally legitimate to me.",
+      "eyebrow": "THE CODE-SIGNING KEY",
+      "headline": "Windows sees a trusted publisher",
+      "subline": "The malware is signed by a CA the OS already trusts.",
+      "meta": {
+        "host": "windows / verify",
+        "lines": [
+          {
+            "t": "Get-AuthenticodeSignature .\\malware.exe",
+            "k": "cmd"
+          },
+          {
+            "t": "Status: Valid",
+            "k": "out"
+          },
+          {
+            "t": "Signer: eMudhra emSign Code Signing CA",
+            "k": "out"
+          },
+          {
+            "t": "Publisher: eMudhra",
+            "k": "out"
+          },
+          {
+            "t": "SmartScreen: no warning",
+            "k": "out"
+          },
+          {
+            "t": "\"looks totally legitimate to me\"",
+            "k": "out"
+          }
+        ]
+      }
+    },
+    {
+      "id": "s026",
+      "type": "hero",
+      "act": "trust",
+      "narration": "Enter eMudra. Based in India and operating globally under the mSign brand, they are a massive trust service provider.",
+      "eyebrow": "THE COMPANY",
+      "headline": "eMudhra",
+      "subline": "India-based. Global reach. The emSign brand.",
+      "meta": {
+        "mark": "eM",
+        "rule": true
+      }
+    },
+    {
+      "id": "s027",
+      "type": "flow",
+      "act": "trust",
+      "narration": "Their certificates are trusted by default in Google Chrome, Mozilla Firefox, Apple Mac OS and iOS, and Microsoft Windows.",
+      "eyebrow": "THE COMPANY",
+      "headline": "Trusted by default on four platforms",
+      "subline": "The root store is the front door.",
+      "meta": {
+        "nodes": [
+          {
+            "k": "01",
+            "t": "CHROME",
+            "s": "root store"
+          },
+          {
+            "k": "02",
+            "t": "FIREFOX",
+            "s": "root store"
+          },
+          {
+            "k": "03",
+            "t": "APPLE",
+            "s": "macOS + iOS"
+          },
+          {
+            "k": "04",
+            "t": "WINDOWS",
+            "s": "root store"
+          }
+        ]
+      }
+    },
+    {
+      "id": "s028",
+      "type": "flow",
+      "act": "trust",
+      "narration": "Even worse, they had eight of their intermediate certificates cross-signed by Sectigo, another giant certificate authority. That doubled the number of trusted certificate paths out in the wild to 16.",
+      "eyebrow": "THE CROSS-SIGN",
+      "headline": "Sectigo doubled the paths to 16",
+      "subline": "Eight intermediates, two roots, sixteen trusted chains.",
+      "meta": {
+        "nodes": [
+          {
+            "k": "01",
+            "t": "8 INTERMEDIATES",
+            "s": "eMudhra"
+          },
+          {
+            "k": "02",
+            "t": "SECTIGO",
+            "s": "AAA Certificate Services"
+          },
+          {
+            "k": "03",
+            "t": "16 PATHS",
+            "s": "in the wild",
+            "hot": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "s029",
+      "type": "statement",
+      "act": "trust",
+      "narration": "and all eight of those intermediates used P384 elliptic curve cryptography.",
+      "eyebrow": "THE CURVE",
+      "headline": "The curve was never the problem",
+      "subline": "All eight used P-384. The private keys were one byte.",
+      "variant": 2,
+      "meta": {
+        "ghost": "P-384"
+      }
+    },
+    {
+      "id": "s030",
+      "type": "hero",
+      "act": "math",
+      "narration": "Now, let's look at the math for just 30 seconds, because the contrast here is almost comical.",
+      "eyebrow": "THE MATH",
+      "headline": "Thirty seconds of math",
+      "subline": "The contrast is almost comical.",
+      "meta": {
+        "mark": "30s",
+        "rule": true
+      }
+    },
+    {
+      "id": "s031",
+      "type": "code",
+      "act": "math",
+      "narration": "In P384 cryptography, your private key is supposed to be a randomly generated integer between 1 and roughly 2 to the power of 384.",
+      "eyebrow": "THE KEY",
+      "headline": "A P-384 private key is a random integer",
+      "subline": "Anywhere from 1 to roughly 2^384.",
+      "meta": {
+        "file": "p384-key.txt",
+        "tag": "expected",
+        "announce": "A random integer with 384 bits of entropy.",
+        "lines": [
+          {
+            "t": "d = random(1, 2^384)",
+            "k": "code",
+            "key": true
+          },
+          {
+            "t": "Q = d * G",
+            "k": "code"
+          },
+          {
+            "t": "# d must remain secret",
+            "k": "com"
+          },
+          {
+            "t": "# Q can be shared",
+            "k": "com"
+          }
+        ]
+      }
+    },
+    {
+      "id": "s032",
+      "type": "stat",
+      "act": "math",
+      "narration": "In normal decimal numbers, that is 115 digits long.",
+      "eyebrow": "THE KEY",
+      "headline": "A P-384 private key",
+      "subline": "A random integer with 115 digits.",
+      "meta": {
+        "value": 115,
+        "display": "115",
+        "suffix": "digits"
+      }
+    },
+    {
+      "id": "s033",
+      "type": "code",
+      "act": "math",
+      "narration": "In computer memory, it is 48 bytes of pure, unpredictable randomness.",
+      "eyebrow": "THE KEY",
+      "headline": "48 bytes of pure randomness",
+      "subline": "Every byte should be unpredictable.",
+      "meta": {
+        "file": "private-key.hex",
+        "tag": "48 bytes",
+        "announce": "48 bytes of entropy. The key should be unguessable.",
+        "lines": [
+          {
+            "t": "a7 4f 1c 9e 02 6b d8 31",
+            "k": "code"
+          },
+          {
+            "t": "5c 88 e3 0a 74 19 bf 2d",
+            "k": "code"
+          },
+          {
+            "t": "c0 91 6e 47 2a 85 0d 73",
+            "k": "code"
+          },
+          {
+            "t": "3f 9b 54 e2 18 7c a6 09",
+            "k": "code"
+          },
+          {
+            "t": "ed 20 8a 5d 36 f4 b1 7e",
+            "k": "code"
+          },
+          {
+            "t": "42 0c 97 5a e8 13 6d 2f",
+            "k": "code"
+          }
+        ]
+      }
+    },
+    {
+      "id": "s034",
+      "type": "flow",
+      "act": "math",
+      "narration": "Because elliptic curve math is a one-way street, everyone in the world is allowed to see your public key.",
+      "eyebrow": "THE MATH",
+      "headline": "A one-way street",
+      "subline": "Everyone can see Q. Nobody can derive d.",
+      "meta": {
+        "nodes": [
+          {
+            "k": "01",
+            "t": "SECRET d",
+            "s": "private integer"
+          },
+          {
+            "k": "02",
+            "t": "MULTIPLY G",
+            "s": "curve base point"
+          },
+          {
+            "k": "03",
+            "t": "PUBLIC Q",
+            "s": "a point on P-384"
+          },
+          {
+            "k": "04",
+            "t": "SHARE Q",
+            "s": "safe to publish"
+          }
+        ]
+      }
+    },
+    {
+      "id": "s035",
+      "type": "code",
+      "act": "math",
+      "narration": "That public key is just a point on a mathematical curve, created by multiplying a known starting point by your secret private number.",
+      "eyebrow": "THE MATH",
+      "headline": "The public key is d times G",
+      "subline": "A point on the curve, derived from the secret.",
+      "meta": {
+        "file": "p384.txt",
+        "tag": "public key",
+        "announce": "Q = d * G. Publish Q. Hide d.",
+        "lines": [
+          {
+            "t": "G = base_point(P-384)",
+            "k": "code"
+          },
+          {
+            "t": "Q = d * G",
+            "k": "code",
+            "key": true
+          },
+          {
+            "t": "publish(Q)",
+            "k": "code"
+          },
+          {
+            "t": "# d stays secret",
+            "k": "com"
+          }
+        ]
+      },
+      "mascot": {
+        "expression": "pointing",
+        "position": "bottom-right",
+        "bubble": "Notice the point scalar formula."
+      }
+    },
+    {
+      "id": "s036",
+      "type": "statement",
+      "act": "math",
+      "narration": "If your secret number is 115 digits long, reversing that multiplication is mathematically impossible.",
+      "eyebrow": "THE MATH",
+      "headline": "Reversing the multiplication is impossible",
+      "subline": "That is the security proof for every P-384 key.",
+      "variant": 0,
+      "meta": {
+        "ghost": "ONE-WAY"
+      }
+    },
+    {
+      "id": "s037",
+      "type": "code",
+      "act": "math",
+      "narration": "But when eMudra generated eight of its intermediate keys, the first 47 bytes were all zeros. Every single one of them.",
+      "eyebrow": "THE BROKEN KEY",
+      "headline": "The first 47 bytes were zeros",
+      "subline": "The same pattern held for all eight keys.",
+      "accent": "#ff3b5c",
+      "meta": {
+        "file": "private-key.hex",
+        "tag": "actual",
+        "announce": "47 bytes of zero. The secret was the last byte.",
+        "lines": [
+          {
+            "t": "00 00 00 00 00 00 00 00",
+            "k": "code"
+          },
+          {
+            "t": "00 00 00 00 00 00 00 00",
+            "k": "code"
+          },
+          {
+            "t": "00 00 00 00 00 00 00 00",
+            "k": "code"
+          },
+          {
+            "t": "00 00 00 00 00 00 00 00",
+            "k": "code"
+          },
+          {
+            "t": "00 00 00 00 00 00 00 00",
+            "k": "code"
+          },
+          {
+            "t": "00 00 00 00 00 00 00 04",
+            "k": "code",
+            "key": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "s038",
+      "type": "compare",
+      "act": "math",
+      "narration": "Only the very last byte at the end had anything in it. Instead of 2 to the power of 384 possibilities, there were only 255 possibilities.",
+      "eyebrow": "THE BROKEN KEY",
+      "headline": "2^384 possibilities became 255",
+      "subline": "The last byte held the entire secret.",
+      "accent": "#ff3b5c",
+      "meta": {
+        "left": {
+          "k": "SHOULD BE",
+          "t": "2^384 possibilities",
+          "pts": [
+            "115-digit integer",
+            "48 random bytes",
+            "unguessable"
+          ]
+        },
+        "right": {
+          "k": "ACTUALLY",
+          "t": "255 possibilities",
+          "pts": [
+            "47 zero bytes",
+            "one byte of key",
+            "at most 255 guesses"
+          ]
+        },
+        "vs": "VS"
+      }
+    },
+    {
+      "id": "s039",
+      "type": "hero",
+      "act": "math",
+      "narration": "To crack the private key of eMudra's US organization-validated TLS authority, you didn't need a nation-state supercomputer.",
+      "eyebrow": "THE TARGET",
+      "headline": "The US OV TLS CA",
+      "subline": "EM OV TLS CA - G3C. One of eight broken intermediates.",
+      "meta": {
+        "mark": "G3C",
+        "rule": true
+      }
+    },
+    {
+      "id": "s040",
+      "type": "terminal",
+      "act": "math",
+      "narration": "You just had to multiply the public starting point by one, then two, then three, then four, and boom. At four, it matched.",
+      "eyebrow": "THE GUESS",
+      "headline": "At four, it matched",
+      "subline": "No supercomputer. One loop. Four guesses.",
+      "meta": {
+        "host": "laptop / recover-key-4",
+        "lines": [
+          {
+            "t": "for d in 1 2 3 4 ... 255; do",
+            "k": "cmd"
+          },
+          {
+            "t": "    test_key $d",
+            "k": "out"
+          },
+          {
+            "t": "done",
+            "k": "out"
+          },
+          {
+            "t": "d=1  no match",
+            "k": "out"
+          },
+          {
+            "t": "d=2  no match",
+            "k": "out"
+          },
+          {
+            "t": "d=3  no match",
+            "k": "out"
+          },
+          {
+            "t": "d=4  MATCH",
+            "k": "err"
+          },
+          {
+            "t": "done in < 1 ms",
+            "k": "out"
+          }
+        ]
+      }
+    },
+    {
+      "id": "s041",
+      "type": "statement",
+      "act": "math",
+      "narration": "As security researcher Scott Helm put it, after recovering all eight keys on his laptop in less than a second,",
+      "eyebrow": "THE RESEARCHER",
+      "headline": "All eight keys on a laptop, in under a second",
+      "subline": "Scott Helme, security researcher",
+      "variant": 2,
+      "meta": {
+        "ghost": "HELME"
+      }
+    },
+    {
+      "id": "s042",
+      "type": "statement",
+      "act": "math",
+      "narration": "normally, when a CA key is compromised, someone stole it. There was a thief, and a moment the break-in happened.",
+      "eyebrow": "THE DIFFERENCE",
+      "headline": "Normally, there is a thief",
+      "subline": "A break-in. A moment. A stolen key.",
+      "variant": 0,
+      "meta": {
+        "ghost": "THIEF"
+      }
+    },
+    {
+      "id": "s043",
+      "type": "statement",
+      "act": "math",
+      "narration": "Here, nobody had to steal anything. The key was effectively public from the very first day the certificate existed.",
+      "eyebrow": "THE DIFFERENCE",
+      "headline": "This key was public from day one",
+      "subline": "Nobody had to steal it. It was generated broken.",
+      "variant": 1,
+      "meta": {
+        "ghost": "DAY ONE"
+      }
+    },
+    {
+      "id": "s044",
+      "type": "hero",
+      "act": "ceremony",
+      "narration": "So how on earth does an audited company run by 15-year cryptography veterans make a mistake this catastrophic?",
+      "eyebrow": "THE CEREMONY",
+      "headline": "How does an audited CA make this mistake?",
+      "subline": "Fifteen-year cryptography veterans. Formal ceremonies. Audits.",
+      "meta": {
+        "mark": "?",
+        "rule": true
+      }
+    },
+    {
+      "id": "s045",
+      "type": "statement",
+      "act": "ceremony",
+      "narration": "Didn't they use a hardware security module? Yes, they actually did. And that is the most terrifying part of this entire story.",
+      "eyebrow": "THE CEREMONY",
+      "headline": "They did use an HSM",
+      "subline": "That is the most terrifying part.",
+      "variant": 2,
+      "meta": {
+        "ghost": "HSM"
+      }
+    },
+    {
+      "id": "s046",
+      "type": "dateline",
+      "act": "ceremony",
+      "narration": "On April 30th, 2025, eMudra conducted a formal key generation ceremony using Utamako hardware security modules, or HSMs.",
+      "eyebrow": "THE CEREMONY",
+      "headline": "The key generation ceremony",
+      "subline": "Utimaco HSMs inside eMudhra's public trust infrastructure.",
+      "meta": {
+        "day": "30",
+        "mon": "APR",
+        "yr": "2025"
+      },
+      "mascot": {
+        "expression": "thinking",
+        "position": "bottom-right",
+        "bubble": "A formal key ceremony... with zero entropy?"
+      }
+    },
+    {
+      "id": "s047",
+      "type": "statement",
+      "act": "ceremony",
+      "narration": "These are specialized tamper-proof hardware vaults certified to FIPS 140-2 Level 3.",
+      "eyebrow": "THE HSM",
+      "headline": "FIPS 140-2 Level 3",
+      "subline": "Tamper-proof vaults. Keys generated inside silicon.",
+      "variant": 0,
+      "meta": {
+        "ghost": "FIPS"
+      }
+    },
+    {
+      "id": "s048",
+      "type": "stack",
+      "act": "ceremony",
+      "narration": "An HSM is specifically engineered so that private keys are generated deep inside silicon and can never be stolen or read in plain text.",
+      "eyebrow": "THE HSM",
+      "headline": "The key never leaves the silicon",
+      "subline": "Generated inside. Never readable in plain text.",
+      "meta": {
+        "layers": [
+          {
+            "t": "APPLICATION",
+            "s": "sends a command"
+          },
+          {
+            "t": "HSM FIRMWARE",
+            "s": "generates the key"
+          },
+          {
+            "t": "TAMPER-PROOF SILICON",
+            "s": "holds the secret",
+            "hot": true
+          },
+          {
+            "t": "PRIVATE KEY",
+            "s": "never exported in plain text"
+          }
+        ]
+      }
+    },
+    {
+      "id": "s049",
+      "type": "compare",
+      "act": "ceremony",
+      "narration": "According to eMudra's official incident report to Mozilla, these new keys were meant for their European and United States operations, labeled G3B and G3C.",
+      "eyebrow": "THE TARGETS",
+      "headline": "Two production labels: G3B and G3C",
+      "subline": "Built for Europe and the United States.",
+      "meta": {
+        "left": {
+          "k": "G3B",
+          "t": "European operations",
+          "pts": [
+            "new production key",
+            "inside the HSM"
+          ]
+        },
+        "right": {
+          "k": "G3C",
+          "t": "United States operations",
+          "pts": [
+            "new production key",
+            "inside the HSM"
+          ]
+        },
+        "vs": "AND"
+      }
+    },
+    {
+      "id": "s050",
+      "type": "flow",
+      "act": "ceremony",
+      "narration": "Because those keys needed to be securely transferred between hardware modules in different data centers, the engineering team introduced what they called an approved deviation to their ceremony script.",
+      "eyebrow": "THE DEVIATION",
+      "headline": "An approved deviation",
+      "subline": "Move a key between data centers, encrypted.",
+      "meta": {
+        "nodes": [
+          {
+            "k": "01",
+            "t": "HSM A",
+            "s": "produces a key"
+          },
+          {
+            "k": "02",
+            "t": "WRAP",
+            "s": "encrypt for transport"
+          },
+          {
+            "k": "03",
+            "t": "HSM B",
+            "s": "imports the key"
+          },
+          {
+            "k": "04",
+            "t": "APPROVED",
+            "s": "ceremony script",
+            "hot": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "s051",
+      "type": "code",
+      "act": "ceremony",
+      "narration": "They wanted to test key wrapping and unwrapping, basically encrypting a key on one hardware module so another hardware module can import it.",
+      "eyebrow": "THE DEVIATION",
+      "headline": "Key wrapping, in one sentence",
+      "subline": "The approved deviation had a test path.",
+      "meta": {
+        "file": "ceremony / key-wrap (schematic)",
+        "tag": "approved deviation",
+        "announce": "Wrap on one HSM. Unwrap on another.",
+        "lines": [
+          {
+            "t": "wrapped = hsm_a.wrap(key, wrapping_key)",
+            "k": "code"
+          },
+          {
+            "t": "hsm_b.unwrap(wrapped, wrapping_key)",
+            "k": "code"
+          },
+          {
+            "t": "# goal: move a key between data centers",
+            "k": "com"
+          },
+          {
+            "t": "# expected: full-length P-384 key",
+            "k": "com"
+          }
+        ]
+      }
+    },
+    {
+      "id": "s052",
+      "type": "diff",
+      "act": "ceremony",
+      "narration": "The HSM generated the first set of strong, full-length keys just fine, but a coding bug inside their custom ceremony script generated a second batch of broken single-byte test keys right alongside the real ones.",
+      "eyebrow": "THE BUG",
+      "headline": "A second batch of broken keys",
+      "subline": "Strong keys first. One-byte test keys alongside them.",
+      "accent": "#ff3b5c",
+      "meta": {
+        "file": "ceremony / keygen (schematic)",
+        "ver": "approved deviation",
+        "announce": "The test path wrote into the production namespace.",
+        "lines": [
+          {
+            "k": "ctx",
+            "t": "for label in production_labels:"
+          },
+          {
+            "k": "ctx",
+            "t": "    hsm.generate_key(curve=\"P-384\", label=label)"
+          },
+          {
+            "k": "ctx",
+            "t": "for label in test_labels:"
+          },
+          {
+            "k": "add",
+            "t": "    hsm.generate_key(bytes=1, label=label)"
+          },
+          {
+            "k": "ctx",
+            "t": "# both batches shared one label table"
+          },
+          {
+            "k": "ctx",
+            "t": "# the test key was selected by mistake"
+          }
+        ]
+      }
+    },
+    {
+      "id": "s053",
+      "type": "ledger",
+      "act": "ceremony",
+      "narration": "And because the script gave those weak keys internal labels that looked almost identical to the real production keys,",
+      "eyebrow": "THE LABELS",
+      "headline": "The labels were almost identical",
+      "subline": "A test key looked like a production key.",
+      "meta": {
+        "head": "LABEL TABLE",
+        "live": "CEREMONY",
+        "rows": [
+          {
+            "k": "PROD",
+            "v": "EM OV TLS CA - G3C"
+          },
+          {
+            "k": "TEST",
+            "v": "EM OV TLS CA - G3C-T",
+            "bad": true
+          },
+          {
+            "k": "PROD",
+            "v": "EM OV TLS CA - G3B"
+          },
+          {
+            "k": "TEST",
+            "v": "EM OV TLS CA - G3B-T",
+            "bad": true
+          }
+        ],
+        "points": [
+          "one suffix apart",
+          "same ceremony",
+          "same HSM",
+          "selected by mistake"
+        ]
+      }
+    },
+    {
+      "id": "s054",
+      "type": "flow",
+      "act": "ceremony",
+      "narration": "The engineers accidentally selected the broken keys, signed them with their root CA, got them cross-signed by Sectigo, and shipped them out to the public internet.",
+      "eyebrow": "THE SHIP",
+      "headline": "The wrong key went all the way",
+      "subline": "Selected, signed, cross-signed, shipped.",
+      "meta": {
+        "nodes": [
+          {
+            "k": "01",
+            "t": "SELECT",
+            "s": "broken test key"
+          },
+          {
+            "k": "02",
+            "t": "SIGN",
+            "s": "root CA"
+          },
+          {
+            "k": "03",
+            "t": "CROSS-SIGN",
+            "s": "Sectigo"
+          },
+          {
+            "k": "04",
+            "t": "SHIP",
+            "s": "public internet",
+            "hot": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "s055",
+      "type": "hero",
+      "act": "ceremony",
+      "narration": "Want to hear the craziest detail? Back in July of 2025, 15 months before the world found out, eMudra actually ran into a bizarre bug tracked in Mozilla ticket 1970-728.",
+      "eyebrow": "THE WARNING",
+      "headline": "July 2025: eMudhra saw the mismatch",
+      "subline": "Bugzilla 1970728. Fifteen months before the world found out.",
+      "meta": {
+        "mark": "2025",
+        "rule": true
+      }
+    },
+    {
+      "id": "s056",
+      "type": "terminal",
+      "act": "ceremony",
+      "narration": "Their certificate revocation lists for these exact intermediates were failing signature validation.",
+      "eyebrow": "THE WARNING",
+      "headline": "The CRL would not verify",
+      "subline": "The revocation list and the certificate disagreed.",
+      "meta": {
+        "host": "openssl / crl",
+        "lines": [
+          {
+            "t": "openssl crl -in emsign.crl -CAfile intermediate.pem -noout",
+            "k": "cmd"
+          },
+          {
+            "t": "verify failure",
+            "k": "err"
+          },
+          {
+            "t": "CRL signature failure",
+            "k": "err"
+          },
+          {
+            "t": "error 7 at 0 depth lookup: certificate signature failure",
+            "k": "err"
+          }
+        ]
+      }
+    },
+    {
+      "id": "s057",
+      "type": "compare",
+      "act": "ceremony",
+      "narration": "Why? Because one internal system was signing revocation lists with the real keys, while the public certificates held the broken keys.",
+      "eyebrow": "THE WARNING",
+      "headline": "Two different keys, one name",
+      "subline": "The CRL was signed with the real key. The published certificate held the broken key.",
+      "meta": {
+        "left": {
+          "k": "INTERNAL",
+          "t": "Signs with the real key",
+          "pts": [
+            "CRL signature valid",
+            "real private key"
+          ]
+        },
+        "right": {
+          "k": "PUBLIC CERT",
+          "t": "Contains the broken key",
+          "pts": [
+            "one-byte private key",
+            "different public point"
+          ]
+        },
+        "vs": "MISMATCH"
+      }
+    },
+    {
+      "id": "s058",
+      "type": "flow",
+      "act": "ceremony",
+      "narration": "Instead of stopping to ask why the keys didn't match, they treated it as a routine operational hiccup, re-signed the files with the flawed keys, and moved on.",
+      "eyebrow": "THE CHOICE",
+      "headline": "They signed the warning with the broken key",
+      "subline": "The mismatch was treated as a routine hiccup.",
+      "meta": {
+        "nodes": [
+          {
+            "k": "01",
+            "t": "MISMATCH",
+            "s": "detected"
+          },
+          {
+            "k": "02",
+            "t": "ROUTINE",
+            "s": "operational hiccup"
+          },
+          {
+            "k": "03",
+            "t": "RE-SIGN",
+            "s": "with flawed key"
+          },
+          {
+            "k": "04",
+            "t": "MOVE ON",
+            "s": "warning buried",
+            "hot": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "s059",
+      "type": "stat",
+      "act": "ceremony",
+      "narration": "For 17 months, those eight keys sat in public databases, waiting for someone to look closely.",
+      "eyebrow": "THE WINDOW",
+      "headline": "The keys sat in public",
+      "subline": "Waiting for someone to look closely.",
+      "meta": {
+        "value": 17,
+        "display": "17",
+        "suffix": "months"
+      }
+    },
+    {
+      "id": "s060",
+      "type": "dateline",
+      "act": "disclosure",
+      "narration": "Then came Saturday, October 17, 2026. At 4.27 p.m. UTC, an independent researcher going only by the name Wayne",
+      "eyebrow": "THE DISCLOSURE",
+      "headline": "Saturday, October 17",
+      "subline": "16:27 UTC. A researcher named Wayne starts a scan.",
+      "meta": {
+        "day": "17",
+        "mon": "OCT",
+        "yr": "2026"
+      },
+      "mascot": {
+        "expression": "angry",
+        "position": "bottom-left",
+        "bubble": "A critical Saturday afternoon alert."
+      }
+    },
+    {
+      "id": "s061",
+      "type": "terminal",
+      "act": "disclosure",
+      "narration": "ran an automated scan across the common CA database and spotted the broken math.",
+      "eyebrow": "THE SCAN",
+      "headline": "The scan found the broken math",
+      "subline": "A public key matched a private key of 4.",
+      "meta": {
+        "host": "ca-scan / common-ca",
+        "lines": [
+          {
+            "t": "ca-scan --all --curve P-384",
+            "k": "cmd"
+          },
+          {
+            "t": "loading common CA database",
+            "k": "out"
+          },
+          {
+            "t": "checking public keys against 1..255",
+            "k": "out"
+          },
+          {
+            "t": "[!] EM OV TLS CA - G3C",
+            "k": "err"
+          },
+          {
+            "t": "    public key matches d = 4",
+            "k": "err"
+          },
+          {
+            "t": "[!] 8 weak intermediates found",
+            "k": "err"
+          }
+        ]
+      }
+    },
+    {
+      "id": "s062",
+      "type": "statement",
+      "act": "disclosure",
+      "narration": "Wayne checked the math once, checked it twice, checked it a third time,",
+      "eyebrow": "THE CHECK",
+      "headline": "Checked once. Twice. Three times.",
+      "subline": "The math did not change.",
+      "variant": 1,
+      "meta": {
+        "ghost": "CHECK"
+      }
+    },
+    {
+      "id": "s063",
+      "type": "ledger",
+      "act": "disclosure",
+      "narration": "and at 6.05 p.m. UTC, Wayne sent an urgent email to the security teams at Apple, Google, Microsoft, Mozilla, and Emudra.",
+      "eyebrow": "THE REPORT",
+      "headline": "One email, five security teams",
+      "subline": "Wayne sent the proof at 18:05 UTC.",
+      "meta": {
+        "head": "RECIPIENTS",
+        "live": "18:05 UTC",
+        "rows": [
+          {
+            "k": "APPLE",
+            "v": "notified"
+          },
+          {
+            "k": "GOOGLE",
+            "v": "notified"
+          },
+          {
+            "k": "MICROSOFT",
+            "v": "notified"
+          },
+          {
+            "k": "MOZILLA",
+            "v": "notified"
+          },
+          {
+            "k": "EMUDHRA",
+            "v": "notified"
+          }
+        ],
+        "points": [
+          "proof, not a key",
+          "eight attestations",
+          "five recipients"
+        ]
+      }
+    },
+    {
+      "id": "s064",
+      "type": "statement",
+      "act": "disclosure",
+      "narration": "And how did Wayne prove beyond a shadow of a doubt that the keys were cracked without emailing raw private keys over the internet?",
+      "eyebrow": "THE PROOF",
+      "headline": "How do you prove a key without sending it?",
+      "subline": "Do not email the private key. Sign with it.",
+      "variant": 0,
+      "meta": {
+        "ghost": "PROOF"
+      }
+    },
+    {
+      "id": "s065",
+      "type": "code",
+      "act": "disclosure",
+      "narration": "Wayne attached eight cryptographic attestations, each one digitally signed using eMudra's own secret CA keys.",
+      "eyebrow": "THE ATTESTATIONS",
+      "headline": "Eight signed proofs",
+      "subline": "Each attestation used eMudhra's own private key.",
+      "meta": {
+        "file": "attestations.txt",
+        "tag": "8 keys",
+        "announce": "Eight signatures. One for each broken key.",
+        "lines": [
+          {
+            "t": "attestation[0] = sign(d=4, payload)",
+            "k": "code",
+            "key": true
+          },
+          {
+            "t": "attestation[1] = sign(d=56, payload)",
+            "k": "code"
+          },
+          {
+            "t": "attestation[2] = sign(d=66, payload)",
+            "k": "code"
+          },
+          {
+            "t": "attestation[3] = sign(d=115, payload)",
+            "k": "code"
+          },
+          {
+            "t": "attestation[4] = sign(d=155, payload)",
+            "k": "code"
+          },
+          {
+            "t": "attestation[5] = sign(d=156, payload)",
+            "k": "code"
+          },
+          {
+            "t": "attestation[6] = sign(d=230, payload)",
+            "k": "code"
+          },
+          {
+            "t": "attestation[7] = sign(d=237, payload)",
+            "k": "code"
+          }
+        ]
+      }
+    },
+    {
+      "id": "s066",
+      "type": "statement",
+      "act": "disclosure",
+      "narration": "In the world of cryptography, that is the ultimate mic drop. It is mathematically impossible to forge that signature unless you possess the private key.",
+      "eyebrow": "THE MIC DROP",
+      "headline": "The signature was the proof",
+      "subline": "You cannot forge it without the private key.",
+      "variant": 2,
+      "meta": {
+        "ghost": "MIC DROP"
+      }
+    },
+    {
+      "id": "s067",
+      "type": "hero",
+      "act": "disclosure",
+      "narration": "What happened next was one of the fastest emergency responses in the history of the web.",
+      "eyebrow": "THE RESPONSE",
+      "headline": "One of the fastest responses in web history",
+      "subline": "The clock started at 18:05 UTC.",
+      "meta": {
+        "mark": "100",
+        "rule": true
+      }
+    },
+    {
+      "id": "s068",
+      "type": "stat",
+      "act": "disclosure",
+      "narration": "Within just 100 minutes, Google Chrome's security team verified the math and pushed an emergency revocation block to billions of Chrome browsers worldwide.",
+      "eyebrow": "THE RESPONSE",
+      "headline": "From report to browser",
+      "subline": "Chrome verified the math and pushed a block to billions.",
+      "meta": {
+        "value": 100,
+        "display": "100",
+        "suffix": "min"
+      }
+    },
+    {
+      "id": "s069",
+      "type": "timeline",
+      "act": "disclosure",
+      "narration": "Less than two hours later, Mozilla pushed an emergency one CRL block to every copy of Firefox.",
+      "eyebrow": "THE RESPONSE",
+      "headline": "The fastest block in browser history",
+      "subline": "Chrome in 100 minutes. Firefox in under two hours.",
+      "meta": {
+        "events": [
+          {
+            "t": "18:05",
+            "s": "Wayne's report"
+          },
+          {
+            "t": "~19:45",
+            "s": "Chrome block live"
+          },
+          {
+            "t": "<20:05",
+            "s": "Firefox OneCRL",
+            "hot": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "s070",
+      "type": "dateline",
+      "act": "disclosure",
+      "narration": "By Tuesday, October 20th, the bug report was unsealed to the public.",
+      "eyebrow": "THE DISCLOSURE",
+      "headline": "The report goes public",
+      "subline": "Bugzilla 2083449 is unsealed.",
+      "meta": {
+        "day": "20",
+        "mon": "OCT",
+        "yr": "2026"
+      }
+    },
+    {
+      "id": "s071",
+      "type": "terminal",
+      "act": "disclosure",
+      "narration": "Within hours, a researcher named Flupke posted a one-line command on GitHub showing the private key was literally four.",
+      "eyebrow": "THE PROOF",
+      "headline": "The private key was literally 4",
+      "subline": "Flüpke posted a one-line command on GitHub.",
+      "meta": {
+        "host": "github / flupke",
+        "lines": [
+          {
+            "t": "python -c \"print(4 * G == Q)\"",
+            "k": "cmd"
+          },
+          {
+            "t": "True",
+            "k": "out"
+          },
+          {
+            "t": "# private key d = 4",
+            "k": "out"
+          },
+          {
+            "t": "# one-line proof",
+            "k": "out"
+          }
+        ]
+      }
+    },
+    {
+      "id": "s072",
+      "type": "terminal",
+      "act": "disclosure",
+      "narration": "And the popular security tool, Mitim-Proxy, actually added a dedicated command line flag, dash dash eMudra, allowing anyone to test intercepting traffic with the broken authority.",
+      "eyebrow": "THE TOOL",
+      "headline": "mitmproxy added --emudhra",
+      "subline": "A dedicated flag to test the broken CA.",
+      "meta": {
+        "host": "mitmproxy / terminal",
+        "lines": [
+          {
+            "t": "mitmproxy --emudhra",
+            "k": "cmd"
+          },
+          {
+            "t": "[emudhra] loading compromised intermediates",
+            "k": "out"
+          },
+          {
+            "t": "[emudhra] proxy listening on 8080",
+            "k": "out"
+          },
+          {
+            "t": "# decrypt and inspect test traffic",
+            "k": "out"
+          }
+        ]
+      }
+    },
+    {
+      "id": "s073",
+      "type": "dateline",
+      "act": "disclosure",
+      "narration": "Days later, Google announced the ultimate penalty. Starting October 27th, 2026, Chrome is completely removing trust in eMudra's entire M-Sign ECC root CA G3,",
+      "eyebrow": "THE PENALTY",
+      "headline": "Chrome removes the entire root",
+      "subline": "emSign ECC Root CA - G3 loses trust on 27 October 2026.",
+      "accent": "#ff3b5c",
+      "meta": {
+        "day": "27",
+        "mon": "OCT",
+        "yr": "2026"
+      },
+      "mascot": {
+        "expression": "sad",
+        "position": "bottom-right",
+        "bubble": "The ultimate death sentence for any CA."
+      }
+    },
+    {
+      "id": "s074",
+      "type": "stat",
+      "act": "disclosure",
+      "narration": "forcing more than 30,000 live websites to urgently replace their certificates. Now, here is the question that actually matters for you.",
+      "eyebrow": "THE PENALTY",
+      "headline": "More than 30,000 certificates must move",
+      "subline": "The migration is the visible cost of the broken key.",
+      "accent": "#ff3b5c",
+      "meta": {
+        "value": 30000,
+        "display": "30,000",
+        "sep": true
+      }
+    },
+    {
+      "id": "s075",
+      "type": "statement",
+      "act": "gap",
+      "narration": "Did hackers abuse these keys during the 17 months they were sitting out in the open?",
+      "eyebrow": "THE GAP",
+      "headline": "Did anyone use the keys?",
+      "subline": "Seventeen months. Public databases. No easy answer.",
+      "variant": 0,
+      "meta": {
+        "ghost": "ABUSE?"
+      }
+    },
+    {
+      "id": "s076",
+      "type": "hero",
+      "act": "gap",
+      "narration": "If you are just browsing websites on Chrome, Firefox, or Safari, you were saved by a system called Certificate Transparency, or CT.",
+      "eyebrow": "THE GAP",
+      "headline": "Certificate Transparency",
+      "subline": "The public receipt that saves browsers.",
+      "meta": {
+        "mark": "CT",
+        "rule": true
+      }
+    },
+    {
+      "id": "s077",
+      "type": "flow",
+      "act": "gap",
+      "narration": "Modern web browsers refuse to trust any website certificate unless the Certificate Authority also publishes it to public, tamper-proof transparency logs.",
+      "eyebrow": "THE GAP",
+      "headline": "No log, no trust",
+      "subline": "A certificate must be publicly witnessed.",
+      "meta": {
+        "nodes": [
+          {
+            "k": "01",
+            "t": "CA ISSUES",
+            "s": "a certificate"
+          },
+          {
+            "k": "02",
+            "t": "CT LOG",
+            "s": "public + tamper-proof"
+          },
+          {
+            "k": "03",
+            "t": "BROWSER",
+            "s": "checks the receipt",
+            "hot": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "s078",
+      "type": "stat",
+      "act": "gap",
+      "narration": "Google audited those global logs and confirmed that zero rogue certificates were ever logged under those six TLS intermediates before the block went live.",
+      "eyebrow": "THE AUDIT",
+      "headline": "Rogue certificates in CT",
+      "subline": "Six TLS intermediates. Every public log checked.",
+      "meta": {
+        "value": 0,
+        "display": "0",
+        "nocount": true
+      }
+    },
+    {
+      "id": "s079",
+      "type": "stack",
+      "act": "gap",
+      "narration": "But the internet is much, much bigger than web browsers. Think about command line tools, back-end servers, and automated developer pipelines.",
+      "eyebrow": "THE GAP",
+      "headline": "The internet is bigger than the browser",
+      "subline": "Most of the trust surface has no address bar.",
+      "meta": {
+        "layers": [
+          {
+            "t": "BROWSERS",
+            "s": "checked by CT + OneCRL"
+          },
+          {
+            "t": "CLI TOOLS",
+            "s": "curl, pip, custom scripts"
+          },
+          {
+            "t": "BACKEND SERVERS",
+            "s": "static trust stores"
+          },
+          {
+            "t": "CI/CD PIPELINES",
+            "s": "automated, unattended",
+            "hot": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "s080",
+      "type": "terminal",
+      "act": "gap",
+      "narration": "When a Python server runs pip install, when a script runs curl, or when a back-end microservice written in Go, Node.js, or running inside a Docker container connects to an external API,",
+      "eyebrow": "THE GAP",
+      "headline": "Every tool carries its own trust store",
+      "subline": "pip. curl. Go. Node. Docker.",
+      "meta": {
+        "host": "developer pipeline",
+        "lines": [
+          {
+            "t": "pip install requests",
+            "k": "cmd"
+          },
+          {
+            "t": "curl https://api.example.com",
+            "k": "cmd"
+          },
+          {
+            "t": "go run main.go",
+            "k": "cmd"
+          },
+          {
+            "t": "node server.js",
+            "k": "cmd"
+          },
+          {
+            "t": "docker run --rm app",
+            "k": "cmd"
+          },
+          {
+            "t": "# each process loads a CA bundle",
+            "k": "out"
+          },
+          {
+            "t": "# no browser CT check",
+            "k": "out"
+          }
+        ]
+      }
+    },
+    {
+      "id": "s081",
+      "type": "compare",
+      "act": "gap",
+      "narration": "most of those tools do not check certificate transparency logs. Even worse, they don't receive automatic 100-minute revocation updates from Google or Mozilla. They rely on a static file of trusted certificates sitting on the hard drive.",
+      "eyebrow": "THE GAP",
+      "headline": "The gap is the static trust store",
+      "subline": "No CT. No OneCRL. No 100-minute update.",
+      "meta": {
+        "left": {
+          "k": "BROWSER",
+          "t": "Live revocation",
+          "pts": [
+            "CT checks",
+            "OneCRL / CRLSet",
+            "minutes to update"
+          ]
+        },
+        "right": {
+          "k": "BACKEND",
+          "t": "Static trust store",
+          "pts": [
+            "CA bundle on disk",
+            "no CT check",
+            "no live revocation"
+          ]
+        },
+        "vs": "GAP"
+      }
+    },
+    {
+      "id": "s082",
+      "type": "terminal",
+      "act": "gap",
+      "narration": "Mozilla engineers specifically warned that macOS's built-in curl utility will keep trusting these broken certificates until Apple ships an operating system patch.",
+      "eyebrow": "THE GAP",
+      "headline": "macOS curl still trusts it",
+      "subline": "Until Apple ships an OS patch.",
+      "meta": {
+        "host": "macOS / curl",
+        "lines": [
+          {
+            "t": "/usr/bin/curl https://example.com",
+            "k": "cmd"
+          },
+          {
+            "t": "* TLS certificate verified",
+            "k": "out"
+          },
+          {
+            "t": "* issuer: emSign ECC Root CA - G3",
+            "k": "out"
+          },
+          {
+            "t": "# the broken chain still validates",
+            "k": "out"
+          },
+          {
+            "t": "# waiting for an OS patch",
+            "k": "out"
+          }
+        ]
+      }
+    },
+    {
+      "id": "s083",
+      "type": "compare",
+      "act": "gap",
+      "narration": "And on top of all that, two of the compromised keys, number 66 and 237, weren't for websites at all. They were Microsoft-trusted code signing keys.",
+      "eyebrow": "THE CODE-SIGNING KEYS",
+      "headline": "Two keys did not sign websites",
+      "subline": "Keys 66 and 237 were Microsoft-trusted code-signing keys.",
+      "accent": "#fb923c",
+      "meta": {
+        "left": {
+          "k": "WEBSITES",
+          "t": "Six TLS intermediates",
+          "pts": [
+            "CT logs",
+            "browser blocks",
+            "public scrutiny"
+          ]
+        },
+        "right": {
+          "k": "WINDOWS SOFTWARE",
+          "t": "Two code-signing intermediates",
+          "pts": [
+            "key 66",
+            "key 237",
+            "no universal CT"
+          ]
+        },
+        "vs": "PLUS"
+      }
+    },
+    {
+      "id": "s084",
+      "type": "statement",
+      "act": "gap",
+      "narration": "And unlike websites, there is no global certificate transparency log enforced for every piece of signed Windows software.",
+      "eyebrow": "THE CODE-SIGNING KEYS",
+      "headline": "There is no CT log for every signed EXE",
+      "subline": "Windows software has no universal public receipt.",
+      "variant": 1,
+      "accent": "#fb923c",
+      "meta": {
+        "ghost": "NO CT"
+      }
+    },
+    {
+      "id": "s085",
+      "type": "hero",
+      "act": "gap",
+      "narration": "That is why emergency patches, tracked under CVE-2026-111-943, are being rushed out right now",
+      "eyebrow": "THE PATCH",
+      "headline": "CVE-2026-111943",
+      "subline": "Emergency patches are shipping now.",
+      "meta": {
+        "mark": "CVE",
+        "rule": true
+      }
+    },
+    {
+      "id": "s086",
+      "type": "ledger",
+      "act": "gap",
+      "narration": "for Go, Ubuntu, Debian, Arch Linux, Python's Certify Package, and Cloudflare's Zero Trust clients.",
+      "eyebrow": "THE PATCH",
+      "headline": "Trust stores and TLS stacks",
+      "subline": "The patch list is a map of where trust lives.",
+      "meta": {
+        "head": "PATCH LIST",
+        "live": "IN PROGRESS",
+        "rows": [
+          {
+            "k": "GO",
+            "v": "1.26.10 / 1.27.3"
+          },
+          {
+            "k": "UBUNTU",
+            "v": "CA bundle"
+          },
+          {
+            "k": "DEBIAN",
+            "v": "CA bundle"
+          },
+          {
+            "k": "ARCH",
+            "v": "ca-certificates"
+          },
+          {
+            "k": "CERTIFI",
+            "v": "2026.10.19"
+          },
+          {
+            "k": "CLOUDFLARE",
+            "v": "Zero Trust client"
+          }
+        ],
+        "points": [
+          "check your runtime",
+          "rebuild static bundles",
+          "do not wait for a browser"
+        ]
+      }
+    },
+    {
+      "id": "s087",
+      "type": "hero",
+      "act": "lesson",
+      "narration": "The eMudra disaster will go down in cybersecurity textbooks for one brutal, unforgettable lesson.",
+      "eyebrow": "THE LESSON",
+      "headline": "The textbook lesson",
+      "subline": "A million-dollar HSM cannot fix a human mistake.",
+      "meta": {
+        "mark": "101",
+        "rule": true
+      }
+    },
+    {
+      "id": "s088",
+      "type": "quote",
+      "act": "lesson",
+      "narration": "A million-dollar hardware security module can stop a hacker from stealing your private key. It cannot stop human error from generating a terrible key. And it cannot stop you from picking the wrong one.",
+      "eyebrow": "THE LESSON",
+      "headline": "An HSM can stop a thief. It cannot stop a human.",
+      "subline": "The lesson from the eMudhra ceremony."
+    },
+    {
+      "id": "s089",
+      "type": "terminal",
+      "act": "lesson",
+      "narration": "If you manage Linux servers, Docker containers, or developer environments, update your CA certificates bundle. Update Go and Python Certify and patch your operating systems today.",
+      "eyebrow": "THE REMEDIATION",
+      "headline": "Update the bundle. Patch the stack.",
+      "subline": "Linux. Docker. Go. Python. Today.",
+      "meta": {
+        "host": "remediation",
+        "lines": [
+          {
+            "t": "sudo update-ca-certificates",
+            "k": "cmd"
+          },
+          {
+            "t": "pip install --upgrade certifi",
+            "k": "cmd"
+          },
+          {
+            "t": "go install golang.org/dl/go1.26.10@latest",
+            "k": "cmd"
+          },
+          {
+            "t": "sudo apt update && sudo apt upgrade",
+            "k": "cmd"
+          },
+          {
+            "t": "# verify the new bundle",
+            "k": "out"
+          },
+          {
+            "t": "# redeploy backend containers",
+            "k": "out"
+          }
+        ]
+      },
+      "mascot": {
+        "expression": "cool",
+        "position": "bottom-right",
+        "bubble": "Zero shortcuts. BUILD. SOLVE. DEPLOY."
+      }
+    },
+    {
+      "id": "s090",
+      "type": "outro",
+      "act": "lesson",
+      "narration": "And if you want deep, no-fluff investigations into the wildest stories in tech and cybersecurity, hit subscribe and drop a comment below. what is the worst production bug you have ever seen? I'll see you in the next one.",
+      "eyebrow": "OUTRO",
+      "headline": "What is the worst production bug you have ever seen?",
+      "subline": "Deep, no-fluff investigations into the wildest stories in tech.",
+      "accent": "#ff3b5c",
+      "meta": {
+        "channel": "youtube.com/channel/UCEbQwm7oWRb1HjfGHMs7AzA",
+        "cta": "Subscribe",
+        "ctaSub": "zero-day autopsy",
+        "ghost": "FOUR"
+      }
+    }
+  ]
+}

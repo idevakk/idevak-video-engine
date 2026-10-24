@@ -30,6 +30,35 @@ const JS = (await read("engine/anim.js")).replace('"__COMPOSITION_ID__"', JSON.s
 
 const tok = (s) => esc(s).replace(/\n/g, "<br>");
 
+// ---------------------------------------------------------------- mascot assets
+const MASCOT_IMAGES = {};
+for (const expr of ["neutral", "shocked", "thinking", "solved"]) {
+  const p = path.resolve(ROOT, `assets/mascot/${expr}.jpg`);
+  try {
+    const buf = await fs.readFile(p);
+    MASCOT_IMAGES[expr] = `data:image/jpeg;base64,${buf.toString("base64")}`;
+  } catch (e) {
+    MASCOT_IMAGES[expr] = "";
+  }
+}
+
+function renderMascotOverlay(mascot) {
+  if (!mascot) return "";
+  const expr = mascot.expression || "neutral";
+  const pos = mascot.position === "bottom-left" ? "pos-bl" : "pos-br";
+  const imgSrc = MASCOT_IMAGES[expr] || "";
+  const bubble = mascot.bubble ? `<div class="m-ov-bubble"><div class="m-ov-btext">${esc(mascot.bubble)}</div></div>` : "";
+  return `
+  <div class="m-ov ${pos} m-expr-${expr}">
+    ${bubble}
+    <div class="m-ov-avatar-wrap">
+      <div class="m-ov-ring"></div>
+      <img class="m-ov-avatar" src="${imgSrc}" alt="${esc(expr)}" />
+      <span class="m-ov-badge">${esc(expr.toUpperCase())}</span>
+    </div>
+  </div>`;
+}
+
 // ---------------------------------------------------------------- copy helpers
 function splitWords(text) {
   return String(text)
@@ -45,12 +74,15 @@ function renderScene(s, i) {
   const dur = Math.max(1.2, s.end - s.start);
   const accent = s.accent || "#38bdf8";
   const id = `s${String(i + 1).padStart(3, "0")}`;
-  const cls = `clip sc sc-${s.type} v${s.variant || 0}`;
+  const punchCls = s.meta?.punch || s.type === "meme" ? " has-punch" : "";
+  const cls = `clip sc sc-${s.type} v${s.variant || 0}${punchCls}`;
   const inner = RENDER[s.type] ? RENDER[s.type](s, i) : RENDER.statement(s, i);
-  return `<section id="${id}" class="${cls}" data-start="${start.toFixed(3)}" data-duration="${dur.toFixed(3)}" data-track-index="2" style="--ac:${accent}">
+  const mascotOv = renderMascotOverlay(s.mascot);
+  return `<section id="${id}" class="${cls}" data-start="${start.toFixed(3)}" data-duration="${dur.toFixed(3)}" data-track-index="2" data-hold style="--ac:${accent}">
   <div class="sc-in" data-layout-allow-overflow>
     <div class="amb"></div>
     ${inner}
+    ${mascotOv}
   </div>
 </section>`;
 }
@@ -349,6 +381,147 @@ const RENDER = {
     </div>`;
   },
 
+  webref(s) {
+    const url = s.meta?.url || "https://docs.aws.amazon.com/";
+    const badge = s.meta?.badge || "OFFICIAL DOCUMENTATION";
+    const docTitle = s.meta?.title || s.headline;
+    const rawSnippet = s.meta?.snippet;
+    const snippet = Array.isArray(rawSnippet) ? rawSnippet : [rawSnippet || s.subline || ""];
+    const highlight = s.meta?.highlight || "";
+    const callout = s.meta?.callout || "";
+    const calloutType = s.meta?.calloutType || "IMPORTANT";
+    const customImg = s.meta?.image;
+
+    return `
+    ${eyebrow(s)}
+    <div class="web-shell">
+      <div class="web-bar">
+        <div class="web-dots"><span></span><span></span><span></span></div>
+        <div class="web-url-box">
+          <svg class="web-lock" viewBox="0 0 24 24"><path fill="currentColor" d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+          <span class="web-url">${esc(url)}</span>
+        </div>
+        <div class="web-badge">${esc(badge)}</div>
+      </div>
+      <div class="web-body">
+        ${customImg ? `<div class="web-screenshot-wrap"><img class="web-screenshot" src="${esc(customImg)}" alt="screenshot" /></div>` : `
+        <div class="web-doc-header">
+          <div class="web-doc-crumb">DOCS / REFERENCE / SPEC</div>
+          <div class="web-doc-title">${esc(docTitle)}</div>
+        </div>
+        <div class="web-doc-content">
+          ${snippet.map(sn => `<p class="web-p ${highlight && sn.includes(highlight) ? "has-hl" : ""}">${esc(sn)}</p>`).join("")}
+          ${callout ? `
+          <div class="web-callout callout-${calloutType.toLowerCase()}">
+            <div class="web-callout-tag">${esc(calloutType)}</div>
+            <div class="web-callout-text">${esc(callout)}</div>
+          </div>` : ""}
+        </div>
+        <div class="web-cursor"><svg viewBox="0 0 24 24"><path fill="var(--ac)" d="M4 0l16 12.279-6.951 1.17 4.325 8.817-3.596 1.734-4.35-8.879-5.428 5.431z"/></svg></div>
+        `}
+      </div>
+    </div>
+    <div class="web-foot">
+      ${s.headline ? `<h2 class="web-foot-title">${splitWords(s.headline)}</h2>` : ""}
+      ${s.subline ? `<p class="web-foot-sub">${esc(s.subline)}</p>` : ""}
+    </div>`;
+  },
+
+  meme(s) {
+    const memeText = s.meta?.text || s.headline || "SKILL ISSUE";
+    const subtext = s.meta?.subtext || s.subline || "";
+    const reaction = s.meta?.reaction || "SKILL ISSUE";
+    const expr = s.meta?.expression || "shocked";
+    const imgSrc = s.meta?.image || MASCOT_IMAGES[expr] || "";
+
+    return `
+    <div class="meme-stage">
+      <div class="meme-ghost">${esc(reaction)}</div>
+      <div class="meme-badge"><span>// REALITY CHECK</span><b>${esc(reaction)}</b></div>
+      <div class="meme-card">
+        <div class="meme-media-wrap">
+          <img class="meme-img" src="${imgSrc}" alt="${esc(memeText)}" />
+          <div class="meme-scanlines"></div>
+          <div class="meme-glitch-bar"></div>
+        </div>
+        <div class="meme-caption-box">
+          <h2 class="meme-caption">${splitWords(memeText)}</h2>
+          ${subtext ? `<p class="meme-sub">${esc(subtext)}</p>` : ""}
+        </div>
+      </div>
+    </div>`;
+  },
+
+  cloud(s) {
+    const nodes = s.meta?.nodes || [];
+    const flowLabel = s.meta?.flow || "DATA & AUTH PIPELINE";
+    return `
+    ${eyebrow(s)}
+    <div class="cloud-stage">
+      <div class="cloud-header">
+        <span class="cloud-tag">CLOUD ARCHITECTURE</span>
+        <span class="cloud-flow-label">${esc(flowLabel)}</span>
+      </div>
+      <div class="cloud-canvas">
+        <div class="cloud-nodes">
+          ${nodes.map((n, k) => `
+            ${k ? `<div class="cloud-edge" data-k="${k}"><svg viewBox="0 0 100 24" preserveAspectRatio="none"><path class="cld-path" d="M0 12 H84"/><path class="cld-arrow" d="M78 5 L92 12 L78 19"/></svg></div>` : ""}
+            <div class="cloud-node ${n.hot ? "is-hot" : ""} ${n.bad ? "is-bad" : ""}" data-k="${k}">
+              <div class="cld-badge">${esc(n.k || `NODE ${k+1}`)}</div>
+              <div class="cld-icon-box"><span class="cld-icon">${esc(n.icon || "☁")}</span></div>
+              <div class="cld-title">${esc(n.t)}</div>
+              ${n.status ? `<div class="cld-status ${n.bad ? "is-bad" : "is-ok"}"><span class="cld-dot"></span>${esc(n.status)}</div>` : ""}
+              ${n.s ? `<div class="cld-sub">${esc(n.s)}</div>` : ""}
+            </div>
+          `).join("")}
+        </div>
+        <div class="cloud-bus-rail"><div class="cloud-packet"></div></div>
+      </div>
+      <div class="cloud-foot">
+        ${s.headline ? `<h2 class="cloud-title">${splitWords(s.headline)}</h2>` : ""}
+        ${s.subline ? `<p class="cloud-sub">${esc(s.subline)}</p>` : ""}
+      </div>
+    </div>`;
+  },
+
+  mascot(s) {
+    const expr = s.meta?.expression || "neutral";
+    const imgSrc = s.meta?.image || MASCOT_IMAGES[expr] || "";
+    const bubble = s.meta?.bubble || s.headline || "";
+    const badge = s.meta?.badge || "iDevak // ANALYSIS";
+    const stats = (s.meta?.stats || []).map(st => `
+      <div class="mst-item">
+        <span class="mst-lbl">${esc(st.label || "")}</span>
+        <span class="mst-val ${st.hot ? "is-hot" : ""}">${esc(st.val || "")}</span>
+      </div>
+    `).join("");
+
+    return `
+    <div class="mascot-stage">
+      <div class="mascot-left">
+        <div class="mascot-hud-frame">
+          <div class="mascot-hud-corner tl"></div>
+          <div class="mascot-hud-corner tr"></div>
+          <div class="mascot-hud-corner bl"></div>
+          <div class="mascot-hud-corner br"></div>
+          <div class="mascot-scanline"></div>
+          <img class="mascot-img" src="${imgSrc}" alt="${esc(expr)}" />
+          <div class="mascot-hud-tag">${esc(badge)}</div>
+          <div class="mascot-expr-badge">${esc(expr.toUpperCase())}</div>
+        </div>
+      </div>
+      <div class="mascot-right">
+        ${eyebrow(s)}
+        <div class="mascot-bubble-box">
+          <div class="mascot-bubble-arrow"></div>
+          <h2 class="mascot-bubble-text">${splitWords(bubble)}</h2>
+          ${s.subline ? `<div class="mascot-sub">${esc(s.subline)}</div>` : ""}
+        </div>
+        ${stats ? `<div class="mascot-stats-grid">${stats}</div>` : ""}
+      </div>
+    </div>`;
+  },
+
   outro(s) {
     const ghost = s.ghost || s.meta?.ghost || project.ghost || String(project.title || "").trim().split(/\s+/)[0].toUpperCase();
     const ctaK = s.meta?.cta || project.cta || "Subscribe";
@@ -397,7 +570,15 @@ ${CSS}
 </div>
 <script>
 window.__COMPOSITION_ID__ = ${JSON.stringify(compositionId)};
-window.__SCENES__ = ${JSON.stringify(scenes.map((s) => ({ start: s.start, end: s.end, type: s.type, accent: s.accent, variant: s.variant || 0 })))};
+window.__SCENES__ = ${JSON.stringify(scenes.map((s) => ({
+  start: s.start,
+  end: s.end,
+  type: s.type,
+  accent: s.accent,
+  variant: s.variant || 0,
+  punch: Boolean(s.meta?.punch || s.type === "meme"),
+  hasMascot: Boolean(s.mascot)
+})))};
 window.__TOTAL__ = ${total.toFixed(3)};
 ${JS}
 </script>
@@ -419,7 +600,3 @@ await fs.writeFile(path.resolve(ROOT, "index.html"), html, "utf8");
 await fs.writeFile(path.resolve(ROOT, "hyperframes.json"), JSON.stringify(meta, null, 2) + "\n", "utf8");
 console.log(`index.html written: ${scenes.length} scenes, ${total.toFixed(1)}s`);
 console.log(`hyperframes.json written: ${meta.name}`);
-
-
-
-

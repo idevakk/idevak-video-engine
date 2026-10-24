@@ -17,7 +17,7 @@ Read `engine/SCHEMA.md` before editing `content/video.json`. Read
    do not have to match the narration.
 3. Do not add TTS, generate a synthetic voice, or replace the user's audio.
    The user supplies the voiceover.
-4. Keep the existing design system and the 17 scene types. The look is the
+4. Keep the existing design system and the 21 scene types. The look is the
    product. Add a new type only when the story cannot be told with an existing
    one, and then add the renderer, CSS, animation, and schema together.
 5. One active video per clone. `content/video.json` is the source of truth.

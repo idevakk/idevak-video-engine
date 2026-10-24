@@ -608,3 +608,155 @@ size, timeline density, negative z-index background layers, and small mono
 labels are expected for this single-file timeline design. Do not split the
 composition into sub-compositions just to silence those warnings unless you are
 deliberately changing the engine.
+
+### webref
+
+A browser and documentation reference window with an address bar, SSL lock, document breadcrumbs, callout highlights, and simulated cursor.
+
+```json
+{
+  "type": "webref",
+  "narration": "According to the official AWS documentation, provisioned concurrency must be configured before cold starts can be eliminated.",
+  "eyebrow": "OFFICIAL SPEC",
+  "headline": "The Docs Explicitly Warned About This",
+  "subline": "Section 4.2 of the specification details the exact race condition.",
+  "meta": {
+    "url": "docs.aws.amazon.com/lambda/latest/dg/configuration-concurrency.html",
+    "badge": "AWS ARCHITECTURE DOCS",
+    "title": "Configuring provisioned concurrency for Lambda",
+    "snippet": [
+      "Allocating execution environments ahead of time prevents initialization latency during traffic spikes.",
+      "Failure to specify an upper bound can exhaust VPC subnet elastic network interfaces within seconds."
+    ],
+    "highlight": "exhaust VPC subnet elastic network interfaces",
+    "callout": "Subnet IP exhaustion causes all downstream Lambda invocations to fail immediately with Status 500.",
+    "calloutType": "WARNING"
+  }
+}
+```
+
+| Meta field | Type | Notes |
+|---|---|---|
+| `url` | string | Required. Web address displayed in the browser bar. |
+| `badge` | string | Optional category badge (e.g. `OFFICIAL DOCS`, `RFC-9110`, `CVE ADVISORY`). |
+| `title` | string | Optional document title. Defaults to scene headline. |
+| `snippet` | string \| string[] | Excerpt paragraphs from the documentation. |
+| `highlight` | string | Key substring to highlight with high-contrast accent border. |
+| `callout` | string | Highlighted alert box text. |
+| `calloutType` | string | `NOTE`, `IMPORTANT`, or `WARNING`. Defaults to `IMPORTANT`. |
+| `image` | string | Optional path to real screenshot image. If set, replaces the rendered HTML doc. |
+
+### meme
+
+A fast-paced, high-impact dev reaction card with comic recoil shake, glitch sweep, and punchline timing.
+
+```json
+{
+  "type": "meme",
+  "narration": "They pushed the hotfix directly to production on a Friday afternoon without testing.",
+  "eyebrow": "DEV REALITY",
+  "headline": "Works on My Machine",
+  "subline": "Famous last words before 48,000 requests timed out.",
+  "meta": {
+    "text": "PUSHED TO PROD ON FRIDAY",
+    "subtext": "What could possibly go wrong?",
+    "reaction": "SKILL ISSUE",
+    "expression": "shocked",
+    "punch": true
+  }
+}
+```
+
+| Meta field | Type | Notes |
+|---|---|---|
+| `text` | string | Bold meme reaction caption. |
+| `subtext` | string | Subtitle or sarcastic commentary. |
+| `reaction` | string | Tag line (e.g. `SKILL ISSUE`, `PAIN`, `WAIT WHAT`, `404 LOGIC`). |
+| `expression` | string | Mascot expression: `neutral`, `shocked`, `thinking`, `solved`. Defaults to `shocked`. |
+| `image` | string | Optional custom meme image path. Defaults to iDevak mascot with chosen expression. |
+| `punch` | boolean | Enables instant Fireship-style camera recoil punch zoom. |
+
+### cloud
+
+A cloud infrastructure and systems topology diagram with node cards, status badges, and animated data packet transmission.
+
+```json
+{
+  "type": "cloud",
+  "narration": "The API gateway forwards requests to an ARM64 Lambda, which queries Redis before hitting the Postgres cluster.",
+  "eyebrow": "INFRASTRUCTURE",
+  "headline": "The Microservice Pipeline",
+  "subline": "Latency spiked because the cache invalidation queue backed up.",
+  "meta": {
+    "flow": "INGRESS -> LAMBDA -> CACHE -> DB",
+    "nodes": [
+      { "k": "EDGE", "t": "Cloudflare CDN", "icon": "⚡", "status": "200 OK" },
+      { "k": "ROUTER", "t": "API Gateway", "icon": "🚪", "status": "HEALTHY" },
+      { "k": "COMPUTE", "t": "AWS Lambda", "icon": "λ", "status": "ACTIVE", "hot": true },
+      { "k": "CACHE", "t": "Redis Cluster", "icon": "⚡", "status": "HIT RATE 94%" },
+      { "k": "PRIMARY", "t": "Aurora Postgres", "icon": "🗄️", "status": "2.4ms" }
+    ]
+  }
+}
+```
+
+| Meta field | Type | Notes |
+|---|---|---|
+| `nodes` | object[] | 2-6 node items. Required fields: `t` (title). Optional: `k` (badge), `s` (sub), `icon`, `status`, `hot`, `bad`. |
+| `flow` | string | Subtitle describing the data pipeline or architecture. |
+
+### mascot
+
+A dedicated spotlight scene featuring Devak (the iDevak mascot) delivering a technical autopsy or summary.
+
+```json
+{
+  "type": "mascot",
+  "narration": "Always rotate your IAM keys, enforce least privilege, and never store secrets in environment variables.",
+  "eyebrow": "TAKEAWAY",
+  "headline": "The Golden Rule of Cloud Security",
+  "subline": "Three simple steps that would have prevented this entire incident.",
+  "meta": {
+    "expression": "solved",
+    "bubble": "Rotate your credentials before someone else does.",
+    "badge": "iDevak // CLOUD SECURITY",
+    "stats": [
+      { "label": "SEVERITY", "val": "CRITICAL", "hot": true },
+      { "label": "CVSS SCORE", "val": "9.8" },
+      { "label": "FIX TIME", "val": "< 5 MIN" }
+    ]
+  }
+}
+```
+
+| Meta field | Type | Notes |
+|---|---|---|
+| `expression` | string | Mascot expression: `neutral`, `shocked`, `thinking`, `solved`. Defaults to `neutral`. |
+| `bubble` | string | Speech balloon dialogue text. |
+| `badge` | string | HUD badge tag (e.g. `iDevak // ANALYSIS`). |
+| `stats` | object[] | Up to 4 telemetry chips with `label` and `val`, plus optional `hot: true`. |
+
+## Universal Mascot Overlay
+
+You can add the iDevak mascot as an expressive reaction overlay to **ANY** scene in your video:
+
+```json
+{
+  "type": "code",
+  "headline": "The Hardcoded Root Password",
+  "narration": "Looking closely at line 42, the developers literally left the password as admin123.",
+  "mascot": {
+    "expression": "shocked",
+    "bubble": "Wait, they really hardcoded this in production?!",
+    "position": "bottom-right"
+  },
+  "meta": { ... }
+}
+```
+
+| Field | Type | Description |
+|---|---|---|
+| `expression` | string | `neutral`, `shocked`, `thinking`, `solved`. |
+| `bubble` | string | Optional speech bubble text that pops up with the mascot. |
+| `position` | string | `bottom-right` (default) or `bottom-left`. |
+

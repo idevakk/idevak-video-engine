@@ -36,10 +36,15 @@ TYPES = {
     "quote",
     "matrix",
     "outro",
+    "webref",
+    "meme",
+    "cloud",
+    "mascot",
 }
 CODE_KINDS = {"code", "hot", "dim", "str", "com", "fn", "kw", "key", "err", "out"}
 DIFF_KINDS = {"ctx", "add", "del"}
 TERM_KINDS = {"cmd", "out", "err"}
+MASCOT_EXPRESSIONS = {"neutral", "shocked", "thinking", "solved"}
 HEX = re.compile(r"^#[0-9a-fA-F]{6}$")
 
 
@@ -153,7 +158,7 @@ def validate_scene(
         return
     where = f"{where} ({scene_type})"
 
-    headline_max = 180 if scene_type in {"quote", "code"} else 96
+    headline_max = 180 if scene_type in {"quote", "code", "webref", "mascot"} else 96
     headline = sfield(scene, "headline", where, errors, required=True, max_len=headline_max)
     narration = sfield(scene, "narration", where, errors, required=True)
     subline = sfield(scene, "subline", where, errors, max_len=180)
@@ -179,8 +184,22 @@ def validate_scene(
 
     sfield(scene, "ghost", where, errors)
 
+    # Universal Mascot overlay on any scene
+    if "mascot" in scene and scene["mascot"] is not None:
+        m = scene["mascot"]
+        if not isinstance(m, dict):
+            errors.append(f"{where}.mascot: must be an object")
+        else:
+            expr = m.get("expression")
+            if expr is not None and expr not in MASCOT_EXPRESSIONS:
+                warnings.append(f"{where}.mascot.expression: unknown {expr!r} (expected: {', '.join(sorted(MASCOT_EXPRESSIONS))})")
+            sfield(m, "bubble", f"{where}.mascot", errors, max_len=180)
+            pos = m.get("position")
+            if pos is not None and pos not in {"bottom-right", "bottom-left"}:
+                warnings.append(f"{where}.mascot.position: unknown {pos!r} (expected bottom-right or bottom-left)")
+
     if headline:
-        soft = 120 if scene_type == "quote" else 64
+        soft = 120 if scene_type in {"quote", "webref"} else 64
         if len(headline) > soft:
             warnings.append(f"{where}.headline: {len(headline)} chars; shorter reads better at 1920x1080")
     if subline and len(subline) > 120:
@@ -353,6 +372,49 @@ def validate_scene(
         for key in ("cta", "ctaSub", "ghost"):
             sfield(meta, key, where, errors)
 
+    elif scene_type == "webref":
+        sfield(meta, "url", where, errors, required=True)
+        sfield(meta, "badge", where, errors)
+        sfield(meta, "title", where, errors)
+        sfield(meta, "highlight", where, errors)
+        sfield(meta, "callout", where, errors)
+        sfield(meta, "calloutType", where, errors)
+        sfield(meta, "image", where, errors)
+        if "snippet" in meta and not isinstance(meta["snippet"], (str, list)):
+            errors.append(f"{where}.meta.snippet: must be a string or list of strings")
+
+    elif scene_type == "meme":
+        sfield(meta, "text", where, errors)
+        sfield(meta, "subtext", where, errors)
+        sfield(meta, "reaction", where, errors)
+        expr = sfield(meta, "expression", where, errors)
+        if expr and expr not in MASCOT_EXPRESSIONS:
+            warnings.append(f"{where}.meta.expression: {expr!r} (expected: {', '.join(sorted(MASCOT_EXPRESSIONS))})")
+        sfield(meta, "image", where, errors)
+        if "punch" in meta and not isinstance(meta["punch"], bool):
+            errors.append(f"{where}.meta.punch: must be a boolean")
+
+    elif scene_type == "cloud":
+        nodes = listfield(meta, "nodes", where, errors, required=True, lo=2, hi=6)
+        items = check_items(nodes, f"{where}.meta.nodes", errors, ("t",), ("k", "s", "status", "icon"))
+        for k, item in enumerate(items):
+            for bkey in ("hot", "bad"):
+                if bkey in item and not isinstance(item[bkey], bool):
+                    errors.append(f"{where}.meta.nodes[{k}].{bkey}: must be a boolean")
+        sfield(meta, "flow", where, errors)
+        sfield(meta, "topology", where, errors)
+
+    elif scene_type == "mascot":
+        expr = sfield(meta, "expression", where, errors)
+        if expr and expr not in MASCOT_EXPRESSIONS:
+            warnings.append(f"{where}.meta.expression: {expr!r} (expected: {', '.join(sorted(MASCOT_EXPRESSIONS))})")
+        sfield(meta, "bubble", where, errors)
+        sfield(meta, "badge", where, errors)
+        sfield(meta, "image", where, errors)
+        if "stats" in meta:
+            st_list = listfield(meta, "stats", where, errors, hi=4)
+            check_items(st_list, f"{where}.meta.stats", errors, ("label", "val"), ("hot",))
+
 
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
@@ -420,52 +482,44 @@ def main() -> None:
             errors.append(f"{where}: must be an object")
             continue
         act_id = sfield(act, "id", where, errors, required=True)
-        if act_id:
-            if act_id in acts:
-                errors.append(f"{where}.id: duplicate {act_id!r}")
-            acts[act_id] = act
         sfield(act, "name", where, errors)
         if "accent" in act:
             accent = act["accent"]
             if not isinstance(accent, str) or not HEX.match(accent):
                 errors.append(f"{where}.accent: must be a #rrggbb string")
+        if act_id:
+            if act_id in acts:
+                errors.append(f"{where}.id: duplicate act id {act_id!r}")
+            acts[act_id] = act
 
     scenes = data.get("scenes")
     if not isinstance(scenes, list) or not scenes:
-        errors.append("video.scenes: must be a non-empty array")
+        errors.append("video.scenes: required non-empty array")
         scenes = []
 
-    seen_ids: dict[str, int] = {}
-    type_counts = Counter()
+    type_counts: Counter[str] = Counter()
     total_words = 0
     top_channel = data.get("channel") or ""
     top_ghost = data.get("ghost") or ""
+
     for i, scene in enumerate(scenes):
         if not isinstance(scene, dict):
-            errors.append(f"scene {i + 1}: must be an object")
+            errors.append(f"scenes[{i}]: must be an object")
             continue
-        scene_id = scene.get("id")
-        if isinstance(scene_id, str) and scene_id:
-            if scene_id in seen_ids:
-                errors.append(f"scene {i + 1}.id: duplicate {scene_id!r} (also scene {seen_ids[scene_id]})")
-            seen_ids[scene_id] = i + 1
-        scene_type = scene.get("type")
-        if scene_type in TYPES:
-            type_counts[scene_type] += 1
-        narration = scene.get("narration")
-        if isinstance(narration, str):
-            total_words += len(re.findall(r"\S+", narration))
+        stype = scene.get("type")
+        if stype in TYPES:
+            type_counts[stype] += 1
+        narr = scene.get("narration") or ""
+        total_words += len(re.findall(r"\S+", narr))
         validate_scene(scene, i, acts, top_channel, top_ghost, errors, warnings)
 
     if scenes:
-        if scenes[0].get("type") != "cold":
-            warnings.append("scene 1: start with a cold open so frame 0 reads as a title card")
-        if scenes[-1].get("type") != "outro":
-            warnings.append(f"scene {len(scenes)}: end with an outro")
-    if total_words < 30:
-        warnings.append(f"video: only {total_words} narration words; this is a very short video")
-    if total_words > 4000:
-        warnings.append(f"video: {total_words} narration words; this is a very long video")
+        first = scenes[0]
+        if isinstance(first, dict) and first.get("type") != "cold":
+            warnings.append("video.scenes[0]: the first scene is usually 'cold'")
+        last = scenes[-1]
+        if isinstance(last, dict) and last.get("type") != "outro":
+            warnings.append(f"video.scenes[{len(scenes) - 1}]: the last scene is usually 'outro'")
 
     print(f"[validate] {path}")
     print(f"[validate] {len(scenes)} scenes, {len(acts)} acts, {total_words} narration words")

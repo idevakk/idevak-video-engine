@@ -339,6 +339,85 @@
       if (el.querySelector(".mx-count")) fade(el.querySelector(".mx-count"), at + 0.9, { dur: 0.6 });
     },
 
+    webref: function (el, s, at, dur) {
+      fade(el.querySelector(".eyebrow"), at, { y: 12, dur: 0.55 });
+      var shell = el.querySelector(".web-shell");
+      if (shell) {
+        tl.fromTo(shell, { y: 35, opacity: 0, scale: 0.96 }, { y: 0, opacity: 1, scale: 1, duration: 0.75, ease: E.expo }, at + 0.05);
+      }
+      var ps = q(el, ".web-p");
+      if (ps.length) {
+        tl.fromTo(ps, { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.6, stagger: 0.1, ease: E.soft }, at + 0.25);
+      }
+      var callout = el.querySelector(".web-callout");
+      if (callout) {
+        tl.fromTo(callout, { opacity: 0, scale: 0.94, x: -10 }, { opacity: 1, scale: 1, x: 0, duration: 0.65, ease: "back.out(1.4)" }, at + 0.45);
+      }
+      var cursor = el.querySelector(".web-cursor");
+      if (cursor) {
+        tl.fromTo(cursor, { opacity: 0, x: 120, y: 80 }, { opacity: 1, x: 0, y: 0, duration: 1.1, ease: "power2.out" }, at + 0.35);
+        tl.to(cursor, { scale: 0.82, duration: 0.16, ease: "power2.inOut", yoyo: true, repeat: 1 }, at + 1.2);
+      }
+      words(el.querySelector(".web-foot-title"), at + 0.2, { stagger: 0.04, dur: 0.8 });
+      if (el.querySelector(".web-foot-sub")) fade(el.querySelector(".web-foot-sub"), at + 0.6, { dur: 0.65 });
+    },
+
+    meme: function (el, s, at, dur) {
+      amb(el.querySelector(".meme-ghost"), dur, at);
+      fade(el.querySelector(".meme-badge"), at, { y: 10, dur: 0.4 });
+      var card = el.querySelector(".meme-card");
+      if (card) {
+        tl.fromTo(card, { scale: 0.82, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.42, ease: "back.out(1.6)" }, at + 0.05);
+      }
+      var stage = el.querySelector(".meme-stage");
+      if (stage) {
+        /* Fireship comic impact shake */
+        tl.to(stage, { x: -8, y: 4, duration: 0.06, ease: "power1.inOut" }, at + 0.08);
+        tl.to(stage, { x: 7, y: -5, duration: 0.06, ease: "power1.inOut" }, at + 0.14);
+        tl.to(stage, { x: -4, y: 2, duration: 0.06, ease: "power1.inOut" }, at + 0.20);
+        tl.to(stage, { x: 0, y: 0, duration: 0.08, ease: "power1.out" }, at + 0.26);
+      }
+      var glitch = el.querySelector(".meme-glitch-bar");
+      if (glitch) {
+        tl.fromTo(glitch, { y: 0, opacity: 0 }, { y: 340, opacity: 0.8, duration: 0.7, ease: "none", repeat: rep(dur, 0.7) }, at + 0.1);
+      }
+      words(el.querySelector(".meme-caption"), at + 0.18, { stagger: 0.038, dur: 0.65 });
+      if (el.querySelector(".meme-sub")) fade(el.querySelector(".meme-sub"), at + 0.5, { dur: 0.6 });
+    },
+
+    cloud: function (el, s, at, dur) {
+      fade(el.querySelector(".eyebrow"), at, { y: 12, dur: 0.55 });
+      fade(el.querySelector(".cloud-header"), at + 0.05, { y: 10, dur: 0.5 });
+      var nodes = q(el, ".cloud-node");
+      tl.fromTo(nodes, { y: 30, opacity: 0, scale: 0.92 }, { y: 0, opacity: 1, scale: 1, duration: 0.6, stagger: 0.12, ease: E.expo }, at + 0.15);
+      var paths = q(el, ".cld-path");
+      draw(paths, at + 0.35, { stagger: 0.15, dur: 0.6 });
+      var packet = el.querySelector(".cloud-packet");
+      if (packet) {
+        tl.fromTo(packet, { x: 0 }, { x: 1540, duration: 1.8, ease: "none", repeat: rep(dur, 1.8) }, at + 0.4);
+      }
+      words(el.querySelector(".cloud-title"), at + 0.2, { stagger: 0.038, dur: 0.8 });
+      if (el.querySelector(".cloud-sub")) fade(el.querySelector(".cloud-sub"), at + 0.6, { dur: 0.65 });
+    },
+
+    mascot: function (el, s, at, dur) {
+      var hud = el.querySelector(".mascot-hud-frame");
+      if (hud) {
+        tl.fromTo(hud, { x: -40, opacity: 0, scale: 0.92 }, { x: 0, opacity: 1, scale: 1, duration: 0.85, ease: E.expo }, at + 0.05);
+        tl.to(hud, { y: -8, duration: 2.2, ease: "sine.inOut", yoyo: true, repeat: rep(dur, 4.4) }, at + 0.8);
+      }
+      var bubble = el.querySelector(".mascot-bubble-box");
+      if (bubble) {
+        tl.fromTo(bubble, { scale: 0.88, opacity: 0, x: 20 }, { scale: 1, opacity: 1, x: 0, duration: 0.6, ease: "back.out(1.4)" }, at + 0.2);
+      }
+      words(el.querySelector(".mascot-bubble-text"), at + 0.3, { stagger: 0.04, dur: 0.75 });
+      if (el.querySelector(".mascot-sub")) fade(el.querySelector(".mascot-sub"), at + 0.65, { dur: 0.65 });
+      var statItems = q(el, ".mst-item");
+      if (statItems.length) {
+        tl.fromTo(statItems, { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.5, stagger: 0.08, ease: E.soft }, at + 0.6);
+      }
+    },
+
     outro: function (el, s, at, dur) {
       tl.fromTo(el.querySelector(".out-ghost"), { opacity: 0, scale: 1.08, x: 40 }, { opacity: 1, scale: 1, x: 0, duration: 2.2, ease: E.expo }, at);
       fade(el.querySelector(".eyebrow"), at, { y: 12, dur: 0.55 });
@@ -363,6 +442,25 @@
 
     /* slow camera push keeps every frame alive */
     tl.fromTo(el.querySelector(".sc-in"), { scale: 1 }, { scale: 1.014, duration: Math.max(1, dur), ease: "none" }, at);
+
+    /* Fireship punch zoom on punch beats */
+    if (s.punch) {
+      tl.fromTo(el.querySelector(".sc-in"), { scale: 1.05 }, { scale: 1.014, duration: 0.38, ease: "power4.out" }, at);
+    }
+
+    /* Universal Mascot Overlay */
+    var mOv = el.querySelector(".m-ov");
+    if (mOv) {
+      tl.fromTo(mOv, { y: 60, opacity: 0, scale: 0.8 }, { y: 0, opacity: 1, scale: 1, duration: 0.5, ease: "back.out(1.5)" }, at + 0.15);
+      var mBubble = mOv.querySelector(".m-ov-bubble");
+      if (mBubble) {
+        tl.fromTo(mBubble, { scale: 0.85, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.4, ease: "back.out(1.3)" }, at + 0.3);
+      }
+      var mRing = mOv.querySelector(".m-ov-ring");
+      if (mRing) {
+        tl.to(mRing, { opacity: 0.8, scale: 1.08, duration: 0.7, ease: "sine.inOut", yoyo: true, repeat: rep(dur, 1.4) }, at + 0.2);
+      }
+    }
 
     /* cut rail rhythm - every scene, subtler on minor beats */
     rail(at, i % 6 === 0 ? 0.72 : 0.38);
@@ -390,6 +488,3 @@
   window.__timelines = window.__timelines || {};
   window.__timelines["__COMPOSITION_ID__"] = tl;
 })();
-
-
-

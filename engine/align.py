@@ -7,6 +7,7 @@ contiguous visual window.
 
 Usage:
     python engine/align.py
+    python engine/align.py --draft
     python engine/align.py content/video.json build/vo.json
 
 Outputs:
@@ -138,13 +139,9 @@ def normalize_meta(scene: dict) -> dict:
         dec = int(st.get("dec", 0))
         sep = bool(st.get("sep"))
         if dec:
-            display = f"{to:,.{dec}f}" if sep else f"{to:.{dec}f}"
+            meta["display"] = f"{to:.{dec}f}"
         else:
-            display = f"{int(round(to)):,}" if sep else str(int(round(to)))
-        meta["display"] = display
-
-    if "value" not in meta:
-        meta["value"] = meta["display"]
+            meta["display"] = f"{to:,.0f}" if sep else f"{int(round(to))}"
     return meta
 
 
@@ -156,37 +153,47 @@ def apply_timing(
     min_gap: float,
     min_duration: float,
 ) -> float:
-    designed: list[str] = []
-    offsets: list[int] = []
-    acc = 0
-    for row in rows:
-        ws = norm_words(row.get("narration", ""))
-        row["_nw"] = len(ws)
-        offsets.append(acc)
-        acc += len(ws)
-        designed.extend(ws)
+    designed_tokens: list[str] = []
+    token_to_scene: list[int] = []
+    for k, row in enumerate(rows):
+        words = norm_words(row["narration"])
+        row["_nw"] = len(words)
+        for w in words:
+            designed_tokens.append(w)
+            token_to_scene.append(k)
 
-    transcript = [norm(w.get("w", "")) for w in tw]
-    if designed:
-        mapping, cost = align_words(designed, transcript)
-    else:
-        mapping, cost = {}, 0.0
+    transcript_tokens = [norm(w.get("w", "")) for w in tw]
+    mapping, cost = align_words(designed_tokens, transcript_tokens)
 
-    for row, off in zip(rows, offsets):
-        idxs = [mapping.get(off + k) for k in range(row["_nw"])]
-        idxs = [x for x in idxs if x is not None]
-        row["_matched"] = len(idxs)
-        if idxs:
-            row["_start"] = tw[idxs[0]]["s"]
-            row["_end"] = tw[idxs[-1]]["e"]
+    scene_hits: dict[int, list[dict]] = {k: [] for k in range(len(rows))}
+    for d_idx, t_idx in mapping.items():
+        if t_idx < len(tw):
+            s_idx = token_to_scene[d_idx]
+            scene_hits[s_idx].append(tw[t_idx])
+
+    for k, row in enumerate(rows):
+        hits = scene_hits[k]
+        row["_matched"] = len(hits)
+        if hits:
+            row["_start"] = min(h.get("s", 0.0) for h in hits)
+            row["_end"] = max(h.get("e", 0.0) for h in hits)
         else:
-            row["_start"] = row["_end"] = None
+            row["_start"] = None
+            row["_end"] = None
 
     for k, row in enumerate(rows):
         if row["_start"] is None:
-            prev_end = next((x["_end"] for x in reversed(rows[:k]) if x["_end"] is not None), 0.0)
-            next_start = next((x["_start"] for x in rows[k + 1 :] if x["_start"] is not None), audio_end)
-            row["_start"] = prev_end
+            prev_end = 0.0
+            for j in range(k - 1, -1, -1):
+                if rows[j]["_end"] is not None:
+                    prev_end = rows[j]["_end"]
+                    break
+            next_start = audio_end
+            for j in range(k + 1, len(rows)):
+                if rows[j]["_start"] is not None:
+                    next_start = rows[j]["_start"]
+                    break
+            row["_start"] = prev_end + 0.05
             row["_end"] = max(prev_end + 0.4, next_start)
 
     for k, row in enumerate(rows):
@@ -212,6 +219,7 @@ def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("project", nargs="?", default=str(DEFAULT_PROJECT))
     ap.add_argument("vo", nargs="?", default=str(DEFAULT_VO))
+    ap.add_argument("--draft", action="store_true", help="estimate timings from script word counts for fast preview")
     ap.add_argument("--out-dir", default=str(DEFAULT_OUT))
     ap.add_argument("--lead-in", type=float, default=0.3, help="visual lead before the first word")
     ap.add_argument("--min-gap", type=float, default=0.6, help="minimum time between scene starts")
@@ -222,20 +230,10 @@ def main() -> None:
     vo_path = resolve(args.vo)
     out_dir = resolve(args.out_dir)
     video = load_json(project_path)
-    vo = load_json(vo_path)
 
     scenes = video.get("scenes")
     if not isinstance(scenes, list) or not scenes:
         raise SystemExit("content/video.json needs a non-empty 'scenes' array")
-
-    tw = [w for seg in vo.get("segments", []) for w in seg.get("words", [])]
-    tw.sort(key=lambda w: w.get("s", 0))
-    if not tw:
-        raise SystemExit("build/vo.json has no word timings. Run engine/transcribe.py first.")
-
-    audio_end = float(vo.get("duration") or tw[-1].get("e", 0.0))
-    if audio_end <= 0:
-        raise SystemExit("could not determine the voiceover duration from build/vo.json")
 
     acts = {}
     for act in video.get("acts") or []:
@@ -267,11 +265,44 @@ def main() -> None:
                 "ghost": scene.get("ghost") or meta.get("ghost") or "",
                 "meta": meta,
                 "narration": scene.get("narration") or "",
+                "mascot": scene.get("mascot"),
             }
         )
 
-    cost = apply_timing(rows, tw, audio_end, args.lead_in, args.min_gap, args.min_duration)
-    total = rows[-1]["end"]
+    # Draft / Synthetic timing mode
+    is_draft = args.draft or not vo_path.exists()
+    if is_draft:
+        curr_t = 0.0
+        for row in rows:
+            nw = len(norm_words(row["narration"]))
+            row["_nw"] = nw
+            row["_matched"] = nw
+            dur = max(2.2, 0.4 + (nw * 0.38))
+            row["start"] = round(curr_t, 3)
+            curr_t += dur
+            row["end"] = round(curr_t, 3)
+        audio_end = curr_t
+        cost = 0.0
+        total = curr_t
+        matched = sum(r["_matched"] for r in rows)
+        designed = matched
+        pct = 100.0
+    else:
+        vo = load_json(vo_path)
+        tw = [w for seg in vo.get("segments", []) for w in seg.get("words", [])]
+        tw.sort(key=lambda w: w.get("s", 0))
+        if not tw:
+            raise SystemExit("build/vo.json has no word timings. Run engine/transcribe.py first.")
+
+        audio_end = float(vo.get("duration") or tw[-1].get("e", 0.0))
+        if audio_end <= 0:
+            raise SystemExit("could not determine the voiceover duration from build/vo.json")
+
+        cost = apply_timing(rows, tw, audio_end, args.lead_in, args.min_gap, args.min_duration)
+        total = rows[-1]["end"]
+        matched = sum(r.get("_matched", 0) for r in rows)
+        designed = sum(r.get("_nw", 0) for r in rows)
+        pct = (100.0 * matched / designed) if designed else 0.0
 
     out_scenes = []
     for row in rows:
@@ -291,6 +322,7 @@ def main() -> None:
                 "ghost": row["ghost"],
                 "meta": row["meta"],
                 "narration": row["narration"],
+                "mascot": row["mascot"],
             }
         )
 
@@ -316,9 +348,6 @@ def main() -> None:
     (out_dir / "project.json").write_text(json.dumps(project, indent=1, ensure_ascii=False), encoding="utf-8")
 
     no_match = [r for r in rows if r.get("_matched", 0) == 0]
-    matched = sum(r.get("_matched", 0) for r in rows)
-    designed = sum(r.get("_nw", 0) for r in rows)
-    pct = (100.0 * matched / designed) if designed else 0.0
     short = [r for r in rows if r["end"] - r["start"] < 2.0]
     long = [r for r in rows if r["end"] - r["start"] > 15.0]
     weak = [r for r in rows if r.get("_nw", 0) >= 4 and r.get("_matched", 0) / max(1, r["_nw"]) < 0.5]
@@ -326,8 +355,9 @@ def main() -> None:
     def cell(value) -> str:
         return str(value).replace("|", "\\|").replace("\n", " ")
 
+    mode_label = "DRAFT ESTIMATE" if is_draft else "ALIGNMENT"
     report = [
-        f"# {project['title']}",
+        f"# {project['title']} ({mode_label})",
         "",
         f"- Audio: `{project['audio']}`",
         f"- Audio duration: {audio_end:.1f}s",
@@ -367,7 +397,7 @@ def main() -> None:
         report.append("- None")
     (out_dir / "report.md").write_text("\n".join(report) + "\n", encoding="utf-8")
 
-    print(f"[align] {len(out_scenes)} scenes, audio {audio_end:.1f}s, video {total:.1f}s")
+    print(f"[align] {len(out_scenes)} scenes, audio {audio_end:.1f}s, video {total:.1f}s ({mode_label})")
     print(f"[align] matched {matched}/{designed} script words ({pct:.1f}%), cost {cost:.1f}")
     if no_match:
         print(f"[align] WARNING: no matched words in scenes {', '.join(str(r['index']) for r in no_match)}")

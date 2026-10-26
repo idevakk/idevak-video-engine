@@ -59,6 +59,94 @@ body{width:var(--composition-width,1920px);height:var(--composition-height,1080p
 .ln{display:block;overflow:hidden;padding-bottom:.04em}
 .lni{display:block}
 
+/* ============================================================ forensic redactions & live highlighter */
+.hl-marker {
+  position: relative;
+  display: inline-block;
+  vertical-align: baseline;
+  z-index: 2;
+  white-space: nowrap;
+}
+.hl-ink {
+  position: absolute;
+  top: 8%;
+  bottom: 6%;
+  left: -8px;
+  right: -8px;
+  background: linear-gradient(100deg, rgba(250, 204, 21, 0.40) 0%, rgba(253, 224, 71, 0.52) 70%, rgba(250, 204, 21, 0.38) 100%);
+  border-radius: 4px 6px 3px 5px;
+  transform: skewX(-5deg);
+  transform-origin: left center;
+  pointer-events: none;
+  z-index: -1;
+  filter: drop-shadow(0 0 14px rgba(250, 204, 21, 0.35));
+}
+.sc[style*="--ac"] .hl-ink {
+  background: linear-gradient(100deg, color-mix(in srgb, var(--ac) 45%, transparent) 0%, color-mix(in srgb, var(--ac) 60%, transparent) 75%, color-mix(in srgb, var(--ac) 40%, transparent) 100%);
+  filter: drop-shadow(0 0 16px color-mix(in srgb, var(--ac) 45%, transparent));
+}
+.hl-text {
+  position: relative;
+  z-index: 1;
+}
+
+.forensic-redact {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  vertical-align: baseline;
+  padding: 0 4px;
+  margin: 0 2px;
+  overflow: visible;
+}
+.redact-tape {
+  position: absolute;
+  inset: -3px -6px -3px -6px;
+  background: repeating-linear-gradient(
+    -45deg,
+    #090a0f,
+    #090a0f 8px,
+    #131722 8px,
+    #131722 16px
+  );
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 3px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  transform-origin: right center;
+  z-index: 4;
+  overflow: hidden;
+}
+.redact-tape::before {
+  content: "REDACTED";
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  color: rgba(255, 255, 255, 0.42);
+  white-space: nowrap;
+  pointer-events: none;
+  padding: 0 6px;
+}
+.redact-laser {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--ac);
+  box-shadow: 0 0 12px var(--ac), 0 0 24px var(--ac);
+}
+.redact-text {
+  position: relative;
+  z-index: 2;
+  transition: filter 0.25s ease-out;
+}
+
 /* ============================================================ cold */
 .cold-wrap{position:absolute;inset:0;padding:0 128px;display:flex;flex-direction:column;justify-content:center}
 .cold-ghost{position:absolute;right:-20px;top:262px;font-size:560px;font-weight:900;

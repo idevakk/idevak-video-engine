@@ -74,12 +74,54 @@ function renderMascotOverlay(mascot) {
 }
 
 // ---------------------------------------------------------------- copy helpers
-function splitWords(text) {
+function splitWordsOnly(text) {
   return String(text)
     .split(/\s+/)
     .filter(Boolean)
     .map((w) => `<span class="w"><span class="wi">${esc(w)}</span></span>`)
     .join(" ");
+}
+
+function splitWords(text, s = null) {
+  if (!text) return "";
+  let str = String(text);
+
+  // Auto-apply s.meta.highlight or s.meta.redact if present
+  const hl = s?.meta?.highlight;
+  const red = s?.meta?.redact;
+  if (red) {
+    const redArr = Array.isArray(red) ? red : [red];
+    for (const r of redArr) {
+      if (r && str.includes(r) && !str.includes(`~~${r}~~`)) {
+        str = str.replace(r, `~~${r}~~`);
+      }
+    }
+  }
+  if (hl) {
+    const hlArr = Array.isArray(hl) ? hl : [hl];
+    for (const h of hlArr) {
+      if (h && str.includes(h) && !str.includes(`==${h}==`)) {
+        str = str.replace(h, `==${h}==`);
+      }
+    }
+  }
+
+  if (!str.includes("==") && !str.includes("~~")) {
+    return splitWordsOnly(str);
+  }
+
+  const parts = str.split(/(==.*?==|~~.*?~~)/g);
+  return parts.map(part => {
+    if (part.startsWith("==") && part.endsWith("==") && part.length > 4) {
+      const inner = part.slice(2, -2);
+      return `<span class="hl-marker is-live-hl" data-hl="${esc(inner)}"><span class="hl-ink"></span><span class="hl-text">${splitWordsOnly(inner)}</span></span>`;
+    } else if (part.startsWith("~~") && part.endsWith("~~") && part.length > 4) {
+      const inner = part.slice(2, -2);
+      return `<span class="forensic-redact is-live-redact" data-redact="${esc(inner)}"><span class="redact-tape"><span class="redact-laser"></span></span><span class="redact-text">${splitWordsOnly(inner)}</span></span>`;
+    } else {
+      return splitWordsOnly(part);
+    }
+  }).join(" ");
 }
 
 // ---------------------------------------------------------------- scene render
@@ -111,7 +153,7 @@ const RENDER = {
       <div class="cold-ghost" data-layout-allow-overflow>${esc(ghost)}</div>
       <div class="cold-rule"></div>
       ${s.eyebrow ? `<div class="cold-eyebrow">${esc(s.eyebrow)}</div>` : ""}
-      <h1 class="cold-title">${splitWords(s.headline)}</h1>
+      <h1 class="cold-title">${splitWords(s.headline, s)}</h1>
       <div class="cold-sub">${esc(s.subline || "")}</div>
       <div class="cold-meta">
         ${(s.meta?.chips || []).map((c, k) => `<span class="chip" data-k="${k}">${esc(c)}</span>`).join("")}
@@ -125,7 +167,7 @@ const RENDER = {
     <div class="hero-grid">
       <div class="hero-left">
         ${eyebrow(s)}
-        <h2 class="hero-title">${splitWords(s.headline)}</h2>
+        <h2 class="hero-title">${splitWords(s.headline, s)}</h2>
         ${s.subline ? `<p class="hero-sub">${esc(s.subline)}</p>` : ""}
       </div>
       <div class="hero-right">
@@ -142,7 +184,7 @@ const RENDER = {
     <div class="stat-wrap">
       ${s.meta?.ghost ? `<div class="st-ghost">${esc(s.meta.ghost)}</div>` : ""}
       ${eyebrow(s)}
-      <h2 class="statement ${wide ? "statement-sm" : ""}">${splitWords(s.headline)}</h2>
+      <h2 class="statement ${wide ? "statement-sm" : ""}">${splitWords(s.headline, s)}</h2>
       ${s.subline ? `<div class="st-sub">${esc(s.subline)}</div>` : ""}
       <div class="st-tickrow"><span></span><span></span><span></span></div>
     </div>`;
@@ -185,7 +227,7 @@ const RENDER = {
       </div>
       <div class="dl-right">
         ${eyebrow(s)}
-        <h2 class="dl-title">${splitWords(s.headline)}</h2>
+        <h2 class="dl-title">${splitWords(s.headline, s)}</h2>
         ${s.subline ? `<p class="dl-sub">${esc(s.subline)}</p>` : ""}
       </div>
     </div>
@@ -196,14 +238,25 @@ const RENDER = {
     const rawLines = s.meta?.lines || [];
     const lines = rawLines.map((l, k) => {
       const cls = ["cl", l.key ? "is-key" : "", l.cls ? `cl-${l.cls}` : ""].filter(Boolean).join(" ");
-      return `<div class="${cls}" data-k="${k}"><span class="cl-n">${l.n ?? k + 1}</span><span class="cl-c">${tok(l.c)}</span></div>`;
+      let content = tok(l.c);
+      if (l.redact || content.includes("~~")) {
+        if (l.redact && !content.includes("~~")) {
+          content = `<span class="forensic-redact is-live-redact" data-redact="${esc(l.c)}"><span class="redact-tape"><span class="redact-laser"></span></span><span class="redact-text">${content}</span></span>`;
+        } else {
+          content = content.replace(/~~(.*?)~~/g, (_, inner) => `<span class="forensic-redact is-live-redact" data-redact="${esc(inner)}"><span class="redact-tape"><span class="redact-laser"></span></span><span class="redact-text">${inner}</span></span>`);
+        }
+      }
+      if (l.hl || content.includes("==")) {
+        content = content.replace(/==(.*?)==/g, (_, inner) => `<span class="hl-marker is-live-hl" data-hl="${esc(inner)}"><span class="hl-ink"></span><span class="hl-text">${inner}</span></span>`);
+      }
+      return `<div class="${cls}" data-k="${k}"><span class="cl-n">${l.n ?? k + 1}</span><span class="cl-c">${content}</span></div>`;
     });
     const callout = s.meta?.announce || s.headline || s.subline || "";
     const sub = callout === s.subline ? "" : (s.subline || "");
     const file = s.meta?.file || "source";
     const tag = s.meta?.tag || "";
     const foot = callout || sub
-      ? `<div class="code-foot">${callout ? `<div class="code-callout">${esc(callout)}</div>` : ""}${sub ? `<div class="code-sub">${esc(sub)}</div>` : ""}</div>`
+      ? `<div class="code-foot">${callout ? `<div class="code-callout">${splitWords(callout, s)}</div>` : ""}${sub ? `<div class="code-sub">${esc(sub)}</div>` : ""}</div>`
       : "";
     return `
     ${eyebrow(s)}
@@ -283,7 +336,7 @@ const RENDER = {
       </div>
       <div class="lg-right">
         ${eyebrow(s)}
-        <h2 class="lg-title">${splitWords(s.headline)}</h2>
+        <h2 class="lg-title">${splitWords(s.headline, s)}</h2>
         ${s.subline ? `<p class="lg-sub">${esc(s.subline)}</p>` : ""}
         ${points.map((p, k) => `<div class="lg-pt" data-k="${k}"><span class="lg-dash"></span><span>${esc(p)}</span></div>`).join("")}
       </div>
@@ -316,7 +369,7 @@ const RENDER = {
       </div>
     </div>
     <div class="mem-side">
-      <h2 class="mem-title">${splitWords(s.headline)}</h2>
+      <h2 class="mem-title">${splitWords(s.headline, s)}</h2>
       ${s.subline ? `<p class="mem-sub">${esc(s.subline)}</p>` : ""}
     </div>`;
   },
@@ -325,7 +378,7 @@ const RENDER = {
     const events = s.meta?.events || [];
     return `
     ${eyebrow(s)}
-    <h2 class="tl-head">${splitWords(s.headline)}</h2>
+    <h2 class="tl-head">${splitWords(s.headline, s)}</h2>
     <div class="tl-stage">
       <div class="tl-line"><div class="tl-line-fill"></div></div>
       <div class="tl-play"></div>
@@ -350,9 +403,16 @@ const RENDER = {
     const rawLines = s.meta?.lines || [];
     const lines = rawLines.map((l, k) => {
       const kind = l.kind || (l.cmd ? "cmd" : l.err ? "err" : l.ok ? "ok" : "out");
-      const text = l.t ?? l.cmd ?? l.text ?? "";
+      let text = l.t ?? l.cmd ?? l.text ?? "";
       const pfx = kind === "cmd" ? "$" : ">";
-      return `<div class="tm-line tm-${kind}" data-k="${k}"><span class="tm-p">${pfx}</span><span class="tm-t">${tok(text)}</span></div>`;
+      let renderedText = tok(text);
+      if (l.redact || renderedText.includes("~~")) {
+        renderedText = renderedText.replace(/~~(.*?)~~/g, (_, inner) => `<span class="forensic-redact is-live-redact" data-redact="${esc(inner)}"><span class="redact-tape"><span class="redact-laser"></span></span><span class="redact-text">${inner}</span></span>`);
+      }
+      if (l.hl || renderedText.includes("==")) {
+        renderedText = renderedText.replace(/==(.*?)==/g, (_, inner) => `<span class="hl-marker is-live-hl" data-hl="${esc(inner)}"><span class="hl-ink"></span><span class="hl-text">${inner}</span></span>`);
+      }
+      return `<div class="tm-line tm-${kind}" data-k="${k}"><span class="tm-p">${pfx}</span><span class="tm-t">${renderedText}</span></div>`;
     });
     const title = s.headline || s.meta?.title || "";
     const sub = s.subline || s.meta?.sub || "";
@@ -368,7 +428,7 @@ const RENDER = {
         <span class="tm-cursor"></span>
       </div>
     </div>
-    ${title || sub ? `<div class="tm-foot">${title ? `<div class="tm-title">${esc(title)}</div>` : ""}${sub ? `<div class="tm-sub">${esc(sub)}</div>` : ""}</div>` : ""}`;
+    ${title || sub ? `<div class="tm-foot">${title ? `<div class="tm-title">${splitWords(title, s)}</div>` : ""}${sub ? `<div class="tm-sub">${esc(sub)}</div>` : ""}</div>` : ""}`;
   },
 
   compare(s) {
@@ -401,7 +461,7 @@ const RENDER = {
     <div class="stk-grid">
       <div class="stk-left">
         ${eyebrow(s)}
-        <h2 class="stk-title">${splitWords(s.headline)}</h2>
+        <h2 class="stk-title">${splitWords(s.headline, s)}</h2>
         ${s.subline ? `<p class="stk-sub">${esc(s.subline)}</p>` : ""}
       </div>
       <div class="stk-right">
@@ -425,7 +485,7 @@ const RENDER = {
     <div class="q-stage">
       <div class="q-mark">&ldquo;</div>
       ${eyebrow(s)}
-      <blockquote class="q-text">${splitWords(s.headline)}</blockquote>
+      <blockquote class="q-text">${splitWords(s.headline, s)}</blockquote>
       <div class="q-by">${esc(s.subline || "")}</div>
       <div class="q-line"></div>
     </div>`;
@@ -438,7 +498,7 @@ const RENDER = {
     <div class="mx-grid">
       <div class="mx-left">
         ${eyebrow(s)}
-        <h2 class="mx-title">${splitWords(s.headline)}</h2>
+        <h2 class="mx-title">${splitWords(s.headline, s)}</h2>
         ${s.subline ? `<p class="mx-sub">${esc(s.subline)}</p>` : ""}
         <div class="mx-legend">
           <span><i class="mx-sw ok"></i>${esc(s.meta?.legendOk || "ok")}</span>
@@ -478,17 +538,17 @@ const RENDER = {
           <div class="web-doc-title">${esc(docTitle)}</div>
         </div>
         <div class="web-doc-content">
-          ${snippet.map(sn => `<p class="web-p ${highlight && sn.includes(highlight) ? "has-hl" : ""}">${esc(sn)}</p>`).join("")}
+          ${snippet.map(sn => `<p class="web-p ${highlight && sn.includes(highlight) ? "has-hl" : ""}">${splitWords(sn, s)}</p>`).join("")}
           ${callout ? `
           <div class="web-callout callout-${calloutType.toLowerCase()}">
             <div class="web-callout-tag">${esc(calloutType)}</div>
-            <div class="web-callout-text">${esc(callout)}</div>
+            <div class="web-callout-text">${splitWords(callout, s)}</div>
           </div>` : ""}
         </div>`}
         <svg class="web-cursor" viewBox="0 0 24 24"><path fill="var(--ac)" d="M3 3l7 18 3-7 7-3L3 3z"/></svg>
       </div>
     </div>
-    ${s.headline && s.headline !== docTitle ? `<div class="web-foot-title">${splitWords(s.headline)}</div>` : ""}
+    ${s.headline && s.headline !== docTitle ? `<div class="web-foot-title">${splitWords(s.headline, s)}</div>` : ""}
     ${s.subline ? `<div class="web-foot-sub">${esc(s.subline)}</div>` : ""}`;
   },
 
@@ -510,7 +570,7 @@ const RENDER = {
           <div class="meme-glitch-bar"></div>
         </div>
         <div class="meme-right">
-          <h2 class="meme-caption">${splitWords(caption)}</h2>
+          <h2 class="meme-caption">${splitWords(caption, s)}</h2>
           ${sub ? `<p class="meme-sub">${esc(sub)}</p>` : ""}
         </div>
       </div>
@@ -543,7 +603,7 @@ const RENDER = {
         <div class="cloud-bus-rail"><div class="cloud-packet"></div></div>
       </div>
       <div class="cloud-foot">
-        ${s.headline ? `<h2 class="cloud-title">${splitWords(s.headline)}</h2>` : ""}
+        ${s.headline ? `<h2 class="cloud-title">${splitWords(s.headline, s)}</h2>` : ""}
         ${s.subline ? `<p class="cloud-sub">${esc(s.subline)}</p>` : ""}
       </div>
     </div>`;
@@ -583,7 +643,7 @@ const RENDER = {
         ${eyebrow(s)}
         <div class="mascot-bubble-box">
           <div class="mascot-bubble-arrow"></div>
-          <h2 class="mascot-bubble-text">${splitWords(bubble)}</h2>
+          <h2 class="mascot-bubble-text">${splitWords(bubble, s)}</h2>
           ${s.subline ? `<div class="mascot-sub">${esc(s.subline)}</div>` : ""}
         </div>
         ${stats ? `<div class="mascot-stats-grid">${stats}</div>` : ""}
@@ -600,7 +660,7 @@ const RENDER = {
     <div class="out-wrap">
       <div class="out-ghost">${esc(ghost)}</div>
       ${eyebrow(s)}
-      <h2 class="out-title">${splitWords(s.headline)}</h2>
+      <h2 class="out-title">${splitWords(s.headline, s)}</h2>
       <div class="out-sub">${esc(s.subline || "")}</div>
       <div class="out-cta">
         <span class="out-cta-k">${esc(ctaK)}</span>

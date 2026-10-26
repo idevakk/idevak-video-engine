@@ -112,6 +112,44 @@
       g3.connect(ctx.destination);
       o3.start(t);
       o3.stop(t + 0.24);
+    } else if (type === "swipe") {
+      // Felt highlighter marker sweep sound
+      var bufferSize = Math.floor(ctx.sampleRate * 0.16);
+      var buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+      var data = buffer.getChannelData(0);
+      for (var i = 0; i < bufferSize; i++) { data[i] = (Math.random() * 2 - 1) * 0.5; }
+      var noise = ctx.createBufferSource();
+      noise.buffer = buffer;
+      var filter = ctx.createBiquadFilter();
+      filter.type = "bandpass";
+      filter.frequency.setValueAtTime(1800, t);
+      filter.frequency.linearRampToValueAtTime(3200, t + 0.12);
+      filter.Q.setValueAtTime(2.5, t);
+      var gain = ctx.createGain();
+      gain.gain.setValueAtTime(0.001, t);
+      gain.gain.linearRampToValueAtTime(0.09 * (opt.vol || 1), t + 0.05);
+      gain.gain.linearRampToValueAtTime(0.001, t + 0.16);
+      noise.connect(filter);
+      filter.connect(gain);
+      gain.connect(ctx.destination);
+      noise.start(t);
+    } else if (type === "unmask") {
+      // Forensic redaction peel & razor unmask chirp
+      var o4 = ctx.createOscillator();
+      var g4 = ctx.createGain();
+      o4.type = "sawtooth";
+      o4.frequency.setValueAtTime(1800, t);
+      o4.frequency.exponentialRampToValueAtTime(420, t + 0.14);
+      var f = ctx.createBiquadFilter();
+      f.type = "lowpass";
+      f.frequency.setValueAtTime(2800, t);
+      g4.gain.setValueAtTime(0.12 * (opt.vol || 1), t);
+      g4.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
+      o4.connect(f);
+      f.connect(g4);
+      g4.connect(ctx.destination);
+      o4.start(t);
+      o4.stop(t + 0.16);
     }
   }
 
@@ -126,7 +164,11 @@
 
   function words(el, at, opts, s) {
     var o = opts || {};
-    var nodes = q(el, ".wi");
+    var allNodes = q(el, ".wi");
+    if (!allNodes.length) return;
+    var nodes = allNodes.filter(function (n) {
+      return !n.closest(".forensic-redact");
+    });
     if (!nodes.length) return;
 
     /* Base cinematic reveal */
@@ -246,6 +288,117 @@
     times.forEach(function (t, i) {
       tl.fromTo(el, { opacity: 0.14 }, { opacity: o.peak || 0.3, duration: 0.16, ease: "power2.out" }, at + t);
       tl.to(el, { opacity: 0.14, duration: o.tail || 0.4, ease: "power1.out" }, at + t + 0.16 + i * 0.001);
+    });
+  }
+
+  /* ---------------------------------------------------------- forensic animations */
+  function forensicAnimations(container, at, dur, s) {
+    if (!container) return;
+
+    // 1. Live Highlighter Markers
+    var hlMarkers = q(container, ".hl-marker");
+    hlMarkers.forEach(function (m, idx) {
+      var ink = m.querySelector(".hl-ink");
+      if (!ink) return;
+
+      gsap.set(ink, { scaleX: 0, opacity: 0, transformOrigin: "left center" });
+
+      var rawTarget = m.getAttribute("data-hl") || m.textContent;
+      var hlTarget = normTok(rawTarget);
+      var targetTime = at + Math.min(dur * 0.45, 0.45 + idx * 0.4);
+      var swipeDur = 0.45;
+
+      if (s && s.wordTimings && s.wordTimings.length) {
+        for (var k = 0; k < s.wordTimings.length; k++) {
+          var wt = s.wordTimings[k];
+          var wtText = normTok(wt.w);
+          if (wtText && wtText.length >= 3 && hlTarget.indexOf(wtText) !== -1) {
+            targetTime = at + Math.max(0.2, wt.t);
+            swipeDur = Math.max(0.32, Math.min(1.0, (wt.d || 0.35) * 1.8));
+            break;
+          }
+        }
+      }
+
+      tl.to(ink, {
+        scaleX: 1,
+        opacity: 1,
+        duration: swipeDur,
+        ease: "power2.out"
+      }, targetTime);
+
+      queueSFX("swipe", targetTime, { vol: 0.85 });
+
+      var wordsInside = q(m, ".wi");
+      if (wordsInside.length) {
+        tl.to(wordsInside, {
+          color: "#ffffff",
+          textShadow: "0 0 16px rgba(255,255,255,0.7), 0 0 28px " + ac(s),
+          duration: 0.25,
+          ease: "power2.out"
+        }, targetTime + 0.05);
+      }
+    });
+
+    // 2. Forensic Redactions
+    var redacts = q(container, ".forensic-redact");
+    redacts.forEach(function (r, idx) {
+      var tape = r.querySelector(".redact-tape");
+      var laser = r.querySelector(".redact-laser");
+      var text = r.querySelector(".redact-text");
+      if (!tape || !text) return;
+
+      gsap.set(tape, { scaleX: 1, transformOrigin: "right center" });
+      if (laser) gsap.set(laser, { opacity: 1, left: 0 });
+      gsap.set(text, { opacity: 0, filter: "blur(5px)" });
+
+      var rawTarget = r.getAttribute("data-redact") || r.textContent;
+      var redTarget = normTok(rawTarget);
+      var revealTime = at + Math.min(dur * 0.65, 0.85 + idx * 0.6);
+
+      if (s && s.wordTimings && s.wordTimings.length) {
+        for (var k = 0; k < s.wordTimings.length; k++) {
+          var wt = s.wordTimings[k];
+          var wtText = normTok(wt.w);
+          if (wtText && wtText.length >= 3 && redTarget.indexOf(wtText) !== -1) {
+            revealTime = at + Math.max(0.25, wt.t);
+            break;
+          }
+        }
+      }
+
+      if (laser) {
+        tl.to(laser, {
+          left: "100%",
+          opacity: 0,
+          duration: 0.38,
+          ease: "power2.inOut"
+        }, revealTime);
+      }
+
+      tl.to(tape, {
+        scaleX: 0,
+        duration: 0.38,
+        ease: "power3.inOut"
+      }, revealTime);
+
+      tl.to(text, {
+        opacity: 1,
+        filter: "blur(0px)",
+        duration: 0.26,
+        ease: "power2.out"
+      }, revealTime + 0.08);
+
+      queueSFX("unmask", revealTime, { vol: 1.1 });
+
+      var wordsInside = q(text, ".wi");
+      if (wordsInside.length) {
+        tl.fromTo(wordsInside,
+          { scale: 1.12, color: "#ffffff" },
+          { scale: 1.0, color: "inherit", textShadow: "0 0 22px " + ac(s) + ", 0 0 36px " + ac(s), duration: 0.35, ease: E.springSubtle },
+          revealTime + 0.1
+        );
+      }
     });
   }
 
@@ -767,6 +920,9 @@
     /* Execute scene type animation */
     var fn = ANIM[s.type] || ANIM.statement;
     fn(el, s, at, dur);
+
+    /* Forensic Redactions & Live Highlighting */
+    forensicAnimations(el, at, dur, s);
 
     /* Mid-scene focal re-engagement on long holds (so 8-12s scenes stay mesmerizing) */
     if (dur > 6.0) {

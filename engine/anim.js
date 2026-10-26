@@ -4,7 +4,17 @@
   var TOTAL = window.__TOTAL__;
   var tl = gsap.timeline({ paused: true });
   gsap.config({ nullTargetWarn: false });
-  var E = { out: "power4.out", soft: "power3.out", inOut: "power2.inOut", expo: "expo.out" };
+
+  var E = {
+    out: "power4.out",
+    soft: "power3.out",
+    inOut: "power2.inOut",
+    expo: "expo.out",
+    spring: "back.out(1.4)",
+    springSubtle: "back.out(1.15)",
+    cinematic: "sine.inOut",
+    smooth: "power2.out",
+  };
 
   function q(el, sel) { return Array.prototype.slice.call(el.querySelectorAll(sel)); }
   function rep(dur, cycle) { return Math.max(0, Math.floor(dur / cycle) - 1); }
@@ -12,20 +22,148 @@
 
   /* ---------------------------------------------------------- backdrop */
   gsap.set("#bg-bloom", { xPercent: -50, yPercent: -50, x: 960, y: 540 });
-  tl.to("#bg-grid", { x: -140, y: -90, duration: TOTAL, ease: "none" }, 0);
   tl.to("#bg-noise", { x: 90, y: -60, duration: TOTAL, ease: "none" }, 0);
-  tl.to("#bg-bloom", { scale: 1.16, duration: TOTAL, ease: "none" }, 0);
   tl.to(":root", { duration: 1.8, ease: "sine.inOut" }, 0);
 
+  /* ---------------------------------------------------------- audio-visual haptics (sfx engine) */
+  var audioCtx = null;
+  function getAudioCtx() {
+    if (!audioCtx && typeof window !== "undefined") {
+      var AC = window.AudioContext || window.webkitAudioContext;
+      if (AC) {
+        audioCtx = new AC();
+        if (audioCtx.state === "suspended") {
+          var resume = function () {
+            audioCtx.resume();
+            window.removeEventListener("click", resume);
+            window.removeEventListener("keydown", resume);
+          };
+          window.addEventListener("click", resume);
+          window.addEventListener("keydown", resume);
+        }
+      }
+    }
+    return audioCtx;
+  }
+
+  function playSFX(type, opt) {
+    var ctx = getAudioCtx();
+    if (!ctx || ctx.state !== "running") return;
+    var t = ctx.currentTime;
+    opt = opt || {};
+
+    if (type === "whoosh") {
+      // Clean air whoosh on camera transitions
+      var bufferSize = ctx.sampleRate * 0.22;
+      var buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+      var data = buffer.getChannelData(0);
+      for (var i = 0; i < bufferSize; i++) { data[i] = Math.random() * 2 - 1; }
+      var noise = ctx.createBufferSource();
+      noise.buffer = buffer;
+      var filter = ctx.createBiquadFilter();
+      filter.type = "bandpass";
+      filter.frequency.setValueAtTime(400, t);
+      filter.frequency.exponentialRampToValueAtTime(1400, t + 0.1);
+      filter.frequency.exponentialRampToValueAtTime(200, t + 0.22);
+      var gain = ctx.createGain();
+      gain.gain.setValueAtTime(0.01, t);
+      gain.gain.linearRampToValueAtTime(0.12 * (opt.vol || 1), t + 0.08);
+      gain.gain.linearRampToValueAtTime(0.001, t + 0.22);
+      noise.connect(filter);
+      filter.connect(gain);
+      gain.connect(ctx.destination);
+      noise.start(t);
+    } else if (type === "thud") {
+      // Sub-bass impact thud for stat reveals & punch cuts
+      var osc = ctx.createOscillator();
+      var g = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(120, t);
+      osc.frequency.exponentialRampToValueAtTime(32, t + 0.28);
+      g.gain.setValueAtTime(0.28 * (opt.vol || 1), t);
+      g.gain.exponentialRampToValueAtTime(0.001, t + 0.28);
+      osc.connect(g);
+      g.connect(ctx.destination);
+      osc.start(t);
+      osc.stop(t + 0.3);
+    } else if (type === "click") {
+      // Crisp mechanical keyclick for terminal typing
+      var o = ctx.createOscillator();
+      var g2 = ctx.createGain();
+      o.type = "triangle";
+      o.frequency.setValueAtTime(1600, t);
+      o.frequency.exponentialRampToValueAtTime(200, t + 0.03);
+      g2.gain.setValueAtTime(0.08 * (opt.vol || 1), t);
+      g2.gain.exponentialRampToValueAtTime(0.001, t + 0.03);
+      o.connect(g2);
+      g2.connect(ctx.destination);
+      o.start(t);
+      o.stop(t + 0.04);
+    } else if (type === "chime") {
+      // Cyber telemetry chime on badge reveals / mascot pop
+      var o3 = ctx.createOscillator();
+      var g3 = ctx.createGain();
+      o3.type = "sine";
+      o3.frequency.setValueAtTime(880, t);
+      o3.frequency.setValueAtTime(1320, t + 0.06);
+      g3.gain.setValueAtTime(0.07 * (opt.vol || 1), t);
+      g3.gain.exponentialRampToValueAtTime(0.001, t + 0.22);
+      o3.connect(g3);
+      g3.connect(ctx.destination);
+      o3.start(t);
+      o3.stop(t + 0.24);
+    }
+  }
+
+  function queueSFX(type, at, opt) {
+    tl.call(function () { playSFX(type, opt); }, null, at);
+  }
+
   /* ---------------------------------------------------------- helpers */
-  function words(el, at, opts) {
+  function normTok(s) {
+    return String(s || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+  }
+
+  function words(el, at, opts, s) {
     var o = opts || {};
     var nodes = q(el, ".wi");
     if (!nodes.length) return;
+
+    /* Base cinematic reveal */
     tl.fromTo(nodes,
-      { yPercent: 118, opacity: 0, x: o.x || 0, rotate: o.rotate || 0.001 },
+      { yPercent: 118, opacity: 0, x: o.x || 0, rotate: o.rotate || -1.2 },
       { yPercent: 0, opacity: 1, rotate: 0, duration: o.dur || 0.85, ease: E.expo, stagger: o.stagger || 0.045 },
       at);
+
+    /* Kinetic Syllable & Spoken Word Glow Punch */
+    if (s && s.wordTimings && s.wordTimings.length) {
+      nodes.forEach(function (n) {
+        var wordText = normTok(n.textContent);
+        if (!wordText || wordText.length < 3) return;
+
+        // Match against wordTimings
+        for (var k = 0; k < s.wordTimings.length; k++) {
+          var wt = s.wordTimings[k];
+          var wtText = normTok(wt.w);
+          if (wtText === wordText || (wordText.length >= 4 && (wtText.indexOf(wordText) === 0 || wordText.indexOf(wtText) === 0))) {
+            var punchAt = at + Math.max(0.2, wt.t);
+            var punchDur = Math.max(0.25, wt.d || 0.35);
+
+            // Emphasize keyword when voiceover speaks it
+            tl.fromTo(n,
+              { color: "inherit", textShadow: "none" },
+              { color: "#ffffff", textShadow: "0 0 20px " + ac(s) + ", 0 0 35px " + ac(s), duration: 0.16, ease: "power2.out" },
+              punchAt
+            );
+            tl.to(n,
+              { color: "inherit", textShadow: "none", duration: punchDur, ease: "sine.in" },
+              punchAt + 0.18
+            );
+            break;
+          }
+        }
+      });
+    }
   }
   function fade(el, at, o) {
     if (!el) return;
@@ -75,6 +213,30 @@
     tl.fromTo("#cut-rail", { x: 0, opacity: 0 }, { x: 1980, opacity: strength || 0.5, duration: 0.22, ease: "power2.in" }, at);
     tl.to("#cut-rail", { opacity: 0, duration: 0.2, ease: "power1.out" }, at + 0.2);
   }
+  function flashCut(at, strength) {
+    var str = strength || 0.22;
+    tl.fromTo("#bg-bloom", { opacity: str * 1.8, scale: 1.25 }, { opacity: 0.13, scale: 1.1, duration: 0.65, ease: "power2.out" }, at);
+  }
+  function cutTransition(s, nextS, at, i, dur) {
+    if (i === 0) return;
+    var isPunch = Boolean(s.punch || s.meta?.punch || s.type === "meme");
+    var isMajor = Boolean(s.type === "cold" || s.type === "hero" || (s.act && nextS && s.act !== nextS.act));
+    var isCyber = Boolean(i % 5 === 0 || s.meta?.rail);
+
+    if (isMajor) {
+      flashCut(at, 0.28);
+      queueSFX("thud", at, { vol: 1.2 });
+      queueSFX("whoosh", at, { vol: 0.8 });
+    } else if (isPunch) {
+      flashCut(at, 0.2);
+      queueSFX("thud", at, { vol: 1.4 });
+    } else if (isCyber) {
+      rail(at, 0.55);
+      queueSFX("whoosh", at, { vol: 0.7 });
+    } else {
+      queueSFX("whoosh", at, { vol: 0.5 });
+    }
+  }
   function amb(el, dur, at) {
     if (!el) return;
     tl.fromTo(el, { scale: 1, x: 0 }, { scale: 1.06, x: 18, duration: 5, ease: "sine.inOut", repeat: rep(dur, 5) }, at);
@@ -104,20 +266,20 @@
         tl.fromTo(rule, { scaleX: 0.18 }, { scaleX: 1, duration: 1.5, ease: E.expo }, 0.05);
         tl.fromTo(q(title, ".wi"), { opacity: 1, scale: 1.045 }, { opacity: 1, scale: 1, duration: 2.4, ease: E.expo, stagger: 0.025 }, 0);
         if (sub) tl.fromTo(sub, { opacity: 0, y: 22 }, { opacity: 1, y: 0, duration: 0.9, ease: E.soft }, 0.85);
-        tl.fromTo(chips, { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.6, stagger: 0.08, ease: E.soft }, 1.15);
+        tl.fromTo(chips, { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.6, stagger: 0.08, ease: E.springSubtle }, 1.15);
         return;
       }
       tl.fromTo(ghost, { scale: 1.1, opacity: 0, x: 60 }, { scale: 1, opacity: 1, x: 0, duration: 2.4, ease: E.expo }, at);
       tl.fromTo(rule, { scaleX: 0 }, { scaleX: 1, duration: 0.7, ease: E.expo }, at + 0.15);
       fade(eyebrow, at + 0.2, { y: 14, dur: 0.6 });
-      words(title, at + 0.35, { stagger: 0.055, dur: 0.95 });
+      words(title, at + 0.35, { stagger: 0.055, dur: 0.95 }, s);
       fade(sub, at + 0.8, { dur: 0.8 });
-      tl.fromTo(chips, { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, stagger: 0.08, ease: E.soft }, at + 1.05);
+      tl.fromTo(chips, { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, stagger: 0.08, ease: E.springSubtle }, at + 1.05);
     },
 
     hero: function (el, s, at, dur) {
       fade(el.querySelector(".eyebrow"), at, { y: 12, dur: 0.55 });
-      words(el.querySelector(".hero-title"), at + 0.1, { stagger: 0.05, dur: 0.9 });
+      words(el.querySelector(".hero-title"), at + 0.1, { stagger: 0.05, dur: 0.9 }, s);
       fade(el.querySelector(".hero-sub"), at + 0.55, { dur: 0.7 });
       tl.fromTo(el.querySelector(".hero-mark"), { opacity: 0, x: 40, scale: 0.94 }, { opacity: 1, x: 0, scale: 1, duration: 1.2, ease: E.expo }, at + 0.15);
       tl.fromTo(el.querySelector(".hero-baseline"), { scaleX: 0 }, { scaleX: 1, duration: 1.1, ease: E.expo }, at + 0.3);
@@ -126,7 +288,7 @@
 
     statement: function (el, s, at, dur) {
       if (el.querySelector(".eyebrow")) fade(el.querySelector(".eyebrow"), at, { y: 12, dur: 0.55 });
-      words(el.querySelector(".statement"), at + 0.06, { stagger: 0.042, dur: 0.85, x: s.variant === 2 ? 34 : s.variant === 1 ? -34 : 0 });
+      words(el.querySelector(".statement"), at + 0.06, { stagger: 0.042, dur: 0.85, x: s.variant === 2 ? 34 : s.variant === 1 ? -34 : 0 }, s);
       if (el.querySelector(".st-sub")) fade(el.querySelector(".st-sub"), at + 0.42, { dur: 0.7 });
       if (el.querySelector(".st-ghost")) tl.fromTo(el.querySelector(".st-ghost"), { opacity: 0, x: 40 }, { opacity: 1, x: 0, duration: 1.8, ease: E.expo }, at);
       var ticks = q(el, ".st-tickrow span");
@@ -137,8 +299,13 @@
     stat: function (el, s, at, dur) {
       fade(el.querySelector(".eyebrow"), at, { y: 12, dur: 0.55 });
       var num = el.querySelector(".stat-number");
+      var countDur = Math.min(2.1, Math.max(1.1, dur * 0.3));
       tl.fromTo(el.querySelector(".stat-main"), { y: 46, opacity: 0 }, { y: 0, opacity: 1, duration: 1, ease: E.expo }, at + 0.05);
-      countUp(num, at + 0.25, { duration: Math.min(2.1, Math.max(1.1, dur * 0.3)) });
+      countUp(num, at + 0.25, { duration: countDur });
+      queueSFX("thud", at + 0.25, { vol: 1.3 });
+      if (num) {
+        tl.fromTo(num, { scale: 1.05 }, { scale: 1.0, duration: 0.35, ease: E.springSubtle }, at + 0.25 + countDur);
+      }
       tl.fromTo(el.querySelector(".stat-label"), { y: 24, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7, ease: E.soft }, at + 0.5);
       if (el.querySelector(".stat-sub")) fade(el.querySelector(".stat-sub"), at + 0.65, { dur: 0.7 });
       tl.fromTo(el.querySelector(".stat-ruler"), { opacity: 0 }, { opacity: 1, duration: 0.5 }, at + 0.4);
@@ -152,7 +319,7 @@
       tl.fromTo(el.querySelector(".dl-day"), { yPercent: 30, opacity: 0 }, { yPercent: 0, opacity: 1, duration: 1.1, ease: E.expo }, at + 0.05);
       tl.fromTo(q(el, ".dl-mon, .dl-yr"), { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, stagger: 0.08, ease: E.soft }, at + 0.3);
       fade(el.querySelector(".eyebrow"), at + 0.15, { y: 12, dur: 0.55 });
-      words(el.querySelector(".dl-title"), at + 0.2, { stagger: 0.04, dur: 0.82 });
+      words(el.querySelector(".dl-title"), at + 0.2, { stagger: 0.04, dur: 0.82 }, s);
       if (el.querySelector(".dl-sub")) fade(el.querySelector(".dl-sub"), at + 0.55, { dur: 0.7 });
       tl.fromTo(el.querySelector(".dl-rail span"), { scaleX: 0 }, { scaleX: 1, duration: 1.5, ease: "power2.inOut" }, at + 0.3);
       amb(el.querySelector(".dl-date"), dur, at);
@@ -160,7 +327,11 @@
 
     code: function (el, s, at, dur) {
       fade(el.querySelector(".eyebrow"), at, { y: 12, dur: 0.55 });
-      tl.fromTo(el.querySelector(".code-shell"), { y: 34, opacity: 0, scale: 0.985 }, { y: 0, opacity: 1, scale: 1, duration: 0.85, ease: E.expo }, at + 0.05);
+      tl.fromTo(el.querySelector(".code-shell"),
+        { y: 34, opacity: 0, scale: 0.985, rotateX: 3, rotateY: -1.5 },
+        { y: 0, opacity: 1, scale: 1, rotateX: 0, rotateY: 0, duration: 0.85, ease: E.expo, transformPerspective: 1200 },
+        at + 0.05
+      );
       var lines = q(el, ".cl");
       tl.fromTo(lines, { x: -18, opacity: 0 }, { x: 0, opacity: 1, duration: 0.5, stagger: 0.09, ease: E.soft }, at + 0.25);
       var key = el.querySelector(".cl.is-key");
@@ -170,11 +341,11 @@
         tl.fromTo(el.querySelector(".code-scan"), { opacity: 0 }, { opacity: 0.5, duration: 0.25 }, at + 1.1);
         tl.fromTo(el.querySelector(".code-scan"), { y: 0 }, { y: Math.max(120, lines.length * 52), duration: 1.0, ease: "power1.inOut" }, at + 1.1);
         tl.to(el.querySelector(".code-scan"), { opacity: 0, duration: 0.35 }, at + 2.1);
+        tl.to(key, { backgroundColor: "rgba(56,189,248,0.06)", duration: 1.6, ease: "sine.inOut", yoyo: true, repeat: rep(dur - 2.1, 3.2) }, at + 2.2);
       }
       var call = el.querySelector(".code-callout");
       if (call) tl.fromTo(call, { clipPath: "inset(0 100% 0 0)", opacity: 1 }, { clipPath: "inset(0 0% 0 0)", duration: 0.9, ease: "steps(28)" }, at + 0.5);
       if (el.querySelector(".code-sub")) fade(el.querySelector(".code-sub"), at + 0.7, { dur: 0.6 });
-      tl.fromTo(el.querySelector(".code-shell"), { rotateX: 2 }, { rotateX: 0, duration: 1.4, ease: E.soft, transformPerspective: 1200 }, at + 0.05);
     },
 
     diff: function (el, s, at, dur) {
@@ -192,7 +363,7 @@
     flow: function (el, s, at, dur) {
       fade(el.querySelector(".eyebrow"), at, { y: 12, dur: 0.55 });
       var nodes = q(el, ".flow-node");
-      tl.fromTo(nodes, { y: 40, opacity: 0, scale: 0.97 }, { y: 0, opacity: 1, scale: 1, duration: 0.75, stagger: 0.12, ease: E.expo }, at + 0.1);
+      tl.fromTo(nodes, { y: 40, opacity: 0, scale: 0.97 }, { y: 0, opacity: 1, scale: 1, duration: 0.75, stagger: 0.12, ease: E.springSubtle }, at + 0.1);
       var paths = q(el, ".fl-p");
       draw(paths, at + 0.5, { dur: 0.6, stagger: 0.1 });
       var arr = q(el, ".fl-a");
@@ -203,9 +374,9 @@
       var packet = el.querySelector(".flow-packet");
       if (railEl && packet) {
         tl.fromTo(railEl, { scaleX: 0, transformOrigin: "left center" }, { scaleX: 1, duration: 0.9, ease: E.expo }, at + 0.3);
+        var cycleDur = Math.max(1.4, Math.min(3.2, dur * 0.35));
         tl.fromTo(packet, { x: 0, opacity: 0 }, { opacity: 1, duration: 0.2 }, at + 0.9);
-        tl.to(packet, { x: 1660, duration: Math.max(1.4, Math.min(4, dur * 0.45)), ease: "power2.inOut" }, at + 1.0);
-        tl.to(packet, { opacity: 0, duration: 0.25 }, at + 1.0 + Math.max(1.4, Math.min(4, dur * 0.45)));
+        tl.to(packet, { x: 1660, duration: cycleDur, ease: "power2.inOut", repeat: rep(dur - 1.0, cycleDur) }, at + 1.0);
       }
       amb(nodes[0], dur, at);
     },
@@ -215,7 +386,7 @@
       var rows = q(el, ".lg-row");
       tl.fromTo(rows, { x: -18, opacity: 0 }, { x: 0, opacity: 1, duration: 0.45, stagger: 0.11, ease: E.soft }, at + 0.25);
       fade(el.querySelector(".eyebrow"), at + 0.2, { y: 12, dur: 0.55 });
-      words(el.querySelector(".lg-title"), at + 0.3, { stagger: 0.04, dur: 0.8 });
+      words(el.querySelector(".lg-title"), at + 0.3, { stagger: 0.04, dur: 0.8 }, s);
       if (el.querySelector(".lg-sub")) fade(el.querySelector(".lg-sub"), at + 0.65, { dur: 0.7 });
       var pts = q(el, ".lg-pt");
       tl.fromTo(pts, { x: -14, opacity: 0 }, { x: 0, opacity: 1, duration: 0.5, stagger: 0.09, ease: E.soft }, at + 0.8);
@@ -254,13 +425,13 @@
         draw(q(ptr, "path"), at + 1.05, { dur: 0.6 });
       }
       tl.fromTo(el.querySelector(".mem-side"), { x: 36, opacity: 0 }, { x: 0, opacity: 1, duration: 0.85, ease: E.expo }, at + 0.2);
-      words(el.querySelector(".mem-title"), at + 0.35, { stagger: 0.04, dur: 0.8 });
+      words(el.querySelector(".mem-title"), at + 0.35, { stagger: 0.04, dur: 0.8 }, s);
       if (el.querySelector(".mem-sub")) fade(el.querySelector(".mem-sub"), at + 0.7, { dur: 0.7 });
     },
 
     timeline: function (el, s, at, dur) {
       fade(el.querySelector(".eyebrow"), at, { y: 12, dur: 0.55 });
-      words(el.querySelector(".tl-head"), at + 0.05, { stagger: 0.04, dur: 0.8 });
+      words(el.querySelector(".tl-head"), at + 0.05, { stagger: 0.04, dur: 0.8 }, s);
       tl.fromTo(el.querySelector(".tl-line"), { scaleX: 0, transformOrigin: "left center" }, { scaleX: 1, duration: 0.85, ease: E.expo }, at + 0.35);
       var fill = el.querySelector(".tl-line-fill");
       tl.fromTo(fill, { scaleX: 0 }, { scaleX: 1, duration: Math.max(2.2, dur * 0.52), ease: "power2.inOut" }, at + 0.6);
@@ -269,24 +440,29 @@
       evs.forEach(function (e, i) {
         var t = at + 0.7 + (i / Math.max(1, evs.length)) * Math.max(1.6, dur * 0.46);
         tl.fromTo(e.querySelector(".tl-dot"), { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.35, ease: "back.out(2.2)" }, t);
-        tl.fromTo(e.querySelector(".tl-card"), { y: e.getBoundingClientRect ? 16 : 16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.55, ease: E.soft }, t + 0.06);
+        tl.fromTo(e.querySelector(".tl-card"), { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.55, ease: E.soft }, t + 0.06);
       });
       if (el.querySelector(".tl-sub")) fade(el.querySelector(".tl-sub"), at + 0.8, { dur: 0.7 });
     },
 
     terminal: function (el, s, at, dur) {
       fade(el.querySelector(".eyebrow"), at, { y: 12, dur: 0.55 });
-      tl.fromTo(el.querySelector(".tm-shell"), { y: 26, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7, ease: E.expo }, at);
+      tl.fromTo(el.querySelector(".tm-shell"),
+        { y: 26, opacity: 0, scale: 0.985, rotateX: 2.5 },
+        { y: 0, opacity: 1, scale: 1, rotateX: 0, duration: 0.75, ease: E.expo, transformPerspective: 1200 },
+        at
+      );
       var lines = q(el, ".tm-line");
       lines.forEach(function (l, i) {
         var t = at + 0.25 + i * 0.42;
         tl.fromTo(l, { opacity: 0 }, { opacity: 1, duration: 0.2 }, t);
         tl.fromTo(l.querySelector(".tm-t"), { clipPath: "inset(0 100% 0 0)" }, { clipPath: "inset(0 0% 0 0)", duration: 0.34, ease: "steps(18)" }, t);
+        queueSFX("click", t, { vol: 0.9 });
       });
       var cur = el.querySelector(".tm-cursor");
       if (cur) {
         var start = at + 0.3;
-        tl.fromTo(cur, { opacity: 0 }, { opacity: 1, duration: 0.12, repeat: rep(Math.max(1.2, dur - 0.4), 0.9), yoyo: true }, start);
+        tl.fromTo(cur, { opacity: 0 }, { opacity: 1, duration: 0.16, repeat: rep(Math.max(1.2, dur - 0.4), 0.5), yoyo: true }, start);
       }
       if (el.querySelector(".tm-title")) fade(el.querySelector(".tm-title"), at + 0.55, { dur: 0.7 });
       if (el.querySelector(".tm-sub")) fade(el.querySelector(".tm-sub"), at + 0.7, { dur: 0.7 });
@@ -304,7 +480,7 @@
 
     stack: function (el, s, at, dur) {
       fade(el.querySelector(".eyebrow"), at, { y: 12, dur: 0.55 });
-      words(el.querySelector(".stk-title"), at + 0.08, { stagger: 0.04, dur: 0.82 });
+      words(el.querySelector(".stk-title"), at + 0.08, { stagger: 0.04, dur: 0.82 }, s);
       if (el.querySelector(".stk-sub")) fade(el.querySelector(".stk-sub"), at + 0.5, { dur: 0.7 });
       var layers = q(el, ".stk-layer");
       tl.fromTo(el.querySelector(".stk-stack"), { rotateX: 14, rotateY: -8, y: 40, opacity: 0 }, { rotateX: 0, rotateY: 0, y: 0, opacity: 1, duration: 1.2, ease: E.expo, transformPerspective: 1600 }, at + 0.1);
@@ -315,14 +491,14 @@
 
     quote: function (el, s, at, dur) {
       tl.fromTo(el.querySelector(".q-mark"), { opacity: 0, scale: 0.8, y: 20 }, { opacity: 0.1, scale: 1, y: 0, duration: 1.2, ease: E.expo }, at);
-      words(el.querySelector(".q-text"), at + 0.08, { stagger: 0.035, dur: 0.85 });
+      words(el.querySelector(".q-text"), at + 0.08, { stagger: 0.035, dur: 0.85 }, s);
       fade(el.querySelector(".q-by"), at + 0.6, { dur: 0.7 });
       tl.fromTo(el.querySelector(".q-line"), { scaleX: 0, transformOrigin: "left center" }, { scaleX: 1, duration: 0.8, ease: E.expo }, at + 0.5);
     },
 
     matrix: function (el, s, at, dur) {
       fade(el.querySelector(".eyebrow"), at, { y: 12, dur: 0.55 });
-      words(el.querySelector(".mx-title"), at + 0.05, { stagger: 0.038, dur: 0.8 });
+      words(el.querySelector(".mx-title"), at + 0.05, { stagger: 0.038, dur: 0.8 }, s);
       if (el.querySelector(".mx-sub")) fade(el.querySelector(".mx-sub"), at + 0.45, { dur: 0.7 });
       fade(el.querySelector(".mx-legend"), at + 0.6, { dur: 0.6 });
       var cells = q(el, ".mx-c");
@@ -358,7 +534,7 @@
         tl.fromTo(cursor, { opacity: 0, x: 120, y: 80 }, { opacity: 1, x: 0, y: 0, duration: 1.1, ease: "power2.out" }, at + 0.35);
         tl.to(cursor, { scale: 0.82, duration: 0.16, ease: "power2.inOut", yoyo: true, repeat: 1 }, at + 1.2);
       }
-      words(el.querySelector(".web-foot-title"), at + 0.2, { stagger: 0.04, dur: 0.8 });
+      words(el.querySelector(".web-foot-title"), at + 0.2, { stagger: 0.04, dur: 0.8 }, s);
       if (el.querySelector(".web-foot-sub")) fade(el.querySelector(".web-foot-sub"), at + 0.6, { dur: 0.65 });
     },
 
@@ -381,7 +557,7 @@
       if (glitch) {
         tl.fromTo(glitch, { y: 0, opacity: 0 }, { y: 340, opacity: 0.8, duration: 0.7, ease: "none", repeat: rep(dur, 0.7) }, at + 0.1);
       }
-      words(el.querySelector(".meme-caption"), at + 0.18, { stagger: 0.038, dur: 0.65 });
+      words(el.querySelector(".meme-caption"), at + 0.18, { stagger: 0.038, dur: 0.65 }, s);
       if (el.querySelector(".meme-sub")) fade(el.querySelector(".meme-sub"), at + 0.5, { dur: 0.6 });
     },
 
@@ -389,14 +565,15 @@
       fade(el.querySelector(".eyebrow"), at, { y: 12, dur: 0.55 });
       fade(el.querySelector(".cloud-header"), at + 0.05, { y: 10, dur: 0.5 });
       var nodes = q(el, ".cloud-node");
-      tl.fromTo(nodes, { y: 30, opacity: 0, scale: 0.92 }, { y: 0, opacity: 1, scale: 1, duration: 0.6, stagger: 0.12, ease: E.expo }, at + 0.15);
+      tl.fromTo(nodes, { y: 30, opacity: 0, scale: 0.92 }, { y: 0, opacity: 1, scale: 1, duration: 0.6, stagger: 0.12, ease: E.springSubtle }, at + 0.15);
       var paths = q(el, ".cld-path");
       draw(paths, at + 0.35, { stagger: 0.15, dur: 0.6 });
       var packet = el.querySelector(".cloud-packet");
       if (packet) {
-        tl.fromTo(packet, { x: 0 }, { x: 1540, duration: 1.8, ease: "none", repeat: rep(dur, 1.8) }, at + 0.4);
+        tl.fromTo(packet, { x: 0, opacity: 0 }, { opacity: 1, duration: 0.2 }, at + 0.35);
+        tl.to(packet, { x: 1540, duration: 1.8, ease: "none", repeat: rep(dur, 1.8) }, at + 0.4);
       }
-      words(el.querySelector(".cloud-title"), at + 0.2, { stagger: 0.038, dur: 0.8 });
+      words(el.querySelector(".cloud-title"), at + 0.2, { stagger: 0.038, dur: 0.8 }, s);
       if (el.querySelector(".cloud-sub")) fade(el.querySelector(".cloud-sub"), at + 0.6, { dur: 0.65 });
     },
 
@@ -405,12 +582,25 @@
       if (hud) {
         tl.fromTo(hud, { x: -40, opacity: 0, scale: 0.92 }, { x: 0, opacity: 1, scale: 1, duration: 0.85, ease: E.expo }, at + 0.05);
         tl.to(hud, { y: -8, duration: 2.2, ease: "sine.inOut", yoyo: true, repeat: rep(dur, 4.4) }, at + 0.8);
+        var img = hud.querySelector(".mascot-img");
+        if (img) {
+          tl.fromTo(img, { scale: 1.05 }, { scale: 1.0, duration: 1.2, ease: E.smooth }, at + 0.1);
+          tl.to(img, { y: -5, duration: 2.4, ease: "sine.inOut", yoyo: true, repeat: rep(dur, 2.4) }, at + 0.8);
+        }
+        var glare = hud.querySelector(".mascot-hud-glare");
+        if (glare) {
+          tl.fromTo(glare, { opacity: 0.3 }, { opacity: 0.7, duration: 1.8, ease: "sine.inOut", yoyo: true, repeat: rep(dur, 3.6) }, at + 0.2);
+        }
+        var tel = hud.querySelector(".mascot-hud-telemetry");
+        if (tel) {
+          tl.fromTo(tel, { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.45, ease: E.soft }, at + 0.4);
+        }
       }
       var bubble = el.querySelector(".mascot-bubble-box");
       if (bubble) {
         tl.fromTo(bubble, { scale: 0.88, opacity: 0, x: 20 }, { scale: 1, opacity: 1, x: 0, duration: 0.6, ease: "back.out(1.4)" }, at + 0.2);
       }
-      words(el.querySelector(".mascot-bubble-text"), at + 0.3, { stagger: 0.04, dur: 0.75 });
+      words(el.querySelector(".mascot-bubble-text"), at + 0.3, { stagger: 0.04, dur: 0.75 }, s);
       if (el.querySelector(".mascot-sub")) fade(el.querySelector(".mascot-sub"), at + 0.65, { dur: 0.65 });
       var statItems = q(el, ".mst-item");
       if (statItems.length) {
@@ -421,7 +611,7 @@
     outro: function (el, s, at, dur) {
       tl.fromTo(el.querySelector(".out-ghost"), { opacity: 0, scale: 1.08, x: 40 }, { opacity: 1, scale: 1, x: 0, duration: 2.2, ease: E.expo }, at);
       fade(el.querySelector(".eyebrow"), at, { y: 12, dur: 0.55 });
-      words(el.querySelector(".out-title"), at + 0.1, { stagger: 0.05, dur: 0.9 });
+      words(el.querySelector(".out-title"), at + 0.1, { stagger: 0.05, dur: 0.9 }, s);
       if (el.querySelector(".out-sub")) fade(el.querySelector(".out-sub"), at + 0.5, { dur: 0.75 });
       fade(el.querySelector(".out-cta"), at + 0.85, { dur: 0.7 });
       fade(el.querySelector(".out-ch"), at + 1.05, { dur: 0.7 });
@@ -429,56 +619,162 @@
   };
 
   /* ---------------------------------------------------------- build */
-  gsap.set(".sc-in", { transformOrigin: "50% 45%" });
+  gsap.set(".sc-in", { transformOrigin: "50% 48%" });
 
   SCENES.forEach(function (s, i) {
     var el = document.getElementById("s" + String(i + 1).padStart(3, "0"));
     if (!el) return;
     var at = s.start;
     var dur = s.end - s.start;
+    var scIn = el.querySelector(".sc-in");
+    var ambEl = el.querySelector(".amb");
 
-    /* accent for shared bloom */
-    tl.to(":root", { "--ac": s.accent || "#38bdf8", duration: 1.2, ease: "sine.inOut" }, at);
+    /* accent for shared bloom & dynamic CSS variable */
+    tl.to(":root", { "--ac": s.accent || "#38bdf8", duration: 1.0, ease: "sine.inOut" }, at);
 
-    /* slow camera push keeps every frame alive */
-    tl.fromTo(el.querySelector(".sc-in"), { scale: 1 }, { scale: 1.014, duration: Math.max(1, dur), ease: "none" }, at);
+    /* ------------------------------ 2.5D Camera & Parallax Choreography */
+    var driftVectors = [
+      { dx: 18, dy: -10, rot: 0.18, scaleEnd: 1.036 },
+      { dx: -16, dy: 8, rot: -0.16, scaleEnd: 1.034 },
+      { dx: -12, dy: -12, rot: 0.14, scaleEnd: 1.038 },
+      { dx: 15, dy: 11, rot: -0.15, scaleEnd: 1.032 }
+    ];
+    var v = driftVectors[i % 4];
 
-    /* Fireship punch zoom on punch beats */
-    if (s.punch) {
-      tl.fromTo(el.querySelector(".sc-in"), { scale: 1.05 }, { scale: 1.014, duration: 0.38, ease: "power4.out" }, at);
+    /* Background Parallax: Counter-drift grid at 0.22x speed for optical depth */
+    tl.to("#bg-grid", {
+      x: "+=" + (-v.dx * 0.45),
+      y: "+=" + (-v.dy * 0.45),
+      duration: Math.max(1, dur),
+      ease: "sine.inOut"
+    }, at);
+
+    /* Dynamic Volumetric Bloom tracking */
+    tl.to("#bg-bloom", {
+      x: 960 + v.dx * 2.2,
+      y: 540 + v.dy * 2.2,
+      scale: 1.08 + (i % 3) * 0.04,
+      opacity: (s.punch || s.type === "stat") ? 0.20 : 0.13,
+      duration: Math.max(1, dur),
+      ease: "sine.inOut"
+    }, at);
+
+    /* Continuous Living Camera on .sc-in (eliminates dead holds) */
+    if (scIn) {
+      tl.fromTo(scIn,
+        { scale: 1.0, x: 0, y: 0, rotate: v.rot },
+        { scale: v.scaleEnd, x: v.dx, y: v.dy, rotate: 0, duration: Math.max(1, dur), ease: "sine.out" },
+        at
+      );
+
+      /* Subtle organic vertical float/breathing during hold */
+      tl.to(scIn, {
+        y: "+=5",
+        duration: 3.2,
+        ease: "sine.inOut",
+        yoyo: true,
+        repeat: rep(dur, 3.2)
+      }, at + 0.3);
     }
 
-    /* Universal Mascot Overlay */
+    /* High-Impact Punch Recoil on punch beats */
+    var isPunch = Boolean(s.punch || s.meta?.punch || s.type === "meme" || (s.type === "stat" && s.variant === 1));
+    if (isPunch && scIn) {
+      tl.fromTo(scIn,
+        { scale: 1.072 },
+        { scale: v.scaleEnd, duration: 0.38, ease: E.out },
+        at
+      );
+      /* Damped camera micro-shake */
+      tl.to(scIn, { x: "-=7", y: "+=4", duration: 0.05, ease: "power1.inOut" }, at + 0.02);
+      tl.to(scIn, { x: "+=12", y: "-=7", duration: 0.06, ease: "power1.inOut" }, at + 0.07);
+      tl.to(scIn, { x: "-=6", y: "+=3", duration: 0.06, ease: "power1.inOut" }, at + 0.13);
+      tl.to(scIn, { x: v.dx, y: v.dy, duration: 0.08, ease: "power1.out" }, at + 0.19);
+    }
+
+    /* Continuous Ambient Light Breath on .amb */
+    if (ambEl) {
+      tl.fromTo(ambEl,
+        { opacity: 0.07, scale: 0.98 },
+        { opacity: 0.16, scale: 1.08, duration: 2.8, ease: "sine.inOut", yoyo: true, repeat: rep(dur, 2.8) },
+        at
+      );
+    }
+
+    /* Universal Mascot Overlay with Living Emotion & Telemetry */
     var mOv = el.querySelector(".m-ov");
     if (mOv) {
-      tl.fromTo(mOv, { y: 60, opacity: 0, scale: 0.8 }, { y: 0, opacity: 1, scale: 1, duration: 0.5, ease: "back.out(1.5)" }, at + 0.15);
+      var expr = mOv.getAttribute("data-expr") || "neutral";
+      var isShock = expr === "shocked" || expr === "panic";
+      var isThink = expr === "thinking" || expr === "skeptical";
+
+      /* Emotion-aware entrance physics */
+      var enterScale = isShock ? 0.72 : 0.82;
+      var enterEase = isShock ? "back.out(2.2)" : E.spring;
+      tl.fromTo(mOv,
+        { y: 64, opacity: 0, scale: enterScale },
+        { y: 0, opacity: 1, scale: 1, duration: 0.55, ease: enterEase },
+        at + 0.12
+      );
+      queueSFX(isShock ? "thud" : "chime", at + 0.15, { vol: 0.8 });
+
+      /* Mascot gentle idle breathing float */
+      tl.to(mOv, {
+        y: isShock ? -9 : -6,
+        duration: isShock ? 1.4 : 2.1,
+        ease: "sine.inOut",
+        yoyo: true,
+        repeat: rep(dur, isShock ? 1.4 : 2.1)
+      }, at + 0.67);
+
+      /* Living head-tilt & micro-bobbing */
+      var avatar = mOv.querySelector(".m-ov-avatar");
+      if (avatar) {
+        var tiltDeg = isThink ? -3.5 : (isShock ? 2.5 : 1.2);
+        tl.to(avatar, {
+          rotate: tiltDeg,
+          duration: 2.4,
+          ease: "sine.inOut",
+          yoyo: true,
+          repeat: rep(dur, 2.4)
+        }, at + 0.7);
+      }
+
+      /* Visor Glare Pulse & Telemetry Glow */
+      var mGlare = mOv.querySelector(".m-ov-glare");
+      if (mGlare) {
+        tl.fromTo(mGlare, { opacity: 0.2 }, { opacity: 0.65, duration: 1.5, ease: "sine.inOut", yoyo: true, repeat: rep(dur, 3.0) }, at + 0.3);
+      }
+      var mTelDot = mOv.querySelector(".m-tel-dot");
+      if (mTelDot) {
+        tl.to(mTelDot, { opacity: 0.4, scale: 0.8, duration: 0.6, ease: "sine.inOut", yoyo: true, repeat: rep(dur, 1.2) }, at + 0.2);
+      }
+
       var mBubble = mOv.querySelector(".m-ov-bubble");
       if (mBubble) {
-        tl.fromTo(mBubble, { scale: 0.85, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.4, ease: "back.out(1.3)" }, at + 0.3);
+        tl.fromTo(mBubble, { scale: 0.82, opacity: 0, y: 12 }, { scale: 1, opacity: 1, y: 0, duration: 0.45, ease: E.spring }, at + 0.28);
       }
       var mRing = mOv.querySelector(".m-ov-ring");
       if (mRing) {
-        tl.to(mRing, { opacity: 0.8, scale: 1.08, duration: 0.7, ease: "sine.inOut", yoyo: true, repeat: rep(dur, 1.4) }, at + 0.2);
+        tl.to(mRing, { opacity: 0.85, scale: 1.12, duration: 0.8, ease: "sine.inOut", yoyo: true, repeat: rep(dur, 1.6) }, at + 0.2);
       }
     }
 
-    /* cut rail rhythm - every scene, subtler on minor beats */
-    rail(at, i % 6 === 0 ? 0.72 : 0.38);
+    /* Contextual Scene Transition */
+    var nextS = SCENES[i + 1];
+    cutTransition(s, nextS, at, i, dur);
 
+    /* Execute scene type animation */
     var fn = ANIM[s.type] || ANIM.statement;
     fn(el, s, at, dur);
 
-    /* mid-scene camera beat so long holds never go static */
-    if (dur > 7.5) {
-      var beatAt = at + Math.max(2.4, dur * 0.52);
-      tl.to(el.querySelector(".sc-in"), { y: -9, duration: 1.3, ease: "sine.inOut", yoyo: true, repeat: 1 }, beatAt);
-      tl.to(el.querySelector(".amb"), { opacity: 0.2, duration: 0.9, ease: "sine.out" }, beatAt);
-      tl.to(el.querySelector(".amb"), { opacity: 0.1, duration: 1.2, ease: "sine.in" }, beatAt + 0.9);
-    }
-    if (dur > 10.5) {
-      var beat2 = at + dur * 0.78;
-      tl.to(el.querySelector(".amb"), { opacity: 0.24, duration: 0.8, ease: "sine.out" }, beat2);
-      tl.to(el.querySelector(".amb"), { opacity: 0.1, duration: 1.4, ease: "sine.in" }, beat2 + 0.8);
+    /* Mid-scene focal re-engagement on long holds (so 8-12s scenes stay mesmerizing) */
+    if (dur > 6.0) {
+      var midTime = at + dur * 0.52;
+      if (ambEl) {
+        tl.to(ambEl, { opacity: 0.22, scale: 1.14, duration: 0.8, ease: "sine.out" }, midTime);
+        tl.to(ambEl, { opacity: 0.10, scale: 1.02, duration: 1.2, ease: "sine.in" }, midTime + 0.8);
+      }
     }
   });
 

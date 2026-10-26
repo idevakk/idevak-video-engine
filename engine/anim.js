@@ -164,6 +164,19 @@
       g5.connect(ctx.destination);
       o5.start(t);
       o5.stop(t + 0.3);
+    } else if (type === "decrypt") {
+      // Rapid cyber matrix decryption data-chatter
+      var o6 = ctx.createOscillator();
+      var g6 = ctx.createGain();
+      o6.type = "sawtooth";
+      o6.frequency.setValueAtTime(1400, t);
+      o6.frequency.linearRampToValueAtTime(2200, t + 0.08);
+      g6.gain.setValueAtTime(0.035 * (opt.vol || 1), t);
+      g6.gain.exponentialRampToValueAtTime(0.001, t + 0.09);
+      o6.connect(g6);
+      g6.connect(ctx.destination);
+      o6.start(t);
+      o6.stop(t + 0.1);
     }
   }
 
@@ -185,11 +198,54 @@
     });
     if (!nodes.length) return;
 
-    /* Base cinematic reveal */
+    /* Base cinematic reveal with spring recoil */
+    var revealDur = o.dur || 0.82;
+    var staggerVal = o.stagger || 0.038;
     tl.fromTo(nodes,
-      { yPercent: 118, opacity: 0, x: o.x || 0, rotate: o.rotate || -1.2 },
-      { yPercent: 0, opacity: 1, rotate: 0, duration: o.dur || 0.85, ease: E.expo, stagger: o.stagger || 0.045 },
+      { yPercent: 118, opacity: 0, x: o.x || 0, rotate: o.rotate || -1.2, scale: 0.94 },
+      { yPercent: 0, opacity: 1, rotate: 0, scale: 1.0, duration: revealDur, ease: E.expo, stagger: staggerVal },
       at);
+
+    /* Text recoil on parent container */
+    if (el) {
+      tl.fromTo(el,
+        { scale: 0.985 },
+        { scale: 1.0, duration: 0.42, ease: "back.out(1.3)" },
+        at + 0.08
+      );
+    }
+
+    /* Single-frame character decryption / matrix settling on first key words */
+    var CHARSET = "0123456789ABCDEF$#@%&*";
+    nodes.slice(0, Math.min(3, nodes.length)).forEach(function (n, wIdx) {
+      var origText = n.textContent;
+      if (!origText || origText.length < 3) return;
+      var startTime = at + wIdx * staggerVal;
+      var decDur = 0.22;
+      var progressObj = { p: 0 };
+      tl.to(progressObj, {
+        p: 1,
+        duration: decDur,
+        ease: "none",
+        onUpdate: function () {
+          var p = progressObj.p;
+          var settledLen = Math.floor(p * origText.length);
+          var scrambled = origText.split("").map(function (ch, ci) {
+            if (ch === " ") return " ";
+            if (ci < settledLen) return ch;
+            return CHARSET[Math.floor(Math.random() * CHARSET.length)];
+          }).join("");
+          n.textContent = scrambled;
+        },
+        onComplete: function () {
+          n.textContent = origText;
+        }
+      }, startTime);
+    });
+
+    if (nodes.length > 0) {
+      queueSFX("decrypt", at, { vol: 0.7 });
+    }
 
     /* Kinetic Syllable & Spoken Word Glow Punch */
     if (s && s.wordTimings && s.wordTimings.length) {

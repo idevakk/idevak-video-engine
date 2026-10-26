@@ -40,6 +40,10 @@ TYPES = {
     "meme",
     "cloud",
     "mascot",
+    "network",
+    "cve",
+    "tweet",
+    "github",
 }
 CODE_KINDS = {"code", "hot", "dim", "str", "com", "fn", "kw", "key", "err", "out"}
 DIFF_KINDS = {"ctx", "add", "del"}
@@ -158,7 +162,7 @@ def validate_scene(
         return
     where = f"{where} ({scene_type})"
 
-    headline_max = 180 if scene_type in {"quote", "code", "webref", "mascot"} else 96
+    headline_max = 180 if scene_type in {"quote", "code", "webref", "mascot", "tweet", "github", "cve"} else 96
     headline = sfield(scene, "headline", where, errors, required=True, max_len=headline_max)
     narration = sfield(scene, "narration", where, errors, required=True)
     subline = sfield(scene, "subline", where, errors, max_len=180)
@@ -194,12 +198,16 @@ def validate_scene(
             if expr is not None and expr not in MASCOT_EXPRESSIONS:
                 warnings.append(f"{where}.mascot.expression: unknown {expr!r} (expected: {', '.join(sorted(MASCOT_EXPRESSIONS))})")
             sfield(m, "bubble", f"{where}.mascot", errors, max_len=180)
+            role = m.get("role")
+            if role is not None and role not in {"corner", "inspector", "reaction-pop", "operator", "presenter"}:
+                warnings.append(f"{where}.mascot.role: unknown {role!r} (expected: corner, inspector, reaction-pop, operator, presenter)")
             pos = m.get("position")
-            if pos is not None and pos not in {"bottom-right", "bottom-left"}:
-                warnings.append(f"{where}.mascot.position: unknown {pos!r} (expected bottom-right or bottom-left)")
+            valid_pos = {"bottom-right", "bottom-left", "inspector-right", "inspector-left", "center-pop"}
+            if pos is not None and pos not in valid_pos:
+                warnings.append(f"{where}.mascot.position: unknown {pos!r} (expected: {", ".join(sorted(valid_pos))})")
 
     if headline:
-        soft = 120 if scene_type in {"quote", "webref"} else 64
+        soft = 120 if scene_type in {"quote", "webref", "tweet", "github", "cve"} else 64
         if len(headline) > soft:
             warnings.append(f"{where}.headline: {len(headline)} chars; shorter reads better at 1920x1080")
     if subline and len(subline) > 120:
@@ -403,6 +411,67 @@ def validate_scene(
                     errors.append(f"{where}.meta.nodes[{k}].{bkey}: must be a boolean")
         sfield(meta, "flow", where, errors)
         sfield(meta, "topology", where, errors)
+
+    elif scene_type == "network":
+        tiers = listfield(meta, "tiers", where, errors, required=True, lo=1, hi=6)
+        if tiers:
+            for t_idx, tier in enumerate(tiers):
+                t_where = f"{where}.meta.tiers[{t_idx}]"
+                if not isinstance(tier, dict):
+                    errors.append(f"{t_where}: must be an object")
+                    continue
+                sfield(tier, "name", t_where, errors)
+                nodes = listfield(tier, "nodes", t_where, errors, required=True, lo=1, hi=6)
+                if nodes:
+                    for n_idx, node in enumerate(nodes):
+                        n_where = f"{t_where}.nodes[{n_idx}]"
+                        if not isinstance(node, dict):
+                            errors.append(f"{n_where}: must be an object")
+                            continue
+                        sfield(node, "id", n_where, errors, required=True)
+                        sfield(node, "title", n_where, errors, required=True)
+                        sfield(node, "sub", n_where, errors)
+                        sfield(node, "icon", n_where, errors)
+                        for bkey in ("hot", "bad"):
+                            if bkey in node and not isinstance(node[bkey], bool):
+                                errors.append(f"{n_where}.{bkey}: must be a boolean")
+        if "packets" in meta:
+            packets = listfield(meta, "packets", where, errors, hi=12)
+            if packets:
+                for p_idx, packet in enumerate(packets):
+                    p_where = f"{where}.meta.packets[{p_idx}]"
+                    if not isinstance(packet, dict):
+                        errors.append(f"{p_where}: must be an object")
+                    else:
+                        sfield(packet, "from", p_where, errors, required=True)
+                        sfield(packet, "to", p_where, errors, required=True)
+
+    elif scene_type == "cve":
+        sfield(meta, "cveId", where, errors, required=True)
+        sfield(meta, "severity", where, errors)
+        sfield(meta, "score", where, errors)
+        sfield(meta, "vector", where, errors)
+        sfield(meta, "affected", where, errors)
+        sfield(meta, "patch", where, errors)
+
+    elif scene_type == "tweet":
+        sfield(meta, "author", where, errors, required=True)
+        sfield(meta, "handle", where, errors, required=True)
+        sfield(meta, "text", where, errors, required=True)
+        sfield(meta, "avatar", where, errors)
+        sfield(meta, "date", where, errors)
+        sfield(meta, "likes", where, errors)
+        sfield(meta, "retweets", where, errors)
+
+    elif scene_type == "github":
+        sfield(meta, "repo", where, errors, required=True)
+        sfield(meta, "prNumber", where, errors)
+        sfield(meta, "title", where, errors, required=True)
+        sfield(meta, "author", where, errors)
+        sfield(meta, "branch", where, errors)
+        sfield(meta, "additions", where, errors)
+        sfield(meta, "deletions", where, errors)
+        lines = listfield(meta, "diff", where, errors, hi=10)
 
     elif scene_type == "mascot":
         expr = sfield(meta, "expression", where, errors)

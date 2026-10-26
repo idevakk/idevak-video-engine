@@ -693,6 +693,141 @@ A fast-paced, high-impact dev reaction card with comic recoil shake, glitch swee
 | `image` | string | Optional custom meme image path. Defaults to iDevak mascot with chosen expression. |
 | `punch` | boolean | Enables instant Fireship-style camera recoil punch zoom. |
 
+### cve
+
+An authentic CVE security advisory card with severity badge, CVSS base score, affected infrastructure, and summary (Fireship / threat intel style).
+
+```json
+{
+  "type": "cve",
+  "narration": "Rated a catastrophic 9.8 critical severity, CVE-2026-3829 allowed unauthenticated remote code execution across millions of servers.",
+  "eyebrow": "SECURITY ALERT",
+  "headline": "Unauthenticated Remote Code Execution in Core Gateway",
+  "subline": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
+  "meta": {
+    "cveId": "CVE-2026-3829",
+    "severity": "CRITICAL",
+    "score": "9.8",
+    "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
+    "affected": "Envoy Ingress <= v1.31.2",
+    "patch": "Patch v1.31.3 deployed"
+  },
+  "mascot": {
+    "role": "reaction-pop",
+    "expression": "panic",
+    "bubble": "A 9.8 base score is essentially Game Over!"
+  }
+}
+```
+
+### tweet
+
+An authentic dark-mode Twitter/X announcement card with author avatar, verified badge, engagement metrics, and formatted text.
+
+```json
+{
+  "type": "tweet",
+  "narration": "Security researcher Jane Doe broke the story on X, warning engineering teams to patch immediately.",
+  "eyebrow": "PUBLIC DISCLOSURE",
+  "headline": "We just verified a zero-day exploit actively weaponized in the wild. Check your cluster configs NOW.",
+  "subline": "Thread by @janedoe_sec",
+  "meta": {
+    "author": "Jane Doe",
+    "handle": "@janedoe_sec",
+    "text": "We just verified a zero-day exploit actively weaponized in the wild. Check your cluster configs NOW.",
+    "date": "2:14 PM · Oct 24, 2026",
+    "likes": "18.4K",
+    "retweets": "4,210"
+  }
+}
+```
+
+### github
+
+An authentic GitHub PR/commit inspection card with repository badges, author metadata, branch pills, and syntax-highlighted diff lines.
+
+```json
+{
+  "type": "github",
+  "narration": "Within six hours, the core maintainers merged a single-line patch that plugged the memory leak.",
+  "eyebrow": "THE HOTFIX",
+  "headline": "Fix buffer overflow by validating packet length header",
+  "subline": "PR #4082 merged into main branch",
+  "meta": {
+    "repo": "envoyproxy/envoy",
+    "prNumber": "#4082",
+    "title": "Fix buffer overflow by validating packet length header",
+    "author": "mattklein123",
+    "branch": "main",
+    "additions": "+3",
+    "deletions": "-1",
+    "diff": [
+      { "k": "ctx", "t": "if (header_len > MAX_ALLOWED_PACKET) {" },
+      { "k": "add", "t": "    return Status::InvalidPacketSize;" },
+      { "k": "ctx", "t": "}" }
+    ]
+  }
+}
+```
+
+### network
+
+A multi-tier distributed architecture graph with curved living SVG bezier traces, traveling glowing packet pulses, and node arrival click haptics (ByteMonk style).
+
+```json
+{
+  "type": "network",
+  "narration": "To protect the cluster, traffic enters an Envoy gateway, routes through partitioned Kafka topics, and persists across a distributed Redis cache.",
+  "eyebrow": "RESILIENT TOPOLOGY",
+  "headline": "Multi-Tier Distributed Ingestion",
+  "subline": "Partitioned message streaming with fast-fail isolation",
+  "meta": {
+    "tiers": [
+      {
+        "id": "edge",
+        "name": "EDGE INGRESS",
+        "nodes": [
+          { "id": "gateway", "title": "Envoy Ingress", "sub": "Rate-limited gRPC", "icon": "🌐", "hot": true }
+        ]
+      },
+      {
+        "id": "stream",
+        "name": "STREAM DISPATCH",
+        "nodes": [
+          { "id": "kafka", "title": "Kafka Telemetry", "sub": "Partitioned Buffer", "icon": "⚡", "hot": true },
+          { "id": "worker", "title": "Backoff Workers", "sub": "Adaptive Concurrency", "icon": "⚙️" }
+        ]
+      },
+      {
+        "id": "store",
+        "name": "ISOLATED TIERS",
+        "nodes": [
+          { "id": "redis", "title": "Redis Sentinel", "sub": "In-Memory Cache", "icon": "💾" },
+          { "id": "postgres", "title": "Aurora DB", "sub": "Write-Protected", "icon": "🗄️" }
+        ]
+      }
+    ],
+    "packets": [
+      { "from": "gateway", "to": "kafka" },
+      { "from": "kafka", "to": "redis" }
+    ]
+  },
+  "mascot": {
+    "role": "inspector",
+    "expression": "cool",
+    "position": "bottom-right",
+    "bubble": "Every tier is decoupled and protected."
+  }
+}
+```
+
+| Meta field | Type | Notes |
+|---|---|---|
+| `tiers` | object[] | 1-5 architectural tiers from ingress to storage. |
+| `tiers[].name` | string | Tier header label (e.g. `EDGE INGRESS`). |
+| `tiers[].nodes` | object[] | Nodes inside this tier. Each node needs `id`, `title`; optional `sub`, `icon`, `hot`, `bad`. |
+| `packets` | object[] | Optional list of packet links `{ "from": "node-1", "to": "node-2" }`. |
+
 ### cloud
 
 A cloud infrastructure and systems topology diagram with node cards, status badges, and animated data packet transmission.
@@ -778,6 +913,7 @@ You can add the iDevak mascot as an expressive reaction overlay to **ANY** scene
 | Field | Type | Description |
 |---|---|---|
 | `expression` | string | `neutral`, `talking`, `thinking`, `shocked`, `cool`, `happy`, `angry`, `sad`, `facepalm`, `pointing`, `panic`, `skeptical`. |
+| `role` | string | Contextual function: `"corner"` (default badge), `"inspector"` (peering into code/terminal), `"reaction-pop"` (Fireship center-stage punch), `"operator"`, `"presenter"`. |
 | `bubble` | string | Optional speech bubble text that pops up with the mascot. |
-| `position` | string | `bottom-right` (default) or `bottom-left`. |
+| `position` | string | `"bottom-right"` (default), `"bottom-left"`, `"inspector-right"`, `"inspector-left"`, `"center-pop"`. |
 

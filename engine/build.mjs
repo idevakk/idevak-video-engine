@@ -51,21 +51,25 @@ for (const expr of MASCOT_EXPRS) {
 // Alias legacy 'solved' to 'happy'
 MASCOT_IMAGES["solved"] = MASCOT_IMAGES["happy"];
 
-function renderMascotOverlay(mascot) {
+function renderMascotOverlay(mascot, s = null) {
   if (!mascot) return "";
   const rawExpr = mascot.expression || "neutral";
   const expr = rawExpr === "solved" ? "happy" : rawExpr;
-  const pos = mascot.position === "bottom-left" ? "pos-bl" : "pos-br";
+  const role = mascot.role || (s && (s.type === "code" || s.type === "terminal" || s.type === "diff") && mascot.position?.startsWith("inspector") ? "inspector" : (mascot.punch ? "reaction-pop" : "corner"));
+  let pos = mascot.position === "bottom-left" ? "pos-bl" : "pos-br";
+  if (mascot.position === "inspector-right" || role === "inspector") pos = "pos-ir";
+  if (mascot.position === "inspector-left") pos = "pos-il";
+  if (mascot.position === "center-pop" || role === "reaction-pop") pos = "pos-cp";
   const imgSrc = MASCOT_IMAGES[expr] || MASCOT_IMAGES["neutral"] || "";
   const bubble = mascot.bubble ? `<div class="m-ov-bubble"><div class="m-ov-btext">${esc(mascot.bubble)}</div></div>` : "";
   return `
-  <div class="m-ov ${pos} m-expr-${expr}" data-expr="${esc(expr)}">
+  <div class="m-ov ${pos} m-role-${role} m-expr-${expr}" data-role="${esc(role)}" data-expr="${esc(expr)}">
     ${bubble}
     <div class="m-ov-avatar-wrap">
       <div class="m-ov-ring"></div>
       <div class="m-ov-telemetry">
         <span class="m-tel-dot"></span>
-        <span class="m-tel-tag">${esc(expr.toUpperCase())}</span>
+        <span class="m-tel-tag">${esc(role === "corner" ? expr.toUpperCase() : `${role.toUpperCase()} // ${expr.toUpperCase()}`)}</span>
       </div>
       <div class="m-ov-glare"></div>
       <img class="m-ov-avatar" src="${imgSrc}" alt="${esc(expr)}" />
@@ -133,7 +137,7 @@ function renderScene(s, i) {
   const punchCls = s.meta?.punch || s.type === "meme" ? " has-punch" : "";
   const cls = `clip sc sc-${s.type} v${s.variant || 0}${punchCls}`;
   const inner = RENDER[s.type] ? RENDER[s.type](s, i) : RENDER.statement(s, i);
-  const mascotOv = renderMascotOverlay(s.mascot);
+  const mascotOv = renderMascotOverlay(s.mascot, s);
   return `<section id="${id}" class="${cls}" data-start="${start.toFixed(3)}" data-duration="${dur.toFixed(3)}" data-track-index="2" data-hold style="--ac:${accent}">
   <div class="sc-in" data-layout-allow-overflow>
     <div class="amb"></div>
@@ -262,6 +266,7 @@ const RENDER = {
     ${eyebrow(s)}
     <div class="code-shell">
       <div class="code-bar">
+        <div class="mac-dots"><span class="mac-dot close"></span><span class="mac-dot min"></span><span class="mac-dot max"></span></div>
         <span class="code-file">${esc(file)}</span>
         ${tag ? `<span class="code-tag">${esc(tag)}</span>` : ""}
       </div>
@@ -420,7 +425,8 @@ const RENDER = {
     ${eyebrow(s)}
     <div class="tm-shell">
       <div class="tm-bar">
-        <span>${esc(s.meta?.host || "terminal@idevak")}</span>
+        <div class="mac-dots"><span class="mac-dot close"></span><span class="mac-dot min"></span><span class="mac-dot max"></span></div>
+        <span class="tm-host">${esc(s.meta?.host || "terminal@idevak")}</span>
         <span class="tm-led"></span>
       </div>
       <div class="tm-body">
@@ -573,6 +579,210 @@ const RENDER = {
           <h2 class="meme-caption">${splitWords(caption, s)}</h2>
           ${sub ? `<p class="meme-sub">${esc(sub)}</p>` : ""}
         </div>
+      </div>
+    </div>`;
+  },
+
+  cve(s) {
+    const cveId = s.meta?.cveId || "CVE-2026-XXXX";
+    const severity = s.meta?.severity || "CRITICAL";
+    const score = s.meta?.score || "9.8";
+    const vector = s.meta?.vector || "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H";
+    const affected = s.meta?.affected || "All versions prior to v2.4.1";
+    const patch = s.meta?.patch || "Upstream hotfix released";
+
+    return `
+    ${eyebrow(s)}
+    <div class="cve-stage">
+      <div class="cve-shell">
+        <div class="cve-head">
+          <div class="cve-badge-group">
+            <span class="cve-icon">⚠️</span>
+            <span class="cve-id">${esc(cveId)}</span>
+            <span class="cve-sev-badge sev-${severity.toLowerCase()}">${esc(severity)}</span>
+          </div>
+          <div class="cve-score-box">
+            <span class="cve-score-lbl">BASE SCORE</span>
+            <span class="cve-score-val">${esc(score)}</span>
+          </div>
+        </div>
+        <div class="cve-body">
+          <div class="cve-metric-row">
+            <div class="cve-metric">
+              <span class="cve-lbl">IMPACT VECTOR</span>
+              <span class="cve-val cve-mono">${esc(vector)}</span>
+            </div>
+            <div class="cve-metric">
+              <span class="cve-lbl">AFFECTED INFRA</span>
+              <span class="cve-val">${esc(affected)}</span>
+            </div>
+            <div class="cve-metric">
+              <span class="cve-lbl">REMEDIATION STATUS</span>
+              <span class="cve-val cve-status-ok">${esc(patch)}</span>
+            </div>
+          </div>
+          <div class="cve-alert-box">
+            <span class="cve-alert-tag">VULNERABILITY SUMMARY</span>
+            <h2 class="cve-summary">${splitWords(s.headline, s)}</h2>
+            ${s.subline ? `<p class="cve-sub">${esc(s.subline)}</p>` : ""}
+          </div>
+        </div>
+      </div>
+    </div>`;
+  },
+
+  tweet(s) {
+    const author = s.meta?.author || "Security Researcher";
+    const handle = s.meta?.handle || "@infosec_lead";
+    const tweetText = s.meta?.text || s.headline;
+    const avatar = s.meta?.avatar || "";
+    const date = s.meta?.date || "Just now";
+    const likes = s.meta?.likes || "24.5K";
+    const retweets = s.meta?.retweets || "4,821";
+
+    return `
+    ${eyebrow(s)}
+    <div class="tweet-stage">
+      <div class="tweet-card">
+        <div class="tweet-top">
+          <div class="tweet-avatar">
+            ${avatar ? `<img src="${esc(avatar)}" alt="${esc(author)}" />` : `<span class="tweet-av-fallback">${esc(author.charAt(0))}</span>`}
+          </div>
+          <div class="tweet-user">
+            <div class="tweet-name-row">
+              <span class="tweet-author">${esc(author)}</span>
+              <span class="tweet-badge-verified">✓</span>
+            </div>
+            <span class="tweet-handle">${esc(handle)}</span>
+          </div>
+          <div class="tweet-x-logo">
+            <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          </div>
+        </div>
+        <div class="tweet-body">
+          <div class="tweet-content">${splitWords(tweetText, s)}</div>
+          ${s.subline && s.subline !== tweetText ? `<div class="tweet-subline">${esc(s.subline)}</div>` : ""}
+          <div class="tweet-date">${esc(date)} · Web Client</div>
+        </div>
+        <div class="tweet-metrics">
+          <div class="tw-metric"><span class="tw-val">${esc(retweets)}</span> <span class="tw-lbl">Reposts</span></div>
+          <div class="tw-metric"><span class="tw-val">${esc(likes)}</span> <span class="tw-lbl">Likes</span></div>
+        </div>
+      </div>
+    </div>`;
+  },
+
+  github(s) {
+    const repo = s.meta?.repo || "cloudflare/core";
+    const prNumber = s.meta?.prNumber || "#4082";
+    const title = s.meta?.title || s.headline;
+    const author = s.meta?.author || "octocat";
+    const branch = s.meta?.branch || "main";
+    const additions = s.meta?.additions || "+1";
+    const deletions = s.meta?.deletions || "-84";
+    const diffLines = s.meta?.diff || [];
+
+    return `
+    ${eyebrow(s)}
+    <div class="gh-stage">
+      <div class="gh-card">
+        <div class="gh-head">
+          <div class="gh-repo-row">
+            <svg class="gh-icon" viewBox="0 0 16 16" width="16" height="16"><path fill="currentColor" d="M2 2.5A2.5 2.5 0 014.5 0h8.75a.75.75 0 01.75.75v12.5a.75.75 0 01-.75.75h-2.5a.75.75 0 110-1.5h1.75v-2h-8a1 1 0 00-.714 1.7.75.75 0 01-1.072 1.05A2.495 2.495 0 012 11.5v-9zm10.5-1V9h-8c-.356 0-.694.074-1 .208V2.5a1 1 0 011-1h8zM5 12.25v3.25a.25.25 0 00.4.2l1.45-1.087a.25.25 0 01.3 0L8.6 15.7a.25.25 0 00.4-.2v-3.25a.25.25 0 00-.25-.25h-3.5a.25.25 0 00-.25.25z"/></svg>
+            <span class="gh-repo">${esc(repo)}</span>
+            <span class="gh-pr-num">${esc(prNumber)}</span>
+          </div>
+          <div class="gh-stats-badge">
+            <span class="gh-add">${esc(additions)}</span>
+            <span class="gh-del">${esc(deletions)}</span>
+          </div>
+        </div>
+        <div class="gh-body">
+          <div class="gh-pr-title">${splitWords(title, s)}</div>
+          <div class="gh-meta-row">
+            <span class="gh-pill gh-pill-merged">Merged</span>
+            <span class="gh-author-text"><b>${esc(author)}</b> merged into <code>${esc(branch)}</code></span>
+          </div>
+          ${diffLines.length ? `
+          <div class="gh-diff-box">
+            ${diffLines.map((l, k) => `
+              <div class="gh-dline dline-${l.k || "ctx"}" data-k="${k}">
+                <span class="dline-sign">${l.k === "add" ? "+" : l.k === "del" ? "-" : " "}</span>
+                <span class="dline-code">${esc(l.t || l)}</span>
+              </div>
+            `).join("")}
+          </div>` : ""}
+        </div>
+      </div>
+      <div class="gh-foot">
+        ${s.subline ? `<p class="gh-sub">${esc(s.subline)}</p>` : ""}
+      </div>
+    </div>`;
+  },
+
+  network(s) {
+    const tiers = s.meta?.tiers || [];
+    const packets = s.meta?.packets || [];
+    return `
+    ${eyebrow(s)}
+    <div class="net-stage">
+      <div class="net-canvas">
+        <div class="net-tiers">
+          ${tiers.map((tier, tIdx) => `
+            <div class="net-tier tier-${esc(tier.id || String(tIdx))}" data-tier="${tIdx}">
+              <div class="net-tier-head">
+                <span class="net-tier-dot"></span>
+                <span class="net-tier-name">${esc(tier.name || `TIER ${tIdx + 1}`)}</span>
+              </div>
+              <div class="net-nodes-col">
+                ${(tier.nodes || []).map((n, nIdx) => `
+                  <div id="node-${esc(n.id)}" class="net-node ${n.hot ? "is-hot" : ""} ${n.bad ? "is-bad" : ""}" data-id="${esc(n.id)}">
+                    <div class="net-node-icon">${esc(n.icon || "⚙️")}</div>
+                    <div class="net-node-body">
+                      <div class="net-node-title">${esc(n.title)}</div>
+                      ${n.sub ? `<div class="net-node-sub">${esc(n.sub)}</div>` : ""}
+                    </div>
+                    <div class="net-node-status"><span class="net-status-dot"></span></div>
+                  </div>
+                `).join("")}
+              </div>
+            </div>
+          `).join("")}
+        </div>
+        <svg class="net-traces-svg" viewBox="0 0 1664 540" preserveAspectRatio="none">
+          <defs>
+            <filter id="net-glow" x="-20%" y="-20%" width="140%" height="140%">
+              <feGaussianBlur stdDeviation="3" result="blur" />
+              <feMerge>
+                <feMergeNode in="blur" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+          </defs>
+          ${tiers.slice(0, -1).map((tier, tIdx) => {
+            const nextTier = tiers[tIdx + 1];
+            if (!nextTier) return "";
+            const currentNodes = tier.nodes || [];
+            const nextNodes = nextTier.nodes || [];
+            const tierX1 = 180 + tIdx * (1304 / Math.max(1, tiers.length - 1));
+            const tierX2 = 180 + (tIdx + 1) * (1304 / Math.max(1, tiers.length - 1));
+            return currentNodes.map((cn, ci) => {
+              const y1 = 90 + ci * (360 / Math.max(1, currentNodes.length - 1 || 1));
+              return nextNodes.map((nn, ni) => {
+                const y2 = 90 + ni * (360 / Math.max(1, nextNodes.length - 1 || 1));
+                const cp1x = tierX1 + (tierX2 - tierX1) * 0.5;
+                const cp2x = tierX1 + (tierX2 - tierX1) * 0.5;
+                const d = `M ${tierX1} ${y1} C ${cp1x} ${y1}, ${cp2x} ${y2}, ${tierX2} ${y2}`;
+                return `<path class="net-trace" d="${d}" data-from="${esc(cn.id)}" data-to="${esc(nn.id)}" />`;
+              }).join("");
+            }).join("");
+          }).join("")}
+          <circle class="net-packet" cx="-40" cy="-40" r="5" filter="url(#net-glow)"></circle>
+        </svg>
+      </div>
+      <div class="net-foot">
+        <h2 class="net-title">${splitWords(s.headline, s)}</h2>
+        ${s.subline ? `<p class="net-sub">${esc(s.subline)}</p>` : ""}
       </div>
     </div>`;
   },

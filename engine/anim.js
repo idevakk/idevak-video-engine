@@ -862,6 +862,134 @@
       if (el.querySelector(".meme-sub")) fade(el.querySelector(".meme-sub"), at + 0.5, { dur: 0.6 });
     },
 
+    cve: function (el, s, at, dur) {
+      fade(el.querySelector(".eyebrow"), at, { y: 12, dur: 0.55 });
+      var shell = el.querySelector(".cve-shell");
+      if (shell) {
+        tl.fromTo(shell,
+          { scale: 0.94, opacity: 0, rotateX: 4 },
+          { scale: 1, opacity: 1, rotateX: 0, duration: 0.75, ease: "back.out(1.6)", transformPerspective: 1200 },
+          at + 0.05
+        );
+        // Fireship CVE siren alert pulse
+        flashCut(at + 0.05, 0.35);
+        queueSFX("thud", at + 0.08, { vol: 1.4 });
+      }
+      var scoreVal = el.querySelector(".cve-score-val");
+      if (scoreVal) {
+        tl.fromTo(scoreVal,
+          { scale: 1.5, opacity: 0, color: "#ffffff" },
+          { scale: 1.0, opacity: 1, color: "#ff3b5c", duration: 0.45, ease: "back.out(2.2)" },
+          at + 0.25
+        );
+        queueSFX("tick", at + 0.25, { vol: 1.0 });
+      }
+      words(el.querySelector(".cve-summary"), at + 0.22, { stagger: 0.038, dur: 0.8 }, s);
+      if (el.querySelector(".cve-sub")) fade(el.querySelector(".cve-sub"), at + 0.6, { dur: 0.65 });
+    },
+
+    tweet: function (el, s, at, dur) {
+      fade(el.querySelector(".eyebrow"), at, { y: 12, dur: 0.55 });
+      var card = el.querySelector(".tweet-card");
+      if (card) {
+        tl.fromTo(card,
+          { y: 35, opacity: 0, scale: 0.96, rotateZ: -1.2 },
+          { y: 0, opacity: 1, scale: 1, rotateZ: 0, duration: 0.75, ease: E.expo },
+          at + 0.06
+        );
+      }
+      var metrics = q(el, ".tw-metric");
+      if (metrics.length) {
+        tl.fromTo(metrics,
+          { opacity: 0, y: 10 },
+          { opacity: 1, y: 0, duration: 0.45, stagger: 0.1, ease: E.soft },
+          at + 0.5
+        );
+      }
+      words(el.querySelector(".tweet-content"), at + 0.18, { stagger: 0.035, dur: 0.75 }, s);
+      if (el.querySelector(".tweet-subline")) fade(el.querySelector(".tweet-subline"), at + 0.6, { dur: 0.6 });
+    },
+
+    github: function (el, s, at, dur) {
+      fade(el.querySelector(".eyebrow"), at, { y: 12, dur: 0.55 });
+      var card = el.querySelector(".gh-card");
+      if (card) {
+        tl.fromTo(card,
+          { y: 30, opacity: 0, scale: 0.98 },
+          { y: 0, opacity: 1, scale: 1, duration: 0.75, ease: E.expo },
+          at + 0.05
+        );
+      }
+      var diffLines = q(el, ".gh-dline");
+      if (diffLines.length) {
+        tl.fromTo(diffLines,
+          { x: -14, opacity: 0 },
+          { x: 0, opacity: 1, duration: 0.4, stagger: 0.08, ease: E.soft },
+          at + 0.3
+        );
+        queueSFX("click", at + 0.35, { vol: 0.8 });
+      }
+      words(el.querySelector(".gh-pr-title"), at + 0.15, { stagger: 0.038, dur: 0.8 }, s);
+      if (el.querySelector(".gh-sub")) fade(el.querySelector(".gh-sub"), at + 0.6, { dur: 0.65 });
+    },
+
+    network: function (el, s, at, dur) {
+      fade(el.querySelector(".eyebrow"), at, { y: 12, dur: 0.55 });
+      var tiers = q(el, ".net-tier");
+      tl.fromTo(tiers,
+        { z: -80, opacity: 0, y: 30, scale: 0.94 },
+        { z: 0, opacity: 1, y: 0, scale: 1, duration: 0.85, stagger: 0.14, ease: E.springSubtle },
+        at + 0.1
+      );
+      var nodes = q(el, ".net-node");
+      tl.fromTo(nodes,
+        { opacity: 0, scale: 0.92, y: 10 },
+        { opacity: 1, scale: 1, y: 0, duration: 0.5, stagger: 0.07, ease: E.soft },
+        at + 0.25
+      );
+      var traces = q(el, ".net-trace");
+      draw(traces, at + 0.45, { dur: 0.85, stagger: 0.06 });
+
+      var packet = el.querySelector(".net-packet");
+      if (packet) {
+        tl.fromTo(packet, { opacity: 0 }, { opacity: 1, duration: 0.2 }, at + 0.5);
+        var cycleDur = Math.max(1.6, Math.min(3.4, dur * 0.38));
+        tl.fromTo(packet,
+          { cx: 160, cy: 120 },
+          { cx: 1520, cy: 420, duration: cycleDur, ease: "sine.inOut", repeat: rep(dur - 0.8, cycleDur) },
+          at + 0.55
+        );
+        // Acoustic ticks on packet milestones
+        var tickTimes = [0.6, 1.2, 1.8, 2.4];
+        tickTimes.forEach(function (offset) {
+          if (offset < dur) {
+            queueSFX("tick", at + offset, { vol: 0.85 });
+          }
+        });
+      }
+
+      var hotNodes = q(el, ".net-node.is-hot");
+      var normalNodes = q(el, ".net-node:not(.is-hot)");
+      if (hotNodes.length) {
+        // ByteMonk Depth-of-Field: Dim inactive nodes and surge hot cluster
+        tl.to(normalNodes, {
+          opacity: 0.35,
+          filter: "blur(1.5px)",
+          duration: 0.8,
+          ease: "sine.inOut"
+        }, at + 1.1);
+
+        tl.fromTo(hotNodes,
+          { scale: 1.0, boxShadow: "0 0 0px var(--ac)" },
+          { scale: 1.05, boxShadow: "0 0 35px -2px var(--ac)", duration: 0.6, ease: "back.out(1.5)" },
+          at + 1.1
+        );
+      }
+
+      words(el.querySelector(".net-title"), at + 0.2, { stagger: 0.038, dur: 0.8 }, s);
+      if (el.querySelector(".net-sub")) fade(el.querySelector(".net-sub"), at + 0.6, { dur: 0.65 });
+    },
+
     cloud: function (el, s, at, dur) {
       fade(el.querySelector(".eyebrow"), at, { y: 12, dur: 0.55 });
       fade(el.querySelector(".cloud-header"), at + 0.05, { y: 10, dur: 0.5 });
@@ -920,7 +1048,11 @@
   };
 
   /* ---------------------------------------------------------- build */
-  gsap.set(".sc-in", { transformOrigin: "50% 48%" });
+  var rootEl = document.getElementById("root");
+  if (rootEl) {
+    gsap.set(rootEl, { perspective: 1400, transformStyle: "preserve-3d" });
+  }
+  gsap.set(".sc-in", { transformOrigin: "50% 50% -80px", transformStyle: "preserve-3d" });
 
   SCENES.forEach(function (s, i) {
     var el = document.getElementById("s" + String(i + 1).padStart(3, "0"));
@@ -933,44 +1065,103 @@
     /* accent for shared bloom & dynamic CSS variable */
     tl.to(":root", { "--ac": s.accent || "#38bdf8", duration: 1.0, ease: "sine.inOut" }, at);
 
-    /* ------------------------------ 2.5D Camera & Parallax Choreography */
+    /* ------------------------------ 2.5D Semantic Camera Archetypes */
+    var isArch = Boolean(s.type === "network" || s.type === "flow" || s.type === "cloud" || s.type === "matrix");
+    var isCode = Boolean(s.type === "code" || s.type === "diff" || s.type === "terminal");
+    var isPunch = Boolean(s.punch || s.meta?.punch || s.type === "meme" || (s.type === "stat" && s.variant === 1));
+
+    var cam = {
+      rotateX: 1.6,
+      rotateY: (i % 2 === 0 ? -1.8 : 1.8),
+      rotateZ: 0,
+      z: 0,
+      scale: 1.0
+    };
+
+    if (isArch) {
+      // ByteMonk 2.5D Isometric Architectural Plane
+      cam.rotateX = 7.5;
+      cam.rotateY = (i % 2 === 0 ? -5.5 : 5.5);
+      cam.z = -30;
+      cam.scale = 1.02;
+    } else if (isCode) {
+      // Fireship Over-the-Shoulder Code Inspection Tilt
+      cam.rotateX = 3.2;
+      cam.rotateY = -2.2;
+      cam.z = 20;
+      cam.scale = 1.01;
+    } else if (isPunch) {
+      // High-Impact Snap Zoom
+      cam.rotateX = 1.2;
+      cam.rotateY = 0;
+      cam.z = 70;
+      cam.scale = 1.07;
+    }
+
     var driftVectors = [
-      { dx: 18, dy: -10, rot: 0.18, scaleEnd: 1.036 },
-      { dx: -16, dy: 8, rot: -0.16, scaleEnd: 1.034 },
-      { dx: -12, dy: -12, rot: 0.14, scaleEnd: 1.038 },
-      { dx: 15, dy: 11, rot: -0.15, scaleEnd: 1.032 }
+      { dx: 22, dy: -12 },
+      { dx: -20, dy: 10 },
+      { dx: -16, dy: -14 },
+      { dx: 18, dy: 13 }
     ];
     var v = driftVectors[i % 4];
 
-    /* Background Parallax: Counter-drift grid at 0.22x speed for optical depth */
+    /* Background Parallax: Counter-drift grid at 0.25x speed for optical depth */
     tl.to("#bg-grid", {
-      x: "+=" + (-v.dx * 0.45),
-      y: "+=" + (-v.dy * 0.45),
+      x: "+=" + (-v.dx * 0.5),
+      y: "+=" + (-v.dy * 0.5),
       duration: Math.max(1, dur),
       ease: "sine.inOut"
     }, at);
 
     /* Dynamic Volumetric Bloom tracking */
     tl.to("#bg-bloom", {
-      x: 960 + v.dx * 2.2,
-      y: 540 + v.dy * 2.2,
-      scale: 1.08 + (i % 3) * 0.04,
-      opacity: (s.punch || s.type === "stat") ? 0.20 : 0.13,
+      x: 960 + v.dx * 2.4,
+      y: 540 + v.dy * 2.4,
+      scale: 1.08 + (i % 3) * 0.05,
+      opacity: isPunch ? 0.22 : 0.14,
       duration: Math.max(1, dur),
       ease: "sine.inOut"
     }, at);
 
-    /* Continuous Living Camera on .sc-in (eliminates dead holds) */
+    /* Continuous Living 2.5D Camera on .sc-in (eliminates dead holds) */
     if (scIn) {
+      // Camera Ingress
       tl.fromTo(scIn,
-        { scale: 1.0, x: 0, y: 0, rotate: v.rot },
-        { scale: v.scaleEnd, x: v.dx, y: v.dy, rotate: 0, duration: Math.max(1, dur), ease: "sine.out" },
+        {
+          rotateX: cam.rotateX * 1.4,
+          rotateY: cam.rotateY * 1.4,
+          z: cam.z - 80,
+          scale: cam.scale * 0.96,
+          opacity: 0.88
+        },
+        {
+          rotateX: cam.rotateX,
+          rotateY: cam.rotateY,
+          z: cam.z,
+          scale: cam.scale,
+          opacity: 1.0,
+          duration: Math.min(1.1, dur * 0.35),
+          ease: E.expo
+        },
         at
       );
 
+      // Continuous slow dolly push-in across hold
+      var dollyZ = cam.z + (dur > 6.0 ? 55 : 30);
+      tl.to(scIn, {
+        x: "+=" + v.dx,
+        y: "+=" + v.dy,
+        z: dollyZ,
+        rotateX: cam.rotateX * 0.65,
+        rotateY: cam.rotateY * 0.65,
+        duration: Math.max(1, dur),
+        ease: "sine.inOut"
+      }, at);
+
       /* Subtle organic vertical float/breathing during hold */
       tl.to(scIn, {
-        y: "+=5",
+        y: "+=4",
         duration: 3.2,
         ease: "sine.inOut",
         yoyo: true,
@@ -1002,22 +1193,27 @@
       );
     }
 
-    /* Universal Mascot Overlay with Living Emotion & Telemetry */
+    /* Universal Contextual Mascot Overlay with Living Emotion & Role Physics */
     var mOv = el.querySelector(".m-ov");
     if (mOv) {
       var expr = mOv.getAttribute("data-expr") || "neutral";
+      var role = mOv.getAttribute("data-role") || "corner";
       var isShock = expr === "shocked" || expr === "panic";
       var isThink = expr === "thinking" || expr === "skeptical";
+      var isPop = role === "reaction-pop";
+      var isInsp = role === "inspector";
 
-      /* Emotion-aware entrance physics */
-      var enterScale = isShock ? 0.72 : 0.82;
-      var enterEase = isShock ? "back.out(2.2)" : E.spring;
+      /* Role & Emotion-aware entrance physics */
+      var enterScale = isPop ? 0.35 : (isShock ? 0.72 : 0.82);
+      var enterEase = isPop ? "back.out(2.4)" : (isShock ? "back.out(2.0)" : E.spring);
+      var enterY = isPop ? 40 : 64;
+
       tl.fromTo(mOv,
-        { y: 64, opacity: 0, scale: enterScale },
-        { y: 0, opacity: 1, scale: 1, duration: 0.55, ease: enterEase },
+        { y: enterY, opacity: 0, scale: enterScale, rotate: isInsp ? 5 : 0 },
+        { y: 0, opacity: 1, scale: 1, rotate: isInsp ? 3 : 0, duration: isPop ? 0.42 : 0.55, ease: enterEase },
         at + 0.12
       );
-      queueSFX(isShock ? "thud" : "chime", at + 0.15, { vol: 0.8 });
+      queueSFX(isPop || isShock ? "thud" : "chime", at + 0.15, { vol: isPop ? 1.2 : 0.8 });
 
       /* Mascot gentle idle breathing float */
       tl.to(mOv, {
@@ -1072,12 +1268,32 @@
     /* Forensic Redactions & Live Highlighting */
     forensicAnimations(el, at, dur, s);
 
-    /* Mid-scene focal re-engagement on long holds (so 8-12s scenes stay mesmerizing) */
-    if (dur > 6.0) {
-      var midTime = at + dur * 0.52;
+    /* Multi-Phase Staged Choreography for Long Holds (>6.0s) (Zero Dead Holds) */
+    if (dur >= 6.0) {
+      var midTime = at + dur * 0.48;
+      // Phase 2: Mid-Scene Focal Zoom & Secondary Activation
+      if (scIn) {
+        tl.to(scIn, {
+          scale: "+=0.038",
+          duration: 1.2,
+          ease: "power2.inOut"
+        }, midTime);
+      }
       if (ambEl) {
-        tl.to(ambEl, { opacity: 0.22, scale: 1.14, duration: 0.8, ease: "sine.out" }, midTime);
-        tl.to(ambEl, { opacity: 0.10, scale: 1.02, duration: 1.2, ease: "sine.in" }, midTime + 0.8);
+        tl.to(ambEl, { opacity: 0.24, scale: 1.16, duration: 0.8, ease: "sine.out" }, midTime);
+        tl.to(ambEl, { opacity: 0.11, scale: 1.03, duration: 1.2, ease: "sine.in" }, midTime + 0.8);
+      }
+      // Secondary tactile swipe
+      queueSFX("swipe", midTime + 0.2, { vol: 0.65 });
+
+      // Phase 3: Resolution & Pre-cut Camera Settle
+      var preCutTime = at + dur * 0.85;
+      if (scIn) {
+        tl.to(scIn, {
+          scale: "-=0.012",
+          duration: dur * 0.15,
+          ease: "sine.out"
+        }, preCutTime);
       }
     }
   });

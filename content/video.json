@@ -1,5 +1,5 @@
 {
-  "title": "Your Video Title Here",
+  "title": "Zero-Day in the Cloud: How the Envoy Vulnerability Was Fixed",
   "slug": "your-video-slug",
   "compositionId": "your-video-slug",
   "audio": "content/voiceover.wav",
@@ -34,119 +34,229 @@
       "id": "s001",
       "type": "cold",
       "act": "hook",
-      "narration": "What if one small configuration bug brought down an entire cloud infrastructure in seconds?",
+      "narration": "What if one configuration bug opened a remote code execution backdoor into millions of cloud clusters?",
       "eyebrow": "COLD OPEN",
-      "headline": "The Silent Outage",
-      "subline": "A single line of configuration. Millions of requests dropped.",
+      "headline": "The 9.8 Cloud Crisis",
+      "subline": "Zero authentication required. Full infrastructure compromise.",
       "meta": {
         "chips": [
-          "AWS CLOUD",
-          "KUBERNETES",
+          "ZERO-DAY",
+          "CVSS 9.8",
           "POSTMORTEM"
         ],
-        "ghost": "ZERO"
+        "ghost": "BREACH"
       }
     },
     {
       "id": "s002",
-      "type": "hero",
+      "type": "cve",
       "act": "hook",
-      "narration": "Today we are dissecting how modern distributed systems fail, and how to design them so they never do.",
-      "eyebrow": "ARCHITECTURE",
-      "headline": "How Distributed Systems Fail",
-      "subline": "Resilience is not an afterthought. It is an engineering discipline.",
+      "narration": "Rated a catastrophic 9.8 critical severity, CVE-2026-3829 allowed unauthenticated memory leaks across edge gateways.",
+      "eyebrow": "SECURITY ADVISORY",
+      "headline": "Unauthenticated Buffer Overflow in Gateway Parser",
+      "subline": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
       "meta": {
-        "mark": "CLOUD",
-        "rule": true
+        "cveId": "CVE-2026-3829",
+        "severity": "CRITICAL",
+        "score": "9.8",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
+        "affected": "Envoy Ingress <= v1.31.2",
+        "patch": "Vendor patch deployed"
       },
       "mascot": {
-        "expression": "pointing",
-        "position": "bottom-right",
-        "bubble": "Let's break down the architecture step by step."
+        "role": "reaction-pop",
+        "expression": "panic",
+        "position": "center-pop",
+        "bubble": "A 9.8 base score is essentially Game Over!"
       }
     },
     {
       "id": "s003",
+      "type": "tweet",
+      "act": "hook",
+      "narration": "Security researchers broke the news on X, confirming active exploits circulating in the wild.",
+      "eyebrow": "PUBLIC DISCLOSURE",
+      "headline": "We just verified a zero-day exploit actively weaponized in production clusters. Patch immediately.",
+      "subline": "Thread by @cloudsec_lead",
+      "meta": {
+        "author": "CloudSec Intelligence",
+        "handle": "@cloudsec_lead",
+        "text": "We just verified a zero-day exploit actively weaponized in production clusters. Patch immediately.",
+        "date": "10:42 AM \u00b7 Oct 26, 2026",
+        "likes": "32.4K",
+        "retweets": "6,190"
+      }
+    },
+    {
+      "id": "s004",
       "type": "terminal",
       "act": "core",
-      "narration": "When the connection pool exhausted, every container node began throwing cascading connection timeouts.",
-      "eyebrow": "THE FAILURE",
-      "headline": "Cascading Pool Exhaustion",
-      "subline": "Max connections reached. Health checks failed.",
+      "narration": "When the malicious payload hit the ingress container, memory exhausted instantly and dropped the pod into CrashLoopBackOff.",
+      "eyebrow": "THE EXPLOIT",
+      "headline": "Cascading Memory Exhaustion",
+      "subline": "OOMKilled status triggered across entire gateway tier.",
       "meta": {
         "host": "prod-cluster / us-east-1",
         "lines": [
           {
-            "t": "kubectl get pods -n production",
+            "t": "kubectl get pods -n gateway",
             "k": "cmd"
           },
           {
-            "t": "api-gateway-7f8d   0/1   CrashLoopBackOff   12m",
+            "t": "envoy-ingress-8f4b   0/1   OOMKilled          1m",
             "k": "err"
           },
           {
-            "t": "db-pool-worker-34  0/1   OOMKilled          4m",
+            "t": "envoy-ingress-912c   0/1   CrashLoopBackOff   15s",
             "k": "err"
           },
           {
-            "t": "[CRITICAL] Connection pool limit 500 exceeded",
+            "t": "[CRITICAL] Memory limit 2048Mi exceeded in worker thread",
             "k": "out"
           }
         ]
       },
       "mascot": {
-        "expression": "panic",
-        "position": "bottom-right",
-        "bubble": "Every node is in CrashLoopBackOff!"
-      }
-    },
-    {
-      "id": "s004",
-      "type": "compare",
-      "act": "solution",
-      "narration": "Instead of blind retries that stampede your database, modern systems implement exponential backoff with jitter and circuit breaking.",
-      "eyebrow": "THE PATTERN",
-      "headline": "Thundering Herd versus Circuit Breakers",
-      "subline": "Graceful degradation under catastrophic load spikes.",
-      "meta": {
-        "left": {
-          "k": "NAIVE RETRIES",
-          "t": "Immediate retry on error",
-          "pts": [
-            "amplifies backend load",
-            "thundering herd collapse",
-            "cascading timeouts"
-          ]
-        },
-        "right": {
-          "k": "CIRCUIT BREAKER",
-          "t": "Exponential backoff and jitter",
-          "pts": [
-            "fast-fail protection",
-            "sheds excess traffic",
-            "instant recovery"
-          ]
-        },
-        "vs": "->"
-      },
-      "mascot": {
-        "expression": "cool",
-        "position": "bottom-left",
-        "bubble": "Circuit breakers protect your database."
+        "role": "inspector",
+        "expression": "shocked",
+        "position": "inspector-right",
+        "bubble": "Look at that OOMKilled exit code!"
       }
     },
     {
       "id": "s005",
+      "type": "network",
+      "act": "core",
+      "narration": "In a resilient architecture, ingress traffic is throttled at Envoy, buffered through Kafka partitions, and decoupled from cache nodes.",
+      "eyebrow": "ISOLATION TOPOLOGY",
+      "headline": "Multi-Tier Ingress Protection",
+      "subline": "Dynamic backpressure with isolated failure domains",
+      "meta": {
+        "tiers": [
+          {
+            "id": "edge",
+            "name": "EDGE INGRESS",
+            "nodes": [
+              {
+                "id": "envoy",
+                "title": "Envoy Ingress",
+                "sub": "Rate-limited",
+                "icon": "\ud83c\udf10",
+                "hot": true
+              }
+            ]
+          },
+          {
+            "id": "stream",
+            "name": "STREAM BUFFER",
+            "nodes": [
+              {
+                "id": "kafka",
+                "title": "Kafka Telemetry",
+                "sub": "Partitioned Buffer",
+                "icon": "\u26a1",
+                "hot": true
+              },
+              {
+                "id": "workers",
+                "title": "Backpressure Pool",
+                "sub": "Adaptive Concurrency",
+                "icon": "\u2699\ufe0f"
+              }
+            ]
+          },
+          {
+            "id": "storage",
+            "name": "STATEFUL TIERS",
+            "nodes": [
+              {
+                "id": "redis",
+                "title": "Redis Sentinel",
+                "sub": "In-Memory Cache",
+                "icon": "\ud83d\udcbe"
+              },
+              {
+                "id": "aurora",
+                "title": "Aurora DB",
+                "sub": "Write-Protected",
+                "icon": "\ud83d\uddc4\ufe0f"
+              }
+            ]
+          }
+        ],
+        "packets": [
+          {
+            "from": "envoy",
+            "to": "kafka"
+          },
+          {
+            "from": "kafka",
+            "to": "redis"
+          }
+        ]
+      },
+      "mascot": {
+        "role": "inspector",
+        "expression": "cool",
+        "position": "inspector-right",
+        "bubble": "Backpressure isolates the cluster."
+      }
+    },
+    {
+      "id": "s006",
+      "type": "github",
+      "act": "solution",
+      "narration": "Within four hours, maintainers merged a three-line patch that validated packet length headers and neutralized the bug.",
+      "eyebrow": "THE RESOLUTION",
+      "headline": "Validate header length to prevent unauthenticated buffer overruns",
+      "subline": "PR #4082 merged into main branch",
+      "meta": {
+        "repo": "envoyproxy/envoy",
+        "prNumber": "#4082",
+        "title": "Validate header length to prevent unauthenticated buffer overruns",
+        "author": "maintainer-core",
+        "branch": "main",
+        "additions": "+3",
+        "deletions": "-1",
+        "diff": [
+          {
+            "k": "ctx",
+            "t": "if (packet_len > MAX_INGRESS_HEADER_SIZE) {"
+          },
+          {
+            "k": "add",
+            "t": "    return Status::InvalidHeaderLength;"
+          },
+          {
+            "k": "del",
+            "t": "    buffer.copy_raw(packet_len);"
+          },
+          {
+            "k": "ctx",
+            "t": "}"
+          }
+        ]
+      },
+      "mascot": {
+        "role": "corner",
+        "expression": "happy",
+        "position": "bottom-right",
+        "bubble": "Clean three-line fix deployed worldwide!"
+      }
+    },
+    {
+      "id": "s007",
       "type": "outro",
       "act": "solution",
-      "narration": "If you build, solve, and deploy modern cloud software, subscribe for more real-world production autopsies.",
-      "eyebrow": "NEXT STEPS",
-      "headline": "BUILD. SOLVE. DEPLOY.",
-      "subline": "Architecture breakdowns, cloud engineering, and AI automation every week.",
+      "narration": "Subscribe to iDevak for zero-day breakdowns, cloud architecture autopsies, and deep infrastructure engineering.",
+      "eyebrow": "NEXT INVESTIGATION",
+      "headline": "Architect Resilience Before the Outage",
+      "subline": "Building high-throughput, fault-tolerant distributed systems.",
       "meta": {
+        "channel": "youtube.com/@iDevak",
         "ghost": "IDEVAK",
         "cta": "Subscribe",
-        "ctaSub": "youtube.com/@iDevak"
+        "ctaSub": "BUILD. SOLVE. DEPLOY."
       }
     }
   ]

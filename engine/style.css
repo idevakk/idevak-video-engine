@@ -1034,3 +1034,130 @@ body{width:var(--composition-width,1920px);height:var(--composition-height,1080p
     font-size: 18px;
   }
 }
+
+
+/* ============================================================ macOS window chrome & glassmorphism */
+.mac-dots{display:flex;align-items:center;gap:7px;margin-right:12px}
+.mac-dot{width:11px;height:11px;border-radius:50%;display:inline-block}
+.mac-dot.close{background:#ff5f56;box-shadow:0 0 8px rgba(255,95,86,.45)}
+.mac-dot.min{background:#ffbd2e;box-shadow:0 0 8px rgba(255,189,46,.45)}
+.mac-dot.max{background:#27c93f;box-shadow:0 0 8px rgba(39,201,63,.45)}
+
+.code-shell, .tm-shell, .diff-shell {
+  background: rgba(9, 13, 24, 0.72) !important;
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 0 24px 60px -12px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(255, 255, 255, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
+  border-radius: 14px;
+}
+
+/* Contextual mascot roles */
+.m-ov.pos-ir{right:120px;bottom:140px;flex-direction:row;transform-origin:bottom right}
+.m-ov.pos-il{left:120px;bottom:140px;flex-direction:row-reverse;transform-origin:bottom left}
+.m-ov.pos-cp{left:50%;bottom:90px;transform:translateX(-50%);flex-direction:column-reverse;align-items:center}
+.m-role-inspector .m-ov-avatar-wrap{width:180px;height:180px;border-width:2px}
+.m-role-reaction-pop .m-ov-avatar-wrap{width:260px;height:260px;border-width:4px}
+
+/* ============================================================ network scene (ByteMonk) */
+.net-stage{width:100%;max-width:1664px;margin:0 auto;display:flex;flex-direction:column;gap:24px}
+.net-canvas{position:relative;width:100%;height:540px;background:linear-gradient(165deg,rgba(10,14,26,.72),rgba(5,7,14,.88));border:1px solid rgba(255,255,255,.10);border-radius:14px;backdrop-filter:blur(24px);box-shadow:0 24px 60px -12px rgba(0,0,0,.8);overflow:hidden;padding:24px 36px}
+.net-tiers{position:relative;z-index:2;display:flex;justify-content:space-between;height:100%;gap:32px}
+.net-tier{display:flex;flex-direction:column;flex:1;min-width:0;gap:16px}
+.net-tier-head{display:flex;align-items:center;gap:8px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,.08)}
+.net-tier-dot{width:6px;height:6px;border-radius:50%;background:var(--ac);box-shadow:0 0 10px var(--ac)}
+.net-tier-name{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.16em;color:var(--dim);text-transform:uppercase}
+.net-nodes-col{display:flex;flex-direction:column;justify-content:center;gap:16px;flex:1}
+.net-node{display:flex;align-items:center;gap:14px;padding:14px 18px;background:rgba(18,24,42,.7);border:1px solid rgba(255,255,255,.08);border-radius:10px;box-shadow:0 10px 25px -5px rgba(0,0,0,.5);transition:border-color .3s,box-shadow .3s}
+.net-node.is-hot{border-color:var(--ac);box-shadow:0 0 24px -4px var(--ac);background:rgba(20,32,58,.8)}
+.net-node.is-bad{border-color:#ff3b5c;box-shadow:0 0 24px -4px #ff3b5c;background:rgba(42,18,24,.8)}
+.net-node-icon{font-size:22px;display:flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:8px;background:rgba(255,255,255,.05)}
+.net-node-body{flex:1;min-width:0}
+.net-node-title{font-size:15px;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.net-node-sub{font-family:var(--mono);font-size:11px;color:var(--dim);margin-top:2px}
+.net-node-status{display:flex;align-items:center}
+.net-status-dot{width:7px;height:7px;border-radius:50%;background:var(--ac);box-shadow:0 0 8px var(--ac)}
+.is-bad .net-status-dot{background:#ff3b5c;box-shadow:0 0 8px #ff3b5c}
+.net-traces-svg{position:absolute;inset:0;width:100%;height:100%;z-index:1;pointer-events:none}
+.net-trace{fill:none;stroke:rgba(255,255,255,.12);stroke-width:1.5px}
+.net-packet{fill:#ffffff;filter:drop-shadow(0 0 8px var(--ac))}
+.net-foot{display:flex;flex-direction:column;gap:6px}
+.net-title{font-size:32px;font-weight:750;letter-spacing:-.02em;color:var(--ink);margin:0}
+.net-sub{font-size:18px;color:var(--dim);margin:0}
+
+
+/* ============================================================ Real-World Dossier Components */
+
+/* 1. CVE Security Advisory Card */
+.cve-stage{width:100%;max-width:1520px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+.cve-shell{background:linear-gradient(165deg,rgba(26,12,16,.75),rgba(12,6,8,.92));border:1px solid rgba(255,59,92,.35);border-radius:14px;box-shadow:0 24px 60px -12px rgba(255,59,92,.25),0 0 0 1px rgba(255,59,92,.1);overflow:hidden;backdrop-filter:blur(24px)}
+.cve-head{display:flex;justify-content:space-between;align-items:center;padding:18px 28px;background:rgba(255,59,92,.12);border-bottom:1px solid rgba(255,59,92,.2)}
+.cve-badge-group{display:flex;align-items:center;gap:12px}
+.cve-icon{font-size:24px}
+.cve-id{font-family:var(--mono);font-size:20px;font-weight:800;letter-spacing:.08em;color:#fff}
+.cve-sev-badge{font-family:var(--mono);font-size:11px;font-weight:800;padding:4px 10px;border-radius:6px;text-transform:uppercase;letter-spacing:.12em}
+.sev-critical{background:#ff3b5c;color:#fff;box-shadow:0 0 16px rgba(255,59,92,.6)}
+.sev-high{background:#f59e0b;color:#fff;box-shadow:0 0 16px rgba(245,158,11,.6)}
+.cve-score-box{display:flex;align-items:baseline;gap:8px;font-family:var(--mono)}
+.cve-score-lbl{font-size:11px;color:rgba(255,255,255,.6);letter-spacing:.1em}
+.cve-score-val{font-size:32px;font-weight:900;color:#ff3b5c;text-shadow:0 0 18px rgba(255,59,92,.8)}
+.cve-body{padding:28px 36px;display:flex;flex-direction:column;gap:24px}
+.cve-metric-row{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;padding-bottom:20px;border-bottom:1px solid rgba(255,255,255,.08)}
+.cve-metric{display:flex;flex-direction:column;gap:4px}
+.cve-lbl{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.12em;color:rgba(255,255,255,.5)}
+.cve-val{font-size:14px;color:var(--ink);font-weight:600}
+.cve-mono{font-family:var(--mono);font-size:12px;color:var(--dim)}
+.cve-status-ok{color:#4ade80}
+.cve-alert-box{display:flex;flex-direction:column;gap:10px}
+.cve-alert-tag{font-family:var(--mono);font-size:11px;font-weight:700;color:#ff3b5c;letter-spacing:.18em}
+.cve-summary{font-size:34px;font-weight:800;letter-spacing:-.02em;color:#fff;line-height:1.2;margin:0}
+.cve-sub{font-size:18px;color:var(--dim);margin:0}
+
+/* 2. Authentic Twitter / X Quote Card */
+.tweet-stage{width:100%;max-width:1100px;margin:0 auto}
+.tweet-card{background:rgba(10,12,18,.85);border:1px solid rgba(255,255,255,.14);border-radius:18px;padding:32px 36px;box-shadow:0 24px 60px -10px rgba(0,0,0,.85);backdrop-filter:blur(24px)}
+.tweet-top{display:flex;align-items:center;gap:16px;margin-bottom:20px}
+.tweet-avatar{width:56px;height:56px;border-radius:50%;overflow:hidden;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center}
+.tweet-avatar img{width:100%;height:100%;object-fit:cover}
+.tweet-av-fallback{font-size:22px;font-weight:700;color:var(--ink)}
+.tweet-user{flex:1;display:flex;flex-direction:column}
+.tweet-name-row{display:flex;align-items:center;gap:6px}
+.tweet-author{font-size:19px;font-weight:800;color:#fff}
+.tweet-badge-verified{color:#1d9bf0;font-size:16px;font-weight:bold}
+.tweet-handle{font-size:14px;color:var(--dim);font-family:var(--mono)}
+.tweet-x-logo{color:rgba(255,255,255,.5)}
+.tweet-body{display:flex;flex-direction:column;gap:14px}
+.tweet-content{font-size:28px;line-height:1.35;font-weight:500;color:#fff}
+.tweet-subline{font-size:18px;color:var(--ac)}
+.tweet-date{font-size:13px;color:var(--dim);font-family:var(--mono);padding-bottom:14px;border-bottom:1px solid rgba(255,255,255,.1)}
+.tweet-metrics{display:flex;gap:28px;padding-top:4px}
+.tw-metric{display:flex;gap:6px;align-items:baseline}
+.tw-val{font-size:15px;font-weight:800;color:#fff;font-family:var(--mono)}
+.tw-lbl{font-size:13px;color:var(--dim)}
+
+/* 3. GitHub PR Diff Card */
+.gh-stage{width:100%;max-width:1420px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+.gh-card{background:#0d1117;border:1px solid #30363d;border-radius:12px;box-shadow:0 24px 60px rgba(0,0,0,.85);overflow:hidden}
+.gh-head{display:flex;justify-content:space-between;align-items:center;padding:14px 20px;background:#161b22;border-bottom:1px solid #30363d}
+.gh-repo-row{display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:13px}
+.gh-icon{color:#8b949e}
+.gh-repo{color:#58a6ff;font-weight:600}
+.gh-pr-num{color:#8b949e}
+.gh-stats-badge{display:flex;gap:8px;font-family:var(--mono);font-size:12px;font-weight:700}
+.gh-add{color:#3fb950;background:rgba(63,185,80,.15);padding:2px 8px;border-radius:10px}
+.gh-del{color:#f85149;background:rgba(248,81,73,.15);padding:2px 8px;border-radius:10px}
+.gh-body{padding:24px 28px;display:flex;flex-direction:column;gap:16px}
+.gh-pr-title{font-size:26px;font-weight:700;color:#c9d1d9;line-height:1.25}
+.gh-meta-row{display:flex;align-items:center;gap:12px}
+.gh-pill-merged{background:#8957e5;color:#fff;font-size:11px;font-weight:700;padding:3px 10px;border-radius:12px;text-transform:uppercase}
+.gh-author-text{font-size:13px;color:#8b949e}
+.gh-author-text code{font-family:var(--mono);color:#58a6ff;background:rgba(110,118,129,.2);padding:2px 6px;border-radius:4px}
+.gh-diff-box{background:#010409;border:1px solid #21262d;border-radius:8px;overflow:hidden;font-family:var(--mono);font-size:13px;margin-top:8px}
+.gh-dline{display:flex;padding:6px 14px;border-bottom:1px solid rgba(255,255,255,.03)}
+.gh-dline:last-child{border-bottom:none}
+.dline-sign{width:20px;color:#8b949e;user-select:none}
+.dline-code{flex:1;white-space:pre}
+.dline-add{background:rgba(46,160,67,.15);color:#7ee787}
+.dline-del{background:rgba(248,81,73,.15);color:#ffa198}
+.dline-ctx{color:#c9d1d9}
+.gh-foot{font-size:16px;color:var(--dim)}

@@ -177,6 +177,19 @@
       g6.connect(ctx.destination);
       o6.start(t);
       o6.stop(t + 0.1);
+    } else if (type === "tick") {
+      // Crisp mechanical odometer tick
+      var o7 = ctx.createOscillator();
+      var g7 = ctx.createGain();
+      o7.type = "triangle";
+      o7.frequency.setValueAtTime(950, t);
+      o7.frequency.exponentialRampToValueAtTime(150, t + 0.015);
+      g7.gain.setValueAtTime(0.04 * (opt.vol || 1), t);
+      g7.gain.exponentialRampToValueAtTime(0.001, t + 0.015);
+      o7.connect(g7);
+      g7.connect(ctx.destination);
+      o7.start(t);
+      o7.stop(t + 0.02);
     }
   }
 
@@ -316,10 +329,31 @@
     }
     node.textContent = fmt(from);
     var p = { v: from };
+    var countDur = o.duration || o.dur || 1.4;
+
+    /* Kinetic roll with spring overshoot */
     tl.to(p, {
-      v: to, duration: o.dur || 1.5, ease: o.ease || "power2.out",
-      onUpdate: function () { node.textContent = fmt(p.v); },
+      v: to,
+      duration: countDur,
+      ease: o.ease || "power3.out",
+      onUpdate: function () {
+        node.textContent = fmt(p.v);
+      },
     }, at);
+
+    /* Odometer mechanical spring snap-back */
+    tl.fromTo(node,
+      { scale: 1.08, filter: "drop-shadow(0 0 16px rgba(255,255,255,0.4))" },
+      { scale: 1.0, filter: "none", duration: 0.45, ease: "back.out(1.6)" },
+      at + countDur
+    );
+
+    /* Acoustic tick intervals */
+    var tickSteps = 8;
+    for (var k = 0; k < tickSteps; k++) {
+      var tickTime = at + (k / tickSteps) * (countDur * 0.75);
+      queueSFX("tick", tickTime, { vol: 0.7 });
+    }
   }
   function rail(at, strength) {
     tl.fromTo("#cut-rail", { x: 0, opacity: 0 }, { x: 1980, opacity: strength || 0.5, duration: 0.22, ease: "power2.in" }, at);
@@ -618,11 +652,23 @@
     flow: function (el, s, at, dur) {
       fade(el.querySelector(".eyebrow"), at, { y: 12, dur: 0.55 });
       var nodes = q(el, ".flow-node");
-      tl.fromTo(nodes, { y: 40, opacity: 0, scale: 0.97 }, { y: 0, opacity: 1, scale: 1, duration: 0.75, stagger: 0.12, ease: E.springSubtle }, at + 0.1);
+      tl.fromTo(nodes, { y: 40, opacity: 0, scale: 0.94 }, { y: 0, opacity: 1, scale: 1, duration: 0.75, stagger: 0.14, ease: E.springSubtle }, at + 0.1);
+
+      /* Reactive SVG circuit traces with glow pulses */
       var paths = q(el, ".fl-p");
-      draw(paths, at + 0.5, { dur: 0.6, stagger: 0.1 });
+      draw(paths, at + 0.45, { dur: 0.6, stagger: 0.12 });
+      paths.forEach(function (p, i) {
+        tl.fromTo(p,
+          { stroke: "rgba(255,255,255,.15)", filter: "none" },
+          { stroke: ac(s), filter: "drop-shadow(0 0 8px " + ac(s) + ")", duration: 0.4, yoyo: true, repeat: 3 },
+          at + 0.7 + i * 0.12
+        );
+      });
+
       var arr = q(el, ".fl-a");
-      arr.forEach(function (a, i) { tl.fromTo(a, { opacity: 0 }, { opacity: 1, duration: 0.3 }, at + 0.9 + i * 0.1); });
+      arr.forEach(function (a, i) {
+        tl.fromTo(a, { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.3, ease: E.spring }, at + 0.9 + i * 0.1);
+      });
       if (el.querySelector(".flow-cap")) fade(el.querySelector(".flow-cap"), at + 0.55, { dur: 0.7 });
       if (el.querySelector(".flow-sub")) fade(el.querySelector(".flow-sub"), at + 0.7, { dur: 0.6 });
       var railEl = el.querySelector(".flow-rail");

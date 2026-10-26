@@ -8,16 +8,16 @@
     "node": ">=20"
   },
   "scripts": {
-    "validate": "python engine/validate.py",
-    "transcribe": "python engine/transcribe.py",
-    "align": "python engine/align.py",
-    "align:draft": "python engine/align.py --draft",
-    "draft": "python engine/align.py --draft && node engine/build.mjs",
+    "validate": "python3 engine/validate.py",
+    "transcribe": "python3 engine/transcribe.py",
+    "align": "python3 engine/align.py",
+    "align:draft": "python3 engine/align.py --draft",
+    "draft": "python3 engine/align.py --draft && node engine/build.mjs",
     "build": "node engine/build.mjs",
     "pipeline": "npm run validate && npm run transcribe && npm run align && npm run build",
-    "lint": "npx hyperframes@latest lint",
-    "check": "npx hyperframes@latest check",
-    "preview": "npx hyperframes@latest preview",
-    "render": "npx hyperframes@latest render --quality looks --output renders/video.mp4"
+    "lint": "npx --yes hyperframes@latest lint",
+    "check": "npx --yes hyperframes@latest check",
+    "preview": "npx --yes hyperframes@latest preview",
+    "render": "npx --yes hyperframes@latest render --quality looks --output renders/video.mp4"
   }
 }

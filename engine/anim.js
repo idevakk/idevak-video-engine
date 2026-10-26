@@ -23,6 +23,7 @@
   /* ---------------------------------------------------------- backdrop */
   gsap.set("#bg-bloom", { xPercent: -50, yPercent: -50, x: 960, y: 540 });
   tl.to("#bg-noise", { x: 90, y: -60, duration: TOTAL, ease: "none" }, 0);
+  tl.to("#bg-grain", { x: -70, y: 80, duration: TOTAL, ease: "none" }, 0);
   tl.to(":root", { duration: 1.8, ease: "sine.inOut" }, 0);
 
   /* ---------------------------------------------------------- audio-visual haptics (sfx engine) */
@@ -150,6 +151,19 @@
       g4.connect(ctx.destination);
       o4.start(t);
       o4.stop(t + 0.16);
+    } else if (type === "flare") {
+      // High-frequency optical refraction ping & sub-bass shimmer
+      var o5 = ctx.createOscillator();
+      var g5 = ctx.createGain();
+      o5.type = "sine";
+      o5.frequency.setValueAtTime(2400, t);
+      o5.frequency.exponentialRampToValueAtTime(320, t + 0.28);
+      g5.gain.setValueAtTime(0.08 * (opt.vol || 1), t);
+      g5.gain.exponentialRampToValueAtTime(0.001, t + 0.28);
+      o5.connect(g5);
+      g5.connect(ctx.destination);
+      o5.start(t);
+      o5.stop(t + 0.3);
     }
   }
 
@@ -259,6 +273,35 @@
     var str = strength || 0.22;
     tl.fromTo("#bg-bloom", { opacity: str * 1.8, scale: 1.25 }, { opacity: 0.13, scale: 1.1, duration: 0.65, ease: "power2.out" }, at);
   }
+  function triggerFlare(at, opt) {
+    opt = opt || {};
+    var flare = document.getElementById("bg-flare");
+    if (!flare) return;
+    var dur = opt.dur || 0.42;
+    var yPos = opt.y == null ? 540 : opt.y;
+    var xPos = opt.x == null ? 960 : opt.x;
+    var rot = opt.rot || (Math.random() > 0.5 ? -1.8 : 1.5);
+    var core = flare.querySelector(".flare-core");
+    var halo = flare.querySelector(".flare-halo");
+    var streak = flare.querySelector(".flare-streak");
+    var streakSub = flare.querySelector(".flare-streak-sub");
+
+    if (core) gsap.set(core, { x: xPos, y: yPos, xPercent: -50, yPercent: -50 });
+    if (halo) gsap.set(halo, { x: xPos, y: yPos, xPercent: -50, yPercent: -50 });
+    if (streak) gsap.set(streak, { top: yPos, rotate: rot });
+    if (streakSub) gsap.set(streakSub, { top: yPos, rotate: rot * 0.7 });
+
+    tl.fromTo(flare,
+      { opacity: 0, scaleY: 0.2 },
+      { opacity: opt.intensity || 0.95, scaleY: 1.0, duration: 0.08, ease: "power2.out" },
+      at
+    );
+    tl.to(flare,
+      { opacity: 0, scaleY: 0.4, duration: dur - 0.08, ease: "power3.in" },
+      at + 0.08
+    );
+    queueSFX("flare", at, { vol: 0.9 });
+  }
   function cutTransition(s, nextS, at, i, dur) {
     if (i === 0) return;
     var isPunch = Boolean(s.punch || s.meta?.punch || s.type === "meme");
@@ -267,10 +310,12 @@
 
     if (isMajor) {
       flashCut(at, 0.28);
+      triggerFlare(at, { y: 480, intensity: 0.92, dur: 0.48 });
       queueSFX("thud", at, { vol: 1.2 });
       queueSFX("whoosh", at, { vol: 0.8 });
     } else if (isPunch) {
       flashCut(at, 0.2);
+      triggerFlare(at, { y: 540, intensity: 1.0, dur: 0.36 });
       queueSFX("thud", at, { vol: 1.4 });
     } else if (isCyber) {
       rail(at, 0.55);
@@ -456,6 +501,7 @@
       tl.fromTo(el.querySelector(".stat-main"), { y: 46, opacity: 0 }, { y: 0, opacity: 1, duration: 1, ease: E.expo }, at + 0.05);
       countUp(num, at + 0.25, { duration: countDur });
       queueSFX("thud", at + 0.25, { vol: 1.3 });
+      triggerFlare(at + 0.25, { y: 460, intensity: 0.85, dur: 0.4 });
       if (num) {
         tl.fromTo(num, { scale: 1.05 }, { scale: 1.0, duration: 0.35, ease: E.springSubtle }, at + 0.25 + countDur);
       }

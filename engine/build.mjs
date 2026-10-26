@@ -705,6 +705,13 @@ body {
   <div id="bg-bloom"></div>
   <div id="bg-noise"></div>
   <div id="bg-vignette"></div>
+  <div id="bg-grain"></div>
+  <div id="bg-flare">
+    <div class="flare-core"></div>
+    <div class="flare-halo"></div>
+    <div class="flare-streak"></div>
+    <div class="flare-streak-sub"></div>
+  </div>
   <div id="cut-rail"></div>
   ${body}
   <audio id="vo" src="${esc(audio)}" data-start="0" data-duration="${total.toFixed(3)}" data-track-index="1" data-volume="1"></audio>

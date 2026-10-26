@@ -10,8 +10,8 @@
     soft: "power3.out",
     inOut: "power2.inOut",
     expo: "expo.out",
-    spring: "back.out(1.4)",
-    springSubtle: "back.out(1.15)",
+    spring: "power3.out",
+    springSubtle: "power3.out",
     cinematic: "sine.inOut",
     smooth: "power2.out",
   };
@@ -21,12 +21,19 @@
   function ac(s) { return s.accent || "#38bdf8"; }
 
   /* ---------------------------------------------------------- backdrop */
-  gsap.set("#bg-bloom", { xPercent: -50, yPercent: -50, x: 960, y: 540 });
+  gsap.set("#bg-bloom", { xPercent: -50, yPercent: -50, x: 0, y: 0 });
+  tl.to("#bg-grid", { x: -40, y: -24, duration: TOTAL, ease: "none" }, 0);
   tl.to("#bg-noise", { x: 90, y: -60, duration: TOTAL, ease: "none" }, 0);
   tl.to("#bg-grain", { x: -70, y: 80, duration: TOTAL, ease: "none" }, 0);
   tl.to(":root", { duration: 1.8, ease: "sine.inOut" }, 0);
 
   /* ---------------------------------------------------------- audio-visual haptics (sfx engine) */
+  // Index-based noise keeps each procedural buffer repeatable across workers.
+  function noiseSample(index) {
+    var n = Math.imul(index + 1, 374761393);
+    n = Math.imul(n ^ (n >>> 13), 1274126177);
+    return ((n ^ (n >>> 16)) >>> 0) / 2147483648 - 1;
+  }
   var audioCtx = null;
   function getAudioCtx() {
     if (!audioCtx && typeof window !== "undefined") {
@@ -58,7 +65,7 @@
       var bufferSize = ctx.sampleRate * 0.22;
       var buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
       var data = buffer.getChannelData(0);
-      for (var i = 0; i < bufferSize; i++) { data[i] = Math.random() * 2 - 1; }
+      for (var i = 0; i < bufferSize; i++) { data[i] = noiseSample(i); }
       var noise = ctx.createBufferSource();
       noise.buffer = buffer;
       var filter = ctx.createBiquadFilter();
@@ -118,7 +125,7 @@
       var bufferSize = Math.floor(ctx.sampleRate * 0.16);
       var buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
       var data = buffer.getChannelData(0);
-      for (var i = 0; i < bufferSize; i++) { data[i] = (Math.random() * 2 - 1) * 0.5; }
+      for (var i = 0; i < bufferSize; i++) { data[i] = (noiseSample(i)) * 0.5; }
       var noise = ctx.createBufferSource();
       noise.buffer = buffer;
       var filter = ctx.createBiquadFilter();
@@ -211,54 +218,13 @@
     });
     if (!nodes.length) return;
 
-    /* Base cinematic reveal with spring recoil */
+    /* Reveal words without changing their layout or overshooting. */
     var revealDur = o.dur || 0.82;
     var staggerVal = o.stagger || 0.038;
     tl.fromTo(nodes,
-      { yPercent: 118, opacity: 0, x: o.x || 0, rotate: o.rotate || -1.2, scale: 0.94 },
-      { yPercent: 0, opacity: 1, rotate: 0, scale: 1.0, duration: revealDur, ease: E.expo, stagger: staggerVal },
+      { yPercent: 70, opacity: 0, x: o.x || 0 },
+      { yPercent: 0, opacity: 1, x: 0, duration: revealDur, ease: E.expo, stagger: staggerVal },
       at);
-
-    /* Text recoil on parent container */
-    if (el) {
-      tl.fromTo(el,
-        { scale: 0.985 },
-        { scale: 1.0, duration: 0.42, ease: "back.out(1.3)" },
-        at + 0.08
-      );
-    }
-
-    /* Single-frame character decryption / matrix settling on first key words */
-    var CHARSET = "0123456789ABCDEF$#@%&*";
-    nodes.slice(0, Math.min(3, nodes.length)).forEach(function (n, wIdx) {
-      var origText = n.textContent;
-      if (!origText || origText.length < 3) return;
-      var startTime = at + wIdx * staggerVal;
-      var decDur = 0.22;
-      var progressObj = { p: 0 };
-      tl.to(progressObj, {
-        p: 1,
-        duration: decDur,
-        ease: "none",
-        onUpdate: function () {
-          var p = progressObj.p;
-          var settledLen = Math.floor(p * origText.length);
-          var scrambled = origText.split("").map(function (ch, ci) {
-            if (ch === " ") return " ";
-            if (ci < settledLen) return ch;
-            return CHARSET[Math.floor(Math.random() * CHARSET.length)];
-          }).join("");
-          n.textContent = scrambled;
-        },
-        onComplete: function () {
-          n.textContent = origText;
-        }
-      }, startTime);
-    });
-
-    if (nodes.length > 0) {
-      queueSFX("decrypt", at, { vol: 0.7 });
-    }
 
     /* Kinetic Syllable & Spoken Word Glow Punch */
     if (s && s.wordTimings && s.wordTimings.length) {
@@ -327,26 +293,20 @@
       var s = dec ? v.toFixed(dec) : String(Math.round(v));
       return sep ? s.replace(/\B(?=(\d{3})+(?!\d))/g, ",") : s;
     }
-    node.textContent = fmt(from);
+    var output = node.querySelector(".stat-value") || node;
+    output.textContent = fmt(from);
     var p = { v: from };
     var countDur = o.duration || o.dur || 1.4;
 
-    /* Kinetic roll with spring overshoot */
+    /* Monotonic count with a fixed-width final-value reserve. */
     tl.to(p, {
       v: to,
       duration: countDur,
       ease: o.ease || "power3.out",
       onUpdate: function () {
-        node.textContent = fmt(p.v);
+        output.textContent = fmt(p.v);
       },
     }, at);
-
-    /* Odometer mechanical spring snap-back */
-    tl.fromTo(node,
-      { scale: 1.08, filter: "drop-shadow(0 0 16px rgba(255,255,255,0.4))" },
-      { scale: 1.0, filter: "none", duration: 0.45, ease: "back.out(1.6)" },
-      at + countDur
-    );
 
     /* Acoustic tick intervals */
     var tickSteps = 8;
@@ -359,31 +319,28 @@
     tl.fromTo("#cut-rail", { x: 0, opacity: 0 }, { x: 1980, opacity: strength || 0.5, duration: 0.22, ease: "power2.in" }, at);
     tl.to("#cut-rail", { opacity: 0, duration: 0.2, ease: "power1.out" }, at + 0.2);
   }
-  function flashCut(at, strength) {
-    var str = strength || 0.22;
-    tl.fromTo("#bg-bloom", { opacity: str * 1.8, scale: 1.25 }, { opacity: 0.13, scale: 1.1, duration: 0.65, ease: "power2.out" }, at);
-  }
   function triggerFlare(at, opt) {
     opt = opt || {};
     var flare = document.getElementById("bg-flare");
     if (!flare) return;
     var dur = opt.dur || 0.42;
-    var yPos = opt.y == null ? 540 : opt.y;
-    var xPos = opt.x == null ? 960 : opt.x;
-    var rot = opt.rot || (Math.random() > 0.5 ? -1.8 : 1.5);
+    var root = document.getElementById("root");
+    var yPos = (opt.y == null ? 540 : opt.y) * ((root && root.clientHeight) || 1080) / 1080;
+    var xPos = (opt.x == null ? 960 : opt.x) * ((root && root.clientWidth) || 1920) / 1920;
+    var rot = opt.rot == null ? (Math.round(at * 30) % 2 ? -1.8 : 1.5) : opt.rot;
     var core = flare.querySelector(".flare-core");
     var halo = flare.querySelector(".flare-halo");
     var streak = flare.querySelector(".flare-streak");
     var streakSub = flare.querySelector(".flare-streak-sub");
 
-    if (core) gsap.set(core, { x: xPos, y: yPos, xPercent: -50, yPercent: -50 });
-    if (halo) gsap.set(halo, { x: xPos, y: yPos, xPercent: -50, yPercent: -50 });
-    if (streak) gsap.set(streak, { top: yPos, rotate: rot });
-    if (streakSub) gsap.set(streakSub, { top: yPos, rotate: rot * 0.7 });
+    if (core) tl.set(core, { x: xPos, y: yPos, xPercent: -50, yPercent: -50 }, at);
+    if (halo) tl.set(halo, { x: xPos, y: yPos, xPercent: -50, yPercent: -50 }, at);
+    if (streak) tl.set(streak, { top: yPos, rotate: rot }, at);
+    if (streakSub) tl.set(streakSub, { top: yPos, rotate: rot * 0.7 }, at);
 
     tl.fromTo(flare,
       { opacity: 0, scaleY: 0.2 },
-      { opacity: opt.intensity || 0.95, scaleY: 1.0, duration: 0.08, ease: "power2.out" },
+      { opacity: Math.min(0.45, opt.intensity || 0.4), scaleY: 1.0, duration: 0.08, ease: "power2.out" },
       at
     );
     tl.to(flare,
@@ -392,19 +349,17 @@
     );
     queueSFX("flare", at, { vol: 0.9 });
   }
-  function cutTransition(s, nextS, at, i, dur) {
-    if (i === 0) return;
+  function cutTransition(s, previousS, at, i, dur) {
+    if (i === 0 || s.type === "stat") return;
     var isPunch = Boolean(s.punch || s.meta?.punch || s.type === "meme");
-    var isMajor = Boolean(s.type === "cold" || s.type === "hero" || (s.act && nextS && s.act !== nextS.act));
+    var isMajor = Boolean(s.type === "cold" || s.type === "hero" || (s.act && previousS && s.act !== previousS.act));
     var isCyber = Boolean(i % 5 === 0 || s.meta?.rail);
 
     if (isMajor) {
-      flashCut(at, 0.28);
       triggerFlare(at, { y: 480, intensity: 0.92, dur: 0.48 });
       queueSFX("thud", at, { vol: 1.2 });
       queueSFX("whoosh", at, { vol: 0.8 });
     } else if (isPunch) {
-      flashCut(at, 0.2);
       triggerFlare(at, { y: 540, intensity: 1.0, dur: 0.36 });
       queueSFX("thud", at, { vol: 1.4 });
     } else if (isCyber) {
@@ -416,7 +371,10 @@
   }
   function amb(el, dur, at) {
     if (!el) return;
-    tl.fromTo(el, { scale: 1, x: 0 }, { scale: 1.06, x: 18, duration: 5, ease: "sine.inOut", repeat: rep(dur, 5) }, at);
+    // Begin after the longest entrance, with no repeating reset or competing tween.
+    var delay = 2.6;
+    if (dur <= delay) return;
+    tl.to(el, { scale: 1.025, x: 12, duration: dur - delay, ease: "sine.inOut" }, at + delay);
   }
   function pulse(el, at, dur, times, o) {
     o = o || {};
@@ -484,7 +442,7 @@
       if (!tape || !text) return;
 
       gsap.set(tape, { scaleX: 1, transformOrigin: "right center" });
-      if (laser) gsap.set(laser, { opacity: 1, left: 0 });
+      if (laser) gsap.set(laser, { opacity: 1, xPercent: 0 });
       gsap.set(text, { opacity: 0, filter: "blur(5px)" });
 
       var rawTarget = r.getAttribute("data-redact") || r.textContent;
@@ -504,7 +462,7 @@
 
       if (laser) {
         tl.to(laser, {
-          left: "100%",
+          xPercent: 100,
           opacity: 0,
           duration: 0.38,
           ease: "power2.inOut"
@@ -552,7 +510,7 @@
         /* frame 0 must already read as a title card */
         tl.fromTo(ghost, { opacity: 0.45, scale: 1.05, x: 30 }, { opacity: 1, scale: 1, x: 0, duration: 2.6, ease: E.expo }, 0);
         tl.fromTo(rule, { scaleX: 0.18 }, { scaleX: 1, duration: 1.5, ease: E.expo }, 0.05);
-        tl.fromTo(q(title, ".wi"), { opacity: 1, scale: 1.045 }, { opacity: 1, scale: 1, duration: 2.4, ease: E.expo, stagger: 0.025 }, 0);
+        gsap.set(q(title, ".wi"), { opacity: 1 });
         if (sub) tl.fromTo(sub, { opacity: 0, y: 22 }, { opacity: 1, y: 0, duration: 0.9, ease: E.soft }, 0.85);
         tl.fromTo(chips, { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.6, stagger: 0.08, ease: E.springSubtle }, 1.15);
         return;
@@ -591,10 +549,6 @@
       tl.fromTo(el.querySelector(".stat-main"), { y: 46, opacity: 0 }, { y: 0, opacity: 1, duration: 1, ease: E.expo }, at + 0.05);
       countUp(num, at + 0.25, { duration: countDur });
       queueSFX("thud", at + 0.25, { vol: 1.3 });
-      triggerFlare(at + 0.25, { y: 460, intensity: 0.85, dur: 0.4 });
-      if (num) {
-        tl.fromTo(num, { scale: 1.05 }, { scale: 1.0, duration: 0.35, ease: E.springSubtle }, at + 0.25 + countDur);
-      }
       tl.fromTo(el.querySelector(".stat-label"), { y: 24, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7, ease: E.soft }, at + 0.5);
       if (el.querySelector(".stat-sub")) fade(el.querySelector(".stat-sub"), at + 0.65, { dur: 0.7 });
       tl.fromTo(el.querySelector(".stat-ruler"), { opacity: 0 }, { opacity: 1, duration: 0.5 }, at + 0.4);
@@ -611,7 +565,7 @@
       words(el.querySelector(".dl-title"), at + 0.2, { stagger: 0.04, dur: 0.82 }, s);
       if (el.querySelector(".dl-sub")) fade(el.querySelector(".dl-sub"), at + 0.55, { dur: 0.7 });
       tl.fromTo(el.querySelector(".dl-rail span"), { scaleX: 0 }, { scaleX: 1, duration: 1.5, ease: "power2.inOut" }, at + 0.3);
-      amb(el.querySelector(".dl-date"), dur, at);
+
     },
 
     code: function (el, s, at, dur) {
@@ -679,7 +633,7 @@
         tl.fromTo(packet, { x: 0, opacity: 0 }, { opacity: 1, duration: 0.2 }, at + 0.9);
         tl.to(packet, { x: 1660, duration: cycleDur, ease: "power2.inOut", repeat: rep(dur - 1.0, cycleDur) }, at + 1.0);
       }
-      amb(nodes[0], dur, at);
+
     },
 
     ledger: function (el, s, at, dur) {
@@ -693,9 +647,9 @@
       tl.fromTo(pts, { x: -14, opacity: 0 }, { x: 0, opacity: 1, duration: 0.5, stagger: 0.09, ease: E.soft }, at + 0.8);
       var stamp = el.querySelector(".lg-stamp");
       if (stamp) {
-        tl.fromTo(stamp, { opacity: 0, scale: 2.1, rotate: -18 }, { opacity: 1, scale: 1, rotate: -7, duration: 0.34, ease: "back.out(2.4)" }, at + Math.min(dur * 0.55, 3.4));
+        tl.fromTo(stamp, { opacity: 0, scale: 2.1, rotate: -18 }, { opacity: 1, scale: 1, rotate: -7, duration: 0.34, ease: E.soft }, at + Math.min(dur * 0.55, 3.4));
       }
-      amb(el.querySelector(".lg-card"), dur, at);
+
     },
 
     memory: function (el, s, at, dur) {
@@ -704,7 +658,7 @@
       var count = el.querySelector(".mem-n");
       var n = parseInt((count && count.getAttribute("data-n")) || "2", 10);
       tl.fromTo(el.querySelector(".mem-shell"), { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.8, ease: E.expo }, at + 0.04);
-      tl.fromTo(cells, { scale: 0.86, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.45, stagger: 0.055, ease: "back.out(1.7)" }, at + 0.2);
+      tl.fromTo(cells, { scale: 0.86, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.45, stagger: 0.055, ease: E.soft }, at + 0.2);
       var live = cells.slice(0, n);
       tl.fromTo(live.map(function (c) { return c.querySelector(".mc-b"); }), { opacity: 0 }, { opacity: 1, duration: 0.4, stagger: 0.12 }, at + 0.7);
       tl.fromTo(live, { borderColor: "rgba(255,255,255,.11)" }, { borderColor: ac(s), duration: 0.3, stagger: 0.12 }, at + 0.7);
@@ -740,7 +694,7 @@
       var evs = q(el, ".tl-ev");
       evs.forEach(function (e, i) {
         var t = at + 0.7 + (i / Math.max(1, evs.length)) * Math.max(1.6, dur * 0.46);
-        tl.fromTo(e.querySelector(".tl-dot"), { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.35, ease: "back.out(2.2)" }, t);
+        tl.fromTo(e.querySelector(".tl-dot"), { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.35, ease: E.soft }, t);
         tl.fromTo(e.querySelector(".tl-card"), { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.55, ease: E.soft }, t + 0.06);
       });
       if (el.querySelector(".tl-sub")) fade(el.querySelector(".tl-sub"), at + 0.8, { dur: 0.7 });
@@ -773,7 +727,7 @@
       fade(el.querySelector(".eyebrow"), at, { y: 12, dur: 0.55 });
       tl.fromTo(el.querySelector(".cmp-left"), { x: -54, opacity: 0 }, { x: 0, opacity: 0.72, duration: 0.9, ease: E.expo }, at + 0.02);
       tl.fromTo(el.querySelector(".cmp-right"), { x: 54, opacity: 0 }, { x: 0, opacity: 1, duration: 0.9, ease: E.expo }, at + 0.06);
-      tl.fromTo(el.querySelector(".cmp-mid"), { scale: 0, opacity: 0, rotate: -45 }, { scale: 1, opacity: 1, rotate: 0, duration: 0.7, ease: "back.out(2.2)" }, at + 0.35);
+      tl.fromTo(el.querySelector(".cmp-mid"), { scale: 0, opacity: 0, rotate: -45 }, { scale: 1, opacity: 1, rotate: 0, duration: 0.7, ease: E.soft }, at + 0.35);
       tl.fromTo(q(el, ".cmp-p"), { y: 14, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, stagger: 0.09, ease: E.soft }, at + 0.6);
       if (el.querySelector(".cmp-cap")) fade(el.querySelector(".cmp-cap"), at + 0.7, { dur: 0.65 });
       if (el.querySelector(".cmp-sub")) fade(el.querySelector(".cmp-sub"), at + 0.82, { dur: 0.65 });
@@ -828,7 +782,7 @@
       }
       var callout = el.querySelector(".web-callout");
       if (callout) {
-        tl.fromTo(callout, { opacity: 0, scale: 0.94, x: -10 }, { opacity: 1, scale: 1, x: 0, duration: 0.65, ease: "back.out(1.4)" }, at + 0.45);
+        tl.fromTo(callout, { opacity: 0, scale: 0.94, x: -10 }, { opacity: 1, scale: 1, x: 0, duration: 0.65, ease: E.soft }, at + 0.45);
       }
       var cursor = el.querySelector(".web-cursor");
       if (cursor) {
@@ -844,15 +798,7 @@
       fade(el.querySelector(".meme-badge"), at, { y: 10, dur: 0.4 });
       var card = el.querySelector(".meme-card");
       if (card) {
-        tl.fromTo(card, { scale: 0.82, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.42, ease: "back.out(1.6)" }, at + 0.05);
-      }
-      var stage = el.querySelector(".meme-stage");
-      if (stage) {
-        /* Fireship comic impact shake */
-        tl.to(stage, { x: -8, y: 4, duration: 0.06, ease: "power1.inOut" }, at + 0.08);
-        tl.to(stage, { x: 7, y: -5, duration: 0.06, ease: "power1.inOut" }, at + 0.14);
-        tl.to(stage, { x: -4, y: 2, duration: 0.06, ease: "power1.inOut" }, at + 0.20);
-        tl.to(stage, { x: 0, y: 0, duration: 0.08, ease: "power1.out" }, at + 0.26);
+        tl.fromTo(card, { scale: 0.82, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.42, ease: E.soft }, at + 0.05);
       }
       var glitch = el.querySelector(".meme-glitch-bar");
       if (glitch) {
@@ -892,14 +838,11 @@
         if (glare) {
           tl.fromTo(glare, { opacity: 0.3 }, { opacity: 0.7, duration: 1.8, ease: "sine.inOut", yoyo: true, repeat: rep(dur, 3.6) }, at + 0.2);
         }
-        var tel = hud.querySelector(".mascot-hud-telemetry");
-        if (tel) {
-          tl.fromTo(tel, { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.45, ease: E.soft }, at + 0.4);
-        }
+
       }
       var bubble = el.querySelector(".mascot-bubble-box");
       if (bubble) {
-        tl.fromTo(bubble, { scale: 0.88, opacity: 0, x: 20 }, { scale: 1, opacity: 1, x: 0, duration: 0.6, ease: "back.out(1.4)" }, at + 0.2);
+        tl.fromTo(bubble, { scale: 0.88, opacity: 0, x: 20 }, { scale: 1, opacity: 1, x: 0, duration: 0.6, ease: E.soft }, at + 0.2);
       }
       words(el.querySelector(".mascot-bubble-text"), at + 0.3, { stagger: 0.04, dur: 0.75 }, s);
       if (el.querySelector(".mascot-sub")) fade(el.querySelector(".mascot-sub"), at + 0.65, { dur: 0.65 });
@@ -933,73 +876,22 @@
     /* accent for shared bloom & dynamic CSS variable */
     tl.to(":root", { "--ac": s.accent || "#38bdf8", duration: 1.0, ease: "sine.inOut" }, at);
 
-    /* ------------------------------ 2.5D Camera & Parallax Choreography */
-    var driftVectors = [
-      { dx: 18, dy: -10, rot: 0.18, scaleEnd: 1.036 },
-      { dx: -16, dy: 8, rot: -0.16, scaleEnd: 1.034 },
-      { dx: -12, dy: -12, rot: 0.14, scaleEnd: 1.038 },
-      { dx: 15, dy: 11, rot: -0.15, scaleEnd: 1.032 }
-    ];
-    var v = driftVectors[i % 4];
-
-    /* Background Parallax: Counter-drift grid at 0.22x speed for optical depth */
-    tl.to("#bg-grid", {
-      x: "+=" + (-v.dx * 0.45),
-      y: "+=" + (-v.dy * 0.45),
-      duration: Math.max(1, dur),
-      ease: "sine.inOut"
-    }, at);
-
-    /* Dynamic Volumetric Bloom tracking */
-    tl.to("#bg-bloom", {
-      x: 960 + v.dx * 2.2,
-      y: 540 + v.dy * 2.2,
-      scale: 1.08 + (i % 3) * 0.04,
-      opacity: (s.punch || s.type === "stat") ? 0.20 : 0.13,
-      duration: Math.max(1, dur),
-      ease: "sine.inOut"
-    }, at);
-
-    /* Continuous Living Camera on .sc-in (eliminates dead holds) */
+    /* One owner per transform. Data stays still; headline scenes get a small push. */
+    var isPunch = Boolean(s.punch || s.type === "meme");
+    var isHeadline = ["cold", "hero", "statement", "quote", "outro"].indexOf(s.type) !== -1;
     if (scIn) {
       tl.fromTo(scIn,
-        { scale: 1.0, x: 0, y: 0, rotate: v.rot },
-        { scale: v.scaleEnd, x: v.dx, y: v.dy, rotate: 0, duration: Math.max(1, dur), ease: "sine.out" },
-        at
-      );
-
-      /* Subtle organic vertical float/breathing during hold */
-      tl.to(scIn, {
-        y: "+=5",
-        duration: 3.2,
-        ease: "sine.inOut",
-        yoyo: true,
-        repeat: rep(dur, 3.2)
-      }, at + 0.3);
+        { scale: isPunch ? 1.025 : 1, x: 0, y: 0, rotate: 0 },
+        { scale: isPunch ? 1 : (isHeadline ? 1.012 : 1),
+          duration: isPunch ? Math.min(0.6, dur) : dur, ease: isPunch ? E.soft : "none" }, at);
     }
-
-    /* High-Impact Punch Recoil on punch beats */
-    var isPunch = Boolean(s.punch || s.meta?.punch || s.type === "meme" || (s.type === "stat" && s.variant === 1));
-    if (isPunch && scIn) {
-      tl.fromTo(scIn,
-        { scale: 1.072 },
-        { scale: v.scaleEnd, duration: 0.38, ease: E.out },
-        at
-      );
-      /* Damped camera micro-shake */
-      tl.to(scIn, { x: "-=7", y: "+=4", duration: 0.05, ease: "power1.inOut" }, at + 0.02);
-      tl.to(scIn, { x: "+=12", y: "-=7", duration: 0.06, ease: "power1.inOut" }, at + 0.07);
-      tl.to(scIn, { x: "-=6", y: "+=3", duration: 0.06, ease: "power1.inOut" }, at + 0.13);
-      tl.to(scIn, { x: v.dx, y: v.dy, duration: 0.08, ease: "power1.out" }, at + 0.19);
-    }
-
-    /* Continuous Ambient Light Breath on .amb */
+    tl.to("#bg-bloom", {
+      opacity: s.type === "stat" ? 0.16 : 0.13,
+      duration: Math.min(1, dur), ease: "sine.inOut"
+    }, at);
     if (ambEl) {
-      tl.fromTo(ambEl,
-        { opacity: 0.07, scale: 0.98 },
-        { opacity: 0.16, scale: 1.08, duration: 2.8, ease: "sine.inOut", yoyo: true, repeat: rep(dur, 2.8) },
-        at
-      );
+      tl.fromTo(ambEl, { opacity: 0.07 },
+        { opacity: 0.11, duration: dur, ease: "sine.inOut" }, at);
     }
 
     /* Universal Mascot Overlay with Living Emotion & Telemetry */
@@ -1010,28 +902,19 @@
       var isThink = expr === "thinking" || expr === "skeptical";
 
       /* Emotion-aware entrance physics */
-      var enterScale = isShock ? 0.72 : 0.82;
-      var enterEase = isShock ? "back.out(2.2)" : E.spring;
+      var enterScale = 0.96;
+      var enterEase = E.soft;
       tl.fromTo(mOv,
-        { y: 64, opacity: 0, scale: enterScale },
+        { y: 24, opacity: 0, scale: enterScale },
         { y: 0, opacity: 1, scale: 1, duration: 0.55, ease: enterEase },
         at + 0.12
       );
       queueSFX(isShock ? "thud" : "chime", at + 0.15, { vol: 0.8 });
 
-      /* Mascot gentle idle breathing float */
-      tl.to(mOv, {
-        y: isShock ? -9 : -6,
-        duration: isShock ? 1.4 : 2.1,
-        ease: "sine.inOut",
-        yoyo: true,
-        repeat: rep(dur, isShock ? 1.4 : 2.1)
-      }, at + 0.67);
-
       /* Living head-tilt & micro-bobbing */
       var avatar = mOv.querySelector(".m-ov-avatar");
       if (avatar) {
-        var tiltDeg = isThink ? -3.5 : (isShock ? 2.5 : 1.2);
+        var tiltDeg = isThink ? -1 : (isShock ? 0.8 : 0.4);
         tl.to(avatar, {
           rotate: tiltDeg,
           duration: 2.4,
@@ -1046,10 +929,7 @@
       if (mGlare) {
         tl.fromTo(mGlare, { opacity: 0.2 }, { opacity: 0.65, duration: 1.5, ease: "sine.inOut", yoyo: true, repeat: rep(dur, 3.0) }, at + 0.3);
       }
-      var mTelDot = mOv.querySelector(".m-tel-dot");
-      if (mTelDot) {
-        tl.to(mTelDot, { opacity: 0.4, scale: 0.8, duration: 0.6, ease: "sine.inOut", yoyo: true, repeat: rep(dur, 1.2) }, at + 0.2);
-      }
+
 
       var mBubble = mOv.querySelector(".m-ov-bubble");
       if (mBubble) {
@@ -1062,8 +942,8 @@
     }
 
     /* Contextual Scene Transition */
-    var nextS = SCENES[i + 1];
-    cutTransition(s, nextS, at, i, dur);
+    var previousS = SCENES[i - 1];
+    cutTransition(s, previousS, at, i, dur);
 
     /* Execute scene type animation */
     var fn = ANIM[s.type] || ANIM.statement;
@@ -1071,15 +951,6 @@
 
     /* Forensic Redactions & Live Highlighting */
     forensicAnimations(el, at, dur, s);
-
-    /* Mid-scene focal re-engagement on long holds (so 8-12s scenes stay mesmerizing) */
-    if (dur > 6.0) {
-      var midTime = at + dur * 0.52;
-      if (ambEl) {
-        tl.to(ambEl, { opacity: 0.22, scale: 1.14, duration: 0.8, ease: "sine.out" }, midTime);
-        tl.to(ambEl, { opacity: 0.10, scale: 1.02, duration: 1.2, ease: "sine.in" }, midTime + 0.8);
-      }
-    }
   });
 
   /* final fade at the very end */

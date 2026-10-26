@@ -63,10 +63,6 @@ function renderMascotOverlay(mascot) {
     ${bubble}
     <div class="m-ov-avatar-wrap">
       <div class="m-ov-ring"></div>
-      <div class="m-ov-telemetry">
-        <span class="m-tel-dot"></span>
-        <span class="m-tel-tag">${esc(expr.toUpperCase())}</span>
-      </div>
       <div class="m-ov-glare"></div>
       <img class="m-ov-avatar" src="${imgSrc}" alt="${esc(expr)}" />
     </div>
@@ -163,6 +159,7 @@ const RENDER = {
 
   hero(s) {
     const mark = s.meta?.mark || String(s.headline || "").trim().split(/\s+/)[0].toUpperCase();
+    const markSize = Math.min(128, Math.floor(400 / Math.max(1, [...mark].length * 0.8)));
     return `
     <div class="hero-grid">
       <div class="hero-left">
@@ -171,7 +168,7 @@ const RENDER = {
         ${s.subline ? `<p class="hero-sub">${esc(s.subline)}</p>` : ""}
       </div>
       <div class="hero-right">
-        <div class="hero-mark">${esc(mark)}</div>
+        <div class="hero-mark" style="--hero-mark-size:${markSize}px">${esc(mark)}</div>
         ${s.meta?.rule ? `<div class="hero-vrule"></div>` : ""}
       </div>
     </div>
@@ -201,7 +198,7 @@ const RENDER = {
       ${eyebrow(s)}
       <div class="stat-main">
         ${prefix ? `<span class="stat-prefix">${esc(prefix)}</span>` : ""}
-        <span class="stat-number" data-to="${esc(String(st.to ?? 0))}" data-dec="${st.dec || 0}" data-sep="${st.sep ? 1 : 0}" data-nocount="${st.nocount ? 1 : 0}">${esc(value)}</span>
+        <span class="stat-number" data-to="${esc(String(st.to ?? 0))}" data-dec="${st.dec || 0}" data-sep="${st.sep ? 1 : 0}" data-nocount="${st.nocount ? 1 : 0}"><span class="stat-reserve" aria-hidden="true">${esc(value)}</span><span class="stat-value">${esc(value)}</span></span>
         ${suffix ? `<span class="stat-suffix">${esc(suffix)}</span>` : ""}
       </div>
       <div class="stat-label">${esc(s.headline)}</div>
@@ -236,9 +233,11 @@ const RENDER = {
 
   code(s) {
     const rawLines = s.meta?.lines || [];
-    const lines = rawLines.map((l, k) => {
-      const cls = ["cl", l.key ? "is-key" : "", l.cls ? `cl-${l.cls}` : ""].filter(Boolean).join(" ");
-      let content = tok(l.c);
+    const lines = rawLines.map((rawL, k) => {
+      const l = typeof rawL === "string" ? { t: rawL } : (rawL || {});
+      const kind = l.cls || l.k || (l.hot ? "hot" : "");
+      const cls = ["cl", l.key ? "is-key" : "", kind ? `cl-${kind}` : ""].filter(Boolean).join(" ");
+      let content = tok(l.c ?? l.t ?? l.text ?? "");
       if (l.redact || content.includes("~~")) {
         if (l.redact && !content.includes("~~")) {
           content = `<span class="forensic-redact is-live-redact" data-redact="${esc(l.c)}"><span class="redact-tape"><span class="redact-laser"></span></span><span class="redact-text">${content}</span></span>`;
@@ -272,9 +271,18 @@ const RENDER = {
   },
 
   diff(s) {
-    const lines = (s.meta?.lines || []).map(
-      (l, k) => `<div class="df-line df-${l.k}" data-k="${k}"><span class="df-sig">${l.k === "add" ? "+" : l.k === "del" ? "-" : " "}</span><span class="df-t">${tok(l.t)}</span></div>`,
-    );
+    const rawLines = s.meta?.lines || [];
+    const lines = rawLines.map((rawL, k) => {
+      let l = typeof rawL === "string"
+        ? (rawL.startsWith("+") ? { t: rawL.slice(1).trimStart(), k: "add" }
+          : rawL.startsWith("-") ? { t: rawL.slice(1).trimStart(), k: "del" }
+          : { t: rawL, k: "ctx" })
+        : (rawL || {});
+      const kind = l.k || l.kind || (l.add ? "add" : l.del ? "del" : "ctx");
+      const sig = kind === "add" ? "+" : kind === "del" ? "-" : " ";
+      let text = l.t ?? l.text ?? l.c ?? "";
+      return `<div class="df-line df-${kind}" data-k="${k}"><span class="df-sig">${sig}</span><span class="df-t">${tok(text)}</span></div>`;
+    });
     const file = s.meta?.file || "source";
     const ver = s.meta?.ver || "";
     const callout = s.meta?.announce || s.headline || "";
@@ -292,7 +300,8 @@ const RENDER = {
   },
 
   flow(s) {
-    const nodes = s.meta?.nodes || [];
+    const rawNodes = s.meta?.nodes || [];
+    const nodes = rawNodes.map(n => typeof n === "string" ? { t: n } : (n || {}));
     return `
     ${eyebrow(s)}
     <div class="flow-stage">
@@ -302,7 +311,7 @@ const RENDER = {
             (n, k) => `${k ? '<div class="flow-link"><svg viewBox="0 0 120 24" preserveAspectRatio="none"><path class="fl-p" d="M0 12 H104"/><path class="fl-a" d="M96 5 L110 12 L96 19"/></svg></div>' : ""}
           <div class="flow-node ${n.hot ? "is-hot" : ""}" data-k="${k}">
             <div class="fn-k">${esc(n.k || "")}</div>
-            <div class="fn-t">${esc(n.t)}</div>
+            <div class="fn-t">${esc(n.t || n.title || n.name || "")}</div>
             ${n.s ? `<div class="fn-s">${esc(n.s)}</div>` : ""}
           </div>`,
           )
@@ -578,7 +587,8 @@ const RENDER = {
   },
 
   cloud(s) {
-    const nodes = s.meta?.nodes || [];
+    const rawNodes = s.meta?.nodes || [];
+    const nodes = rawNodes.map(n => typeof n === "string" ? { t: n } : (n || {}));
     const tag = s.meta?.tag || "CLOUD ARCHITECTURE";
     return `
     <div class="cloud-stage">
@@ -592,11 +602,11 @@ const RENDER = {
           ${nodes.map((n, k) => `
             ${k > 0 ? `<div class="cloud-edge"><svg viewBox="0 0 100 24"><path d="M0 12 H90" class="cld-path"/><polygon points="90 8, 98 12, 90 16" class="cld-arrow"/></svg></div>` : ""}
             <div class="cloud-node ${n.hot ? "is-hot" : ""} ${n.bad ? "is-bad" : ""}">
-              <span class="cld-badge">${esc(n.kind || "NODE")}</span>
+              <span class="cld-badge">${esc(n.kind || n.k || "NODE")}</span>
               <div class="cld-icon-box"><span class="cld-icon">${esc(n.icon || "☁")}</span></div>
-              <div class="cld-title">${esc(n.name || n.title || "")}</div>
-              <div class="cld-status ${n.bad ? "is-bad" : "is-ok"}"><span class="cld-dot"></span>${esc(n.status || "HEALTHY")}</div>
-              ${n.meta ? `<div class="cld-sub">${esc(n.meta)}</div>` : ""}
+              <div class="cld-title">${esc(n.name || n.title || n.t || "")}</div>
+              <div class="cld-status ${n.bad ? "is-bad" : "is-ok"}"><span class="cld-dot"></span>${esc(n.status || n.s || "HEALTHY")}</div>
+              ${n.meta || n.sub ? `<div class="cld-sub">${esc(n.meta || n.sub)}</div>` : ""}
             </div>
           `).join("")}
         </div>
@@ -631,10 +641,7 @@ const RENDER = {
           <div class="mascot-hud-corner br"></div>
           <div class="mascot-scanline"></div>
           <div class="mascot-hud-glare"></div>
-          <div class="mascot-hud-telemetry">
-            <span class="mst-tel-pulse"></span>
-            <span class="mst-tel-text">HUD ONLINE // ${esc(expr.toUpperCase())}</span>
-          </div>
+
           <img class="mascot-img" src="${imgSrc}" alt="${esc(expr)}" />
           <div class="mascot-hud-tag">${esc(badge)}</div>
         </div>
@@ -724,6 +731,7 @@ window.__SCENES__ = ${JSON.stringify(scenes.map((s) => ({
   type: s.type,
   accent: s.accent,
   variant: s.variant || 0,
+  act: s.act,
   punch: Boolean(s.meta?.punch || s.type === "meme"),
   hasMascot: Boolean(s.mascot),
   mascotExpr: s.mascot?.expression || (s.type === "mascot" ? (s.meta?.expression || "neutral") : null),

@@ -49,15 +49,18 @@ hyperframes check / preview / render
   expressions and placements that protect evidence readability.
   Both copyable generation prompts include these requirements. External LLM
   integrations must load the guide; the CLI pipeline does not invoke an LLM.
-- **User-Run Output:** Agents prepare source, media, transcription, alignment,
-  and validation, then ask the user to run preview or render with exact commands.
-  They never execute draft/full builds, launch previews, or render videos,
-  including through pipeline/SFX commands or automatic build hooks. Output
-  review remains pending until user-produced results are available.
-- **Text Stability QA:** Every QA round checks user-produced playback for text
+- **Build and Check Autonomy:** Agents install required dependencies, prepare
+  media/source, transcribe, align, build the composition and SFX, inspect the
+  generated files, and run tests/lint/headless checks themselves. Estimated draft
+  builds are allowed. Starting a preview server or encoding a draft/final video
+  requires explicit user permission, including indirect tool/test/hook calls.
+  Agents complete preparation before asking and reuse permission already granted
+  for that action. They can also give preview/render commands for the user to run.
+- **Text Stability QA:** Every QA round checks available playback and frames for text
   jitter, flicker, font/layout jumps, shifting counters, and unstable motion.
-  Agents fix any issue immediately in source and ask the user to rebuild and
-  recheck affected timestamps, preserving the user-run build/render policy.
+  Agents fix any issue immediately in source, rebuild, and repeat permitted
+  headless checks. Only unperformed playback/export verification stays pending;
+  preview-server launch or video rendering for QA still needs permission.
 - **Archived Reference Projects:** See `projects/` for full production examples (including the 90-scene `emudhra-key-was-four` investigation).
 
 ---
@@ -76,9 +79,11 @@ hyperframes check / preview / render
 
 ## Quick Start (Clean Template)
 
-These commands are for the end user. An LLM or agent must hand them off rather
-than execute draft, build, preview, or render steps itself. After source changes,
-preview requires a user-run build; rendering through npm includes that build.
+Agents should install dependencies, build, and check the composition themselves.
+`npm run draft` builds HTML with estimated timing; it does not render a draft
+video. Only starting a preview server or encoding any draft/final video needs
+explicit permission. Commands below that launch preview/render require that
+permission, or can be run directly by the user.
 
 ```bash
 # 1. Clone the repository
@@ -91,7 +96,7 @@ npx playwright install chromium
 
 # 3. Test and preview the clean starter template immediately (no audio needed)
 npm run draft
-npm run preview
+npm run preview       # Agent execution requires explicit permission
 
 # 4. Edit your script in content/video.json (Read engine/SCHEMA.md & PROMPTS.md)
 npm run validate
@@ -100,7 +105,7 @@ npm run validate
 npm run pipeline
 
 # 6. Render MP4 at the configured resolution and frame rate
-npm run render
+npm run render        # Agent execution requires explicit permission
 ```
 
 ---
@@ -114,7 +119,7 @@ npm run render
 
 ## Exported sound effects
 
-Every user-run build bakes the animation's exact cue schedule into `build/sfx_track.wav`
+Every build bakes the animation's exact cue schedule into `build/sfx_track.wav`
 (48 kHz PCM). This includes transitions, stat ticks and impacts, terminal clicks,
 mascot entrances, highlights, and redactions as scheduled by the animation.
 `build/sfx_track.json` lists all cue timestamps and gains for review. There is
@@ -128,9 +133,11 @@ metadata are not modified. Browser audio callbacks are no longer used.
 composition cannot silently omit the new SFX track. Direct HyperFrames CLI
 renders still require `npm run build` first. `npm run sfx` and the old
 `python engine/sfx_mixer.py` entry point rebuild the composition and SFX together.
-These commands are user-run only; agents must not execute them as a workaround
-for the build/render restriction. Ask the user to listen to the exported mix
-and check cue synchronization, clear speech, and balanced effect levels.
+Agents should run build/SFX generation and inspect their outputs themselves.
+The render commands also encode video and therefore require explicit permission;
+do not start them just to trigger their build hooks. Check the baked mix and,
+once a permitted export is available, review cue synchronization, clear speech,
+and balanced effect levels in the MP4.
 
 Builds now require Playwright Chromium (`npx playwright install chromium`). A
 synthesis failure stops the build rather than silently exporting voiceover only.
@@ -151,7 +158,8 @@ to its exact spoken phrase. See `engine/SCHEMA.md` for the timing contract.
 
 ## Long Windows exports
 
-The following is a user-run troubleshooting command, not an agent action.
+The following command encodes video, so agent execution requires explicit user
+permission. Installing dependencies, building, and checking artifacts do not.
 
 HyperFrames 0.8.207 can report `capture_disk stalled` at the full frame count
 while the disk stage is still finishing. For a long delivery export, increase

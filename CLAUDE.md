@@ -6,7 +6,9 @@ Read `AGENTS.md` and `PROMPTS.md` first. Read `engine/SCHEMA.md` before editing 
 
 - Aspect ratios: `"aspect": "16:9"` (default 1920x1080) or `"aspect": "9:16"` (1080x1920 portrait for YouTube Shorts, Reels, TikTok). Setting `"aspect": "9:16"` automatically configures dimensions, mobile safe zones (160px top, 240px bottom), and responsive stacked layouts.
 - The voiceover is the timing master. `narration` must match the spoken audio.
-- For rapid visual preview before recording audio, use `npm run draft` (`python engine/align.py --draft && node engine/build.mjs`).
+- Install missing project dependencies, including Playwright Chromium and required Python packages, then build and verify the generated composition yourself. Follow `AGENTS.md` and `PROMPTS.md` section 0 for setup and QA.
+- Before recording audio, `npm run draft` (`python engine/align.py --draft && node engine/build.mjs`) is allowed to build an estimated composition. It generates HTML/metadata/SFX, not a draft video render.
+- Starting a preview server or encoding any draft/final video requires explicit user permission. This includes direct commands and indirect tools, tests, subagents, and lifecycle hooks. Finish setup, builds, and permitted checks before asking; reuse explicit permission already granted for that action.
 - Use the 21 scene types (including `webref`, `meme`, `cloud`, `mascot`).
 - Support the iDevak mascot (**Devak**) with expressions (`neutral`, `shocked`, `thinking`, `solved`) and audio-synced overlays.
 - `content/video.json` is the source of truth. `build/`, `index.html`, `hyperframes.json`, and `renders/` are generated and ignored.
@@ -19,14 +21,14 @@ Read `AGENTS.md` and `PROMPTS.md` first. Read `engine/SCHEMA.md` before editing 
 
 ```bash
 npm run validate
-npm run draft         # Quick draft preview without audio
+npm run draft         # Estimated composition build without audio; no video export
 npm run transcribe    # Whisper word-level timing
 npm run align         # Exact monotonic audio alignment
 npm run build         # Generate index.html and hyperframes.json
 npm run lint          # HyperFrames syntax lint (must report 0 errors)
 npm run check         # HyperFrames runtime, layout, and motion check (must report 0 errors)
-npm run preview       # Interactive local browser preview
-npm run render        # Full 1080p 60fps render
+npm run preview       # Preview server; explicit permission required
+npm run render        # Video export at configured size/fps; explicit permission required
 ```
 
 `npm run pipeline` runs validate, transcribe, align, and build in order.
@@ -35,5 +37,7 @@ npm run render        # Full 1080p 60fps render
 
 - `python engine/validate.py` reports 0 errors.
 - `build/report.md` has no no-match or weak-match warnings.
+- The agent has built HTML/metadata/SFX, inspected asset/audio references and dimensions/duration, and completed relevant tests and lint.
 - `npx hyperframes@latest check` reports 0 errors.
-- The preview is correct at the first frame, at every transition, and at the last frame.
+- Every QA round checks available frames/playback for text jitter, flicker, layout jumps, and unstable counters. Fix issues immediately in source, rebuild, and repeat headless checks.
+- Preview-server launch and draft/final video encoding await explicit permission unless already authorized. Disclose pending playback/export checks; do not leave dependency setup or builds to the user.

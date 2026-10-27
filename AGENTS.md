@@ -35,28 +35,42 @@ brief. Read `engine/SCHEMA.md` before editing `content/video.json`. Read
    `PROMPTS.md` section 0. Use supported expressions and the existing baked SFX
    path, synchronize reactions and sounds to speech, preserve evidence
    readability, and give the user exported-mix review instructions.
-10. Never execute a draft build, full composition build, preview launch, or video
-    render. These actions belong to the end user. Prepare the source and always
-    ask the user to run preview or render themselves, with build prerequisites
-    and exact commands. Do not bypass this through another tool, subagent,
-    wrapper, test, or lifecycle hook. This includes `npm run draft`, `build`,
-    `pipeline`, `sfx`, `preview`, `render`, and `render:hq`, direct builder/SFX
-    mixer/HyperFrames equivalents, and any command that invokes them indirectly.
-    Leave draft timing (`align:draft` / `align.py --draft`) to the user too.
-    A generic request to generate a video does not authorize these actions.
-11. Every QA round must check user-produced playback for text jitter, flicker,
-    font/layout jumps, shifting counters, and unstable overlays or transitions.
-    Fix any issue immediately in source; follow `PROMPTS.md` section 0 and ask
-    the user to rebuild and recheck affected timestamps. Do not run a build,
-    preview, or render for QA, and keep verification pending until results arrive.
+10. Complete dependency setup, source/media preparation, transcription,
+    alignment, composition builds, SFX baking, tests, lint, and checks yourself.
+    This includes `npm run build`, `pipeline`, `sfx`, and, for estimated timing,
+    `draft` / `align:draft`. A composition build generates HTML, metadata, and
+    audio; it is not a video render. Headless build/SFX and QA tools are allowed.
+    Require explicit user permission before starting a preview server or any
+    draft/final video render, including `npm run preview`, `render`, `render:hq`,
+    direct equivalents, and indirect tool/subagent/test/lifecycle-hook calls.
+    Finish permitted preparation and checks before asking to preview or render.
+    A generic request to generate a video is not that permission; an explicit
+    request to start preview or render is. Reuse permission already granted for
+    the action instead of asking again, or give commands for the user to run.
+11. Every QA round must check available playback and frame sequences for text
+    jitter, flicker, font/layout jumps, shifting counters, and unstable overlays
+    or transitions.
+    Fix any issue immediately in source, rebuild, and repeat permitted headless
+    checks at affected timestamps. Preview-server launch and video rendering
+    still require permission; keep any unperformed playback/export QA pending.
 
 ## Workflow
 
-Steps 1-5 are source preparation. Agents may research, acquire source media,
-edit authored files, transcribe, validate, and align the supplied narration.
-Run only checks that do not trigger a composition build, preview, or render.
-Steps 6-8 and the fast path below are commands to give the user, never commands
-for the agent to execute. Website research screenshots remain allowed.
+Agents own dependency setup and steps 1-6, plus lint, tests, headless checks, and
+build-artifact inspection in step 7. Do not stop at source preparation or ask the
+user to build. Only preview-server launch and draft/final video rendering need
+explicit permission. Website research captures and headless still-frame QA are
+allowed; do not start a persistent preview server or encode video as a QA bypass.
+
+### 0. Set up dependencies
+
+Check the repo's Node, Python, FFmpeg, Python transcription, and browser
+requirements. Install missing project dependencies using the existing lockfile
+and documented commands (`npm ci` when a lockfile is present, otherwise
+`npm install`), plus Playwright Chromium (`npx playwright install chromium`) and
+required Python packages as needed. Resolve setup/build/check failures yourself;
+report genuine external blockers. Do not launch preview or render as an install
+or test side effect. Follow `PROMPTS.md` for missing research skills/tools.
 
 ### 1. Put the voiceover in place
 
@@ -145,9 +159,9 @@ Read the report:
 Do not hand-edit `build/scenes.json` or `build/project.json`. They are
 generated. Change `content/video.json` and re-run the aligner.
 
-### 6. Build (end user only)
+### 6. Build and inspect artifacts
 
-Ask the user to run this prerequisite before previewing changed source:
+Run the build yourself after source, animation, or cue changes:
 
 ```bash
 node engine/build.mjs
@@ -160,14 +174,20 @@ paused GSAP timeline. The builder inlines `engine/fonts.css`, `engine/style.css`
 and `engine/anim.js`, and replaces the `"__COMPOSITION_ID__"` placeholder in the
 animation registry with the project's composition id.
 
-### 7. Check and preview (end user only)
+The build also bakes `build/sfx_track.wav` and its cue schedule. Verify the
+generated HTML/metadata, composition dimensions/duration, local asset/audio
+references, and SFX track/schedule. Resolve missing or stale outputs, then run
+lint, checks, and relevant tests. Do not hand-edit generated files. With no
+recording, `npm run draft` is allowed for an estimated composition build; it
+does not encode a draft video or establish final speech timing.
 
-Ask the user to run these commands after their build:
+### 7. Check, then request preview permission
+
+Run these checks yourself after the build:
 
 ```bash
 npx hyperframes@latest lint
 npx hyperframes@latest check
-npx hyperframes@latest preview
 ```
 
 `lint` and `check` must report 0 errors. The checker may report many warnings
@@ -176,15 +196,22 @@ timeline density, negative z-index background layers, and small mono labels.
 These are expected for this engine. Do not split the composition into
 sub-compositions just to silence them.
 
-Ask the user to preview at several timestamps, including the first frame,
-every scene transition, and the last frame. Look for clipped text, overlapping
-elements, and text that is too small to read. Fix reported CSS or content issues,
-then hand back rebuild and review commands. Do not launch the preview yourself.
+Inspect available frames at the first frame, every transition, and the last
+frame for clipped/overlapping text, readability, jitter, and layout instability.
+Fix issues immediately, rebuild, and repeat the relevant checks. Headless
+composition checks and still-frame inspection are allowed without permission.
 
-### 8. Render (end user only)
+After preparation and checks, ask permission to start `npm run preview` unless
+the user already explicitly authorized it, or give the command for them to run.
+Do not launch a preview server without permission, including through another
+command or tool. Review playback once available and disclose pending checks.
 
-Always ask the user to run the render themselves. `npm run render` includes a
-build hook; agents must not execute it even to test the export.
+### 8. Render (explicit permission required)
+
+Ask permission before any draft, review, or final video render, unless already
+explicitly authorized for that action. Alternatively give the user these
+commands. `npm run render` includes a build hook; the build alone is allowed,
+but the command also encodes video and therefore requires permission.
 
 ```bash
 npx hyperframes@latest render --quality looks --output renders/video.mp4
@@ -196,11 +223,17 @@ The render reads `index.html` and the audio path in the composition. The audio
 file must exist at render time. Use `--quality draft` for a fast review and
 `--quality delivery` for the final master.
 
-## Fast path (end user only)
+## Fast path
 
 ```bash
 npm run pipeline
 npm run check
+```
+
+The agent runs the commands above. The following commands require explicit
+permission to execute, or can be handed to the user:
+
+```bash
 npm run preview
 npm run render
 ```
@@ -231,9 +264,9 @@ one stage.
 
 ## Troubleshooting
 
-Build, preview, and render remedies below are instructions for the user to run.
-Agents may fix source files and inspect user-provided results, but must not
-execute those remedies themselves.
+Agents should run setup, transcription, alignment, build, and check remedies
+below themselves. Preview-server and video-render remedies require explicit
+permission; they may also be provided as commands for the user to run.
 
 **`missing file: build/vo.json`**
 Run `python engine/transcribe.py` first.
@@ -269,8 +302,9 @@ The composition is one large HTML file. Use `--quality draft` for review. For a
 long video, render with more workers only if the machine has memory to spare.
 The old 24-minute test rendered from a 180-scene file.
 
-## Definition of done for agent handoff
+## Definition of done before preview/render permission
 
+- Required dependencies are installed and available; genuine blockers are disclosed.
 - `python engine/validate.py` reports 0 errors; any unavailable input is disclosed.
 - When final audio is available, transcription and alignment are complete with
   a high match percentage and no no-match or weak-match warnings.
@@ -278,14 +312,17 @@ The old 24-minute test rendered from a 180-scene file.
   against their planned display footprint. Source limitations are disclosed.
 - Contextual SFX and mascot direction are authored using the supported engine
   paths, expressions, and positions, with clear evidence and narration in mind.
-- Give the user exact commands and prerequisites, and explicitly ask them to
-  run preview or render. Explain that changed source needs a user-run build
-  before preview, and `npm run render` / `render:hq` include their own build.
+- The agent has built the composition and SFX, inspected generated files and
+  local media/audio references, and completed relevant tests, lint, and checks.
+  An estimated draft build is clearly distinguished from final audio alignment.
+- Report preparation/check results and ask permission to start preview or render
+  if not already explicitly authorized. Offer exact commands if the user prefers
+  to run them. Do not ask the user to do prerequisite builds or dependency setup.
 - Include a review checklist: lint/check errors, opening/every cut/ending,
   sharp evidence at native and reduced resolution, speech timing, mascot
   placement, text/motion stability across adjacent frames, and audible SFX
-  beneath clear narration in the exported MP4. Fix any reported jitter or
-  instability immediately in source, then request user-run verification.
-- State that build, playback review, and export remain for the user to run.
-  Do not claim an unperformed check passed or a new MP4 was generated. Inspect
-  user-produced artifacts when supplied and fix source issues they reveal.
+  beneath clear narration in the exported MP4. Fix any jitter or instability
+  immediately in source, rebuild, and repeat permitted QA.
+- Distinguish completed build/headless checks from pending playback/export QA.
+  Do not claim an unperformed check passed or a new MP4 was generated. Review
+  available outputs and resolve issues without bypassing preview/render permission.

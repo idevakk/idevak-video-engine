@@ -16,7 +16,7 @@
     smooth: "power2.out",
   };
 
-  function q(el, sel) { return Array.prototype.slice.call(el.querySelectorAll(sel)); }
+  function q(el, sel) { return el ? Array.prototype.slice.call(el.querySelectorAll(sel)) : []; }
   function rep(dur, cycle) { return Math.max(0, Math.floor(dur / cycle) - 1); }
   function ac(s) { return s.accent || "#38bdf8"; }
 
@@ -319,22 +319,10 @@
   }
   function cutTransition(s, previousS, at, i, dur) {
     if (i === 0 || s.type === "stat") return;
-    var isPunch = Boolean(s.punch || s.meta?.punch || s.type === "meme");
-    var isMajor = Boolean(s.type === "cold" || s.type === "hero" || (s.act && previousS && s.act !== previousS.act));
-    var isCyber = Boolean(i % 5 === 0 || s.meta?.rail);
-
-    if (isMajor) {
-      triggerFlare(at, { y: 480, intensity: 0.92, dur: 0.48 });
-      queueSFX("thud", at, { vol: 1.2 });
-      queueSFX("whoosh", at, { vol: 0.8 });
-    } else if (isPunch) {
-      triggerFlare(at, { y: 540, intensity: 1.0, dur: 0.36 });
-      queueSFX("thud", at, { vol: 1.4 });
-    } else if (isCyber) {
-      rail(at, 0.55);
-      queueSFX("whoosh", at, { vol: 0.7 });
-    } else {
-      queueSFX("whoosh", at, { vol: 0.5 });
+    // Keep the shared backdrop continuous. Scene choreography supplies the
+    // motion; flashes and sweeping rails obscure evidence at the cut.
+    if (s.act && previousS && s.act !== previousS.act) {
+      queueSFX("whoosh", at, { vol: 0.28 });
     }
   }
   function amb(el, dur, at) {
@@ -513,15 +501,18 @@
     stat: function (el, s, at, dur) {
       fade(el.querySelector(".eyebrow"), at, { y: 12, dur: 0.55 });
       var num = el.querySelector(".stat-number");
-      var countDur = Math.min(2.1, Math.max(1.1, dur * 0.3));
-      tl.fromTo(el.querySelector(".stat-main"), { y: 46, opacity: 0 }, { y: 0, opacity: 1, duration: 1, ease: E.expo }, at + 0.05);
-      countUp(num, at + 0.25, { duration: countDur });
-      queueSFX("thud", at + 0.25, { vol: 1.3 });
+      var cued = typeof s.revealTime === "number";
+      var revealAt = at + (cued ? s.revealTime : 0.05);
+      var countAt = cued ? revealAt : at + 0.25;
+      var countDur = cued ? Math.max(0.1, Math.min(0.65, dur - s.revealTime - 0.05)) : Math.min(2.1, Math.max(1.1, dur * 0.3));
+      tl.fromTo(el.querySelector(".stat-main"), { y: 46, opacity: 0 }, { y: 0, opacity: 1, duration: cued ? 0.35 : 1, ease: E.expo }, revealAt);
+      countUp(num, countAt, { duration: countDur });
+      queueSFX("thud", countAt, { vol: 1.3 });
       tl.fromTo(el.querySelector(".stat-label"), { y: 24, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7, ease: E.soft }, at + 0.5);
       if (el.querySelector(".stat-sub")) fade(el.querySelector(".stat-sub"), at + 0.65, { dur: 0.7 });
       tl.fromTo(el.querySelector(".stat-ruler"), { opacity: 0 }, { opacity: 1, duration: 0.5 }, at + 0.4);
       tl.fromTo(el.querySelector(".stat-ruler-fill"), { scaleX: 0 }, { scaleX: 1, duration: 1.4, ease: "power2.inOut" }, at + 0.5);
-      if (el.querySelector(".stat-ghost")) tl.fromTo(el.querySelector(".stat-ghost"), { opacity: 0, x: 60 }, { opacity: 1, x: 0, duration: 2, ease: E.expo }, at);
+      if (el.querySelector(".stat-ghost")) tl.fromTo(el.querySelector(".stat-ghost"), { opacity: 0, x: 60 }, { opacity: 1, x: 0, duration: 2, ease: E.expo }, cued ? revealAt : at);
       amb(el.querySelector(".stat-ghost"), dur, at);
     },
 
@@ -840,13 +831,27 @@
     var dur = s.end - s.start;
     var scIn = el.querySelector(".sc-in");
     var ambEl = el.querySelector(".amb");
+    var evidenceVideo = document.getElementById("evidence-video-" + (i + 1));
+    var evidenceViewport = el.querySelector(".evidence-viewport");
+    if (evidenceVideo && evidenceViewport) {
+      // Media has one timing owner at the root, but follows its scene's layout.
+      var rootBox = document.getElementById("root").getBoundingClientRect();
+      var box = evidenceViewport.getBoundingClientRect();
+      var renderScale = rootBox.width / document.getElementById("root").clientWidth;
+      gsap.set(evidenceVideo, {
+        left: (box.left - rootBox.left) / renderScale,
+        top: (box.top - rootBox.top) / renderScale,
+        width: box.width / renderScale,
+        height: box.height / renderScale
+      });
+    }
 
     /* accent for shared bloom & dynamic CSS variable */
     tl.to(":root", { "--ac": s.accent || "#38bdf8", duration: 1.0, ease: "sine.inOut" }, at);
 
     /* One owner per transform. Data stays still; headline scenes get a small push. */
     var isPunch = Boolean(s.punch || s.type === "meme");
-    var isHeadline = ["cold", "hero", "statement", "quote", "outro"].indexOf(s.type) !== -1;
+    var isHeadline = !s.hasEvidence && ["cold", "hero", "statement", "quote", "outro"].indexOf(s.type) !== -1;
     if (scIn) {
       tl.fromTo(scIn,
         { scale: isPunch ? 1.025 : 1, x: 0, y: 0, rotate: 0 },
@@ -916,6 +921,15 @@
     /* Execute scene type animation */
     var fn = ANIM[s.type] || ANIM.statement;
     fn(el, s, at, dur);
+
+    var evidence = el.querySelector(".evidence-frame, .brand-grid");
+    if (evidence) {
+      tl.fromTo(evidence, { x: 32, opacity: 0 }, { x: 0, opacity: 1, duration: 0.65, ease: E.soft }, at + 0.1);
+      // Hold text-heavy evidence at a stable pixel size once it lands.
+    }
+    if (evidenceVideo) {
+      tl.fromTo(evidenceVideo, { x: 32, opacity: 0 }, { x: 0, opacity: 1, duration: 0.65, ease: E.soft }, at + 0.1);
+    }
 
     /* Forensic Redactions & Live Highlighting */
     forensicAnimations(el, at, dur, s);

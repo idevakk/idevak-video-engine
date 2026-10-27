@@ -48,7 +48,9 @@ def norm(tok: str) -> str:
 
 
 def norm_words(text: str) -> list[str]:
-    return [t for t in (norm(w) for w in re.findall(r"\S+", text or "")) if t]
+    # ASR can emit a printed compound as several timestamped pieces. Use the
+    # same lexical units on both sides, preserving each piece's original time.
+    return re.findall(r"[a-z0-9]+", (text or "").lower().replace("%", " percent "))
 
 
 def sim(a: str, b: str) -> float:
@@ -162,18 +164,25 @@ def apply_timing(
             designed_tokens.append(w)
             token_to_scene.append(k)
 
-    transcript_tokens = [norm(w.get("w", "")) for w in tw]
+    transcript_tokens: list[str] = []
+    transcript_owners: list[int] = []
+    for i, word in enumerate(tw):
+        for token in norm_words(word.get("w", "")):
+            transcript_tokens.append(token)
+            transcript_owners.append(i)
     mapping, cost = align_words(designed_tokens, transcript_tokens)
 
-    scene_hits: dict[int, list[dict]] = {k: [] for k in range(len(rows))}
+    scene_indices: dict[int, set[int]] = {k: set() for k in range(len(rows))}
+    matched_tokens = [0] * len(rows)
     for d_idx, t_idx in mapping.items():
-        if t_idx < len(tw):
+        if t_idx < len(transcript_tokens) and sim(designed_tokens[d_idx], transcript_tokens[t_idx]) <= 0.45:
             s_idx = token_to_scene[d_idx]
-            scene_hits[s_idx].append(tw[t_idx])
+            scene_indices[s_idx].add(transcript_owners[t_idx])
+            matched_tokens[s_idx] += 1
 
     for k, row in enumerate(rows):
-        hits = scene_hits[k]
-        row["_matched"] = len(hits)
+        hits = [tw[i] for i in sorted(scene_indices[k])]
+        row["_matched"] = matched_tokens[k]
         row["_hits"] = hits
         if hits:
             row["_start"] = min(h.get("s", 0.0) for h in hits)
@@ -199,14 +208,15 @@ def apply_timing(
 
     for k, row in enumerate(rows):
         row["_start"] = max(0.0, float(row["_start"]))
-        row["_end"] = max(float(row["_end"]), row["_start"] + min_duration)
-        if k:
-            row["_start"] = max(row["_start"], rows[k - 1]["_end"] + 0.02)
+        row["_end"] = max(float(row["_end"]), row["_start"])
 
     starts: list[float] = []
     prev = 0.0
     for k, row in enumerate(rows):
-        st = 0.0 if k == 0 else max(prev + min_gap, row["_start"] - lead_in)
+        # A cut must never remove the preceding scene's final spoken word.
+        # Optional anticipation is restricted to the silence between sentences.
+        preferred = min(row["_start"], max(prev + min_gap, row["_start"] - lead_in))
+        st = 0.0 if k == 0 else max(rows[k - 1]["_end"], preferred)
         starts.append(st)
         prev = st
 
@@ -222,7 +232,7 @@ def main() -> None:
     ap.add_argument("vo", nargs="?", default=str(DEFAULT_VO))
     ap.add_argument("--draft", action="store_true", help="estimate timings from script word counts for fast preview")
     ap.add_argument("--out-dir", default=str(DEFAULT_OUT))
-    ap.add_argument("--lead-in", type=float, default=0.3, help="visual lead before the first word")
+    ap.add_argument("--lead-in", type=float, default=0.0, help="optional visual anticipation in inter-scene silence; default 0 follows speech")
     ap.add_argument("--min-gap", type=float, default=0.6, help="minimum time between scene starts")
     ap.add_argument("--min-duration", type=float, default=0.35, help="minimum scene duration")
     args = ap.parse_args()
@@ -315,8 +325,25 @@ def main() -> None:
                 word_hits.append({
                     "w": h.get("w", "").strip(),
                     "t": round(max(0.0, float(h.get("s", scene_st)) - scene_st), 3),
-                    "d": round(max(0.1, float(h.get("e", 0.0)) - float(h.get("s", 0.0))), 3)
+                    "d": round(max(0.0, float(h.get("e", 0.0)) - float(h.get("s", 0.0))), 3)
                 })
+
+        reveal_time = None
+        cue = row["meta"].get("revealOn")
+        if cue and not is_draft:
+            cue_tokens = norm_words(cue)
+            spoken_tokens = []
+            spoken_times = []
+            for hit in row.get("_hits", []):
+                for token in norm_words(hit.get("w", "")):
+                    spoken_tokens.append(token)
+                    spoken_times.append(float(hit["s"]))
+            for i in range(len(spoken_tokens) - len(cue_tokens) + 1):
+                if spoken_tokens[i:i + len(cue_tokens)] == cue_tokens:
+                    reveal_time = round(max(0.0, spoken_times[i] - scene_st), 3)
+                    break
+            if reveal_time is None:
+                raise SystemExit(f"scene {row['index']}: revealOn phrase not found in its spoken words: {cue!r}")
 
         out_scenes.append(
             {
@@ -325,6 +352,9 @@ def main() -> None:
                 "start": round(row["start"], 3),
                 "end": round(row["end"], 3),
                 "duration": round(row["end"] - row["start"], 3),
+                "speechStart": round(row["_start"], 3) if row.get("_start") is not None else None,
+                "speechEnd": round(row["_end"], 3) if row.get("_end") is not None else None,
+                "revealTime": reveal_time,
                 "type": row["type"],
                 "act": row["act"],
                 "accent": row["accent"],
@@ -402,13 +432,15 @@ def main() -> None:
         f"- Mean scene: {total / max(1, len(out_scenes)):.1f}s",
         f"- Alignment cost: {cost:.1f}",
         f"- Script words matched: {matched}/{designed} ({pct:.1f}%)",
+        "- Match percentage measures transcript token coverage, not acoustic timestamp accuracy.",
+        f"- Visual anticipation: {args.lead_in:.3f}s, limited to silence after the previous scene's speech.",
         "",
-        "| # | Start | End | Dur | Type | Headline | Words | Matched |",
-        "|---:|---:|---:|---:|---|---|---:|---:|",
+        "| # | Start | End | Speech start | Speech end | Dur | Type | Headline | Words | Matched |",
+        "|---:|---:|---:|---:|---:|---:|---|---|---:|---:|",
     ]
     for row in rows:
         report.append(
-            f"| {row['index']} | {row['start']:.2f} | {row['end']:.2f} | {row['end'] - row['start']:.1f} | "
+            f"| {row['index']} | {row['start']:.2f} | {row['end']:.2f} | {row.get('_start', row['start']):.2f} | {row.get('_end', row['end']):.2f} | {row['end'] - row['start']:.1f} | "
             f"{row['type']} | {cell(row['headline'])} | {row.get('_nw', 0)} | {row.get('_matched', 0)} |"
         )
 

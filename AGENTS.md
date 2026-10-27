@@ -5,8 +5,11 @@ videos. You bring a topic and a voiceover. The engine transcribes the audio,
 aligns every scene's narration to the spoken words, and builds a deterministic
 composition.
 
-Read `engine/SCHEMA.md` before editing `content/video.json`. Read
-`engine/build.mjs` before adding a new visual type.
+Read `PROMPTS.md`, especially section 0, at the start of every new video task.
+Its authentic-media and quality defaults apply even when the user only supplies
+an idea or voiceover and does not repeat the production brief. Read
+`engine/SCHEMA.md` before editing `content/video.json`. Read `engine/build.mjs`
+before adding a new visual type.
 
 ## Non-negotiables
 
@@ -25,6 +28,9 @@ Read `engine/SCHEMA.md` before editing `content/video.json`. Read
 6. Do not commit generated files, audio, or renders. The ignore rules handle
    this; do not force-add them.
 7. Use plain hyphens in repo docs and commit messages. Do not use em dashes.
+8. Source authentic logos, relevant incident images and footage, and real website
+   captures by default. Follow the skill checks, sourcing, native-resolution,
+   provenance, and playback review requirements in `PROMPTS.md` section 0.
 
 ## Workflow
 
@@ -69,7 +75,10 @@ top-level shape:
 }
 ```
 
-Plan the beats first, then choose a scene type for each beat. A good short video
+Research the topic and map relevant authentic assets to the narration before
+choosing the visuals. Group narration into coherent thoughts, not arbitrary ASR
+segment pairs. Keep each cut through the final spoken word; use `meta.revealOn`
+for statistics introduced later in a beat. A good short video
 has 8-20 scenes. A 20-minute video can use 60-180. Keep each scene between 8 and
 35 narration words. If a beat is longer, split it.
 
@@ -233,4 +242,9 @@ The old 24-minute test rendered from a 180-scene file.
 - `node engine/build.mjs` writes the composition.
 - `npx hyperframes@latest lint` and `check` report 0 errors.
 - The preview looks correct at the start, at every transition, and at the end.
+- Relevant authentic assets were researched, downloaded locally, credited, and
+  inspected at their actual rendered size. Missing media or sourcing tools are
+  disclosed; no placeholder is presented as real evidence.
+- Website text and logos remain sharp in a reduced-resolution review. Scene
+  cuts and number reveals follow the actual voiceover in playback.
 - The render exists at the requested output path.

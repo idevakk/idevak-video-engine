@@ -64,12 +64,17 @@ def load_audio(path: Path, start: float | None = None, end: float | None = None)
     if shutil.which("ffmpeg") is None:
         raise SystemExit("ffmpeg was not found on PATH. Install it and try again.")
 
-    cmd = ["ffmpeg", "-hide_banner", "-loglevel", "error"]
+    # Decode before seeking. Input-side PCM seeking can return an empty stream
+    # for otherwise valid WAVs on some FFmpeg builds.
+    cmd = ["ffmpeg", "-hide_banner", "-loglevel", "error", "-i", str(path)]
     if start is not None:
         cmd += ["-ss", str(start)]
     if end is not None:
-        cmd += ["-to", str(end)]
-    cmd += ["-i", str(path), "-ac", "1", "-ar", "16000", "-f", "f32le", "-"]
+        duration = end - (start or 0)
+        if duration <= 0:
+            raise ValueError("trim end must be after trim start")
+        cmd += ["-t", str(duration)]
+    cmd += ["-ac", "1", "-ar", "16000", "-f", "f32le", "-"]
     raw = subprocess.run(cmd, capture_output=True, check=True).stdout
     return np.frombuffer(raw, dtype=np.float32).copy()
 

@@ -6,6 +6,7 @@ renders/
 .hyperframes/
 .thumbnails/
 .waveform-cache/
+.firecrawl/
 
 # User media. Bring your own voiceover; do not commit audio or renders.
 *.mp4

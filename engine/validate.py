@@ -218,6 +218,7 @@ def validate_scene(
         errors.append(f"{where}.meta: must be an object")
         meta = {}
     meta = meta or {}
+    sfield(meta, "source", where, errors, max_len=220)
 
     if scene_type in {"cold", "outro"} and not (scene.get("ghost") or meta.get("ghost") or top_ghost):
         warnings.append(f"{where}: no ghost word; the builder will fall back to the title")
@@ -229,8 +230,26 @@ def validate_scene(
 
     elif scene_type == "hero":
         mark = sfield(meta, "mark", where, errors, max_len=8)
-        if not mark:
+        if not mark and not any(meta.get(k) for k in ("image", "video", "logos")):
             warnings.append(f"{where}.meta.mark: missing; hero will use the first word of the headline")
+        for key in ("image", "video", "poster", "alt", "label", "caption", "position"):
+            sfield(meta, key, where, errors)
+        for key in ("image", "video", "poster"):
+            asset = meta.get(key)
+            if isinstance(asset, str) and asset and not (ROOT / asset).is_file():
+                errors.append(f"{where}.meta.{key}: local media not found: {asset}")
+        if meta.get("video") and not (meta.get("image") or meta.get("poster")):
+            errors.append(f"{where}.meta.video: requires an image or poster")
+        if "mediaStart" in meta and (isinstance(meta["mediaStart"], bool) or not isinstance(meta["mediaStart"], (int, float)) or meta["mediaStart"] < 0):
+            errors.append(f"{where}.meta.mediaStart: must be a non-negative number")
+        if "logos" in meta:
+            logos = listfield(meta, "logos", where, errors, lo=1, hi=6)
+            check_items(logos, f"{where}.meta.logos", errors, required=("src", "name"))
+            for logo in logos:
+                if isinstance(logo, dict) and isinstance(logo.get("src"), str) and not (ROOT / logo["src"]).is_file():
+                    errors.append(f"{where}.meta.logos: local logo not found: {logo['src']}")
+                if isinstance(logo, dict) and "background" in logo and not re.fullmatch(r"#[0-9a-fA-F]{6}", str(logo["background"])):
+                    errors.append(f"{where}.meta.logos.background: must be a #rrggbb color")
         if "rule" in meta and not isinstance(meta["rule"], bool):
             errors.append(f"{where}.meta.rule: must be a boolean")
 
@@ -238,6 +257,7 @@ def validate_scene(
         sfield(meta, "ghost", where, errors, max_len=24)
 
     elif scene_type == "stat":
+        sfield(meta, "revealOn", where, errors, max_len=100)
         if not any(key in meta for key in ("value", "display", "stat")):
             errors.append(f"{where}.meta: needs value, display, or stat")
         if "value" in meta and not isinstance(meta["value"], (int, float, str)):

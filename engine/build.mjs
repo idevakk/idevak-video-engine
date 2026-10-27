@@ -131,7 +131,7 @@ function renderScene(s, i) {
   const accent = s.accent || "#38bdf8";
   const id = `s${String(i + 1).padStart(3, "0")}`;
   const punchCls = s.meta?.punch || s.type === "meme" ? " has-punch" : "";
-  const cls = `clip sc sc-${s.type} v${s.variant || 0}${punchCls}`;
+  const cls = `clip sc sc-${s.type} v${s.variant || 0}${punchCls}${s.type === "hero" && (s.meta?.image || s.meta?.video || s.meta?.logos) ? " has-evidence" : ""}${s.type === "webref" && s.meta?.image ? " has-screenshot" : ""}`;
   const inner = RENDER[s.type] ? RENDER[s.type](s, i) : RENDER.statement(s, i);
   const mascotOv = renderMascotOverlay(s.mascot);
   return `<section id="${id}" class="${cls}" data-start="${start.toFixed(3)}" data-duration="${dur.toFixed(3)}" data-track-index="2" data-hold style="--ac:${accent}">
@@ -139,6 +139,7 @@ function renderScene(s, i) {
     <div class="amb"></div>
     ${inner}
     ${mascotOv}
+    ${s.meta?.source ? `<div class="source-credit">${esc(s.meta.source)}</div>` : ""}
   </div>
 </section>`;
 }
@@ -172,7 +173,7 @@ const RENDER = {
         ${s.subline ? `<p class="hero-sub">${esc(s.subline)}</p>` : ""}
       </div>
       <div class="hero-right">
-        <div class="hero-mark" style="--hero-mark-size:${markSize}px">${esc(mark)}</div>
+        ${s.meta?.image || s.meta?.video ? `<div class="evidence-frame"><div class="evidence-label">${esc(s.meta?.label || "INCIDENT EVIDENCE")}</div><div class="evidence-viewport"><img class="evidence-image" src="${esc(s.meta.image || s.meta.poster || "")}" alt="${esc(s.meta.alt || s.headline)}" style="object-position:${esc(s.meta.position || "center")}${s.meta.video ? ";visibility:hidden" : ""}" /></div>${s.meta.caption ? `<div class="evidence-caption">${esc(s.meta.caption)}</div>` : ""}</div>` : s.meta?.logos ? `<div class="brand-grid">${s.meta.logos.map(logo => `<div class="brand-item"><img src="${esc(logo.src)}" alt="${esc(logo.name)}" style="background:${/^#[0-9a-f]{6}$/i.test(logo.background || "") ? logo.background : "transparent"}" /><span>${esc(logo.name)}</span></div>`).join("")}</div>` : `<div class="hero-mark" style="--hero-mark-size:${markSize}px">${esc(mark)}</div>`}
         ${s.meta?.rule ? `<div class="hero-vrule"></div>` : ""}
       </div>
     </div>
@@ -216,9 +217,9 @@ const RENDER = {
 
   dateline(s) {
     const date = s.meta?.date || {};
-    const day = date.day || "";
-    const month = date.month || "";
-    const year = date.year || "";
+    const day = date.day || s.meta?.day || "";
+    const month = date.month || s.meta?.mon || "";
+    const year = date.year || s.meta?.yr || "";
     return `
     <div class="dl-grid">
       <div class="dl-date">
@@ -447,7 +448,9 @@ const RENDER = {
   compare(s) {
     const left = s.meta?.left || {};
     const right = s.meta?.right || {};
-    const mid = s.meta?.mid || "VS";
+    const mid = s.meta?.mid || s.meta?.vs || "VS";
+    const points = (side) => (Array.isArray(side.pts) ? side.pts : [side.p || ""])
+      .filter(Boolean).map(p => `<div class="cmp-p">${esc(p)}</div>`).join("");
     const longMid = mid.length > 3;
     return `
     ${eyebrow(s)}
@@ -455,13 +458,13 @@ const RENDER = {
       <div class="cmp-col cmp-left">
         <div class="cmp-k">${esc(left.k || "BEFORE")}</div>
         <div class="cmp-t">${esc(left.t || "")}</div>
-        <div class="cmp-p">${esc(left.p || "")}</div>
+        ${points(left)}
       </div>
       <div class="cmp-mid"><div class="cmp-diamond"><span class="cmp-vs ${longMid ? "is-long" : ""}">${esc(mid)}</span></div></div>
       <div class="cmp-col cmp-right">
         <div class="cmp-k">${esc(right.k || "AFTER")}</div>
         <div class="cmp-t">${esc(right.t || "")}</div>
-        <div class="cmp-p">${esc(right.p || "")}</div>
+        ${points(right)}
       </div>
     </div>
     ${s.headline ? `<div class="cmp-cap">${esc(s.headline)}</div>` : ""}
@@ -545,7 +548,7 @@ const RENDER = {
         <div class="web-badge">${esc(badge)}</div>
       </div>
       <div class="web-body">
-        ${customImg ? `<div class="web-screenshot-wrap"><img class="web-screenshot" src="${esc(customImg)}" alt="screenshot" /></div>` : `
+        ${customImg ? `<div class="web-screenshot-wrap"><img class="web-screenshot" src="${esc(customImg)}" alt="${esc(s.meta?.alt || docTitle)}" style="object-position:${esc(s.meta?.position || "top center")}" /></div>` : `
         <div class="web-doc-header">
           <div class="web-doc-crumb">DOCS / REFERENCE / SPEC</div>
           <div class="web-doc-title">${esc(docTitle)}</div>
@@ -684,6 +687,11 @@ const RENDER = {
 
 // ---------------------------------------------------------------- document
 const body = scenes.map(renderScene).join("\n");
+// Timed media lives beside scenes, never inside a plain timed section. This
+// keeps source seeking and visibility on the same global clock in HyperFrames.
+const evidenceVideos = scenes.map((s, i) => s.type === "hero" && s.meta?.video
+  ? `<video id="evidence-video-${i + 1}" class="clip evidence-video" src="${esc(s.meta.video)}" poster="${esc(s.meta.image || s.meta.poster || "")}" data-start="${s.start.toFixed(3)}" data-duration="${(s.end - s.start).toFixed(3)}" data-media-start="${Number(s.meta.mediaStart || 0)}" data-track-index="4" muted playsinline preload="metadata"></video>`
+  : "").join("\n");
 
 const html = `<!doctype html>
 <html lang="en">
@@ -725,6 +733,7 @@ body {
   </div>
   <div id="cut-rail"></div>
   ${body}
+  ${evidenceVideos}
   <audio id="vo" src="${esc(audio)}" data-start="0" data-duration="${total.toFixed(3)}" data-track-index="1" data-volume="1"></audio>
   <audio id="sfx" src="build/sfx_track.wav" data-start="0" data-duration="${total.toFixed(3)}" data-track-index="3" data-volume="1"></audio>
 </div>
@@ -739,6 +748,8 @@ window.__SCENES__ = ${JSON.stringify(scenes.map((s) => ({
   act: s.act,
   punch: Boolean(s.meta?.punch || s.type === "meme"),
   hasMascot: Boolean(s.mascot),
+  hasEvidence: Boolean(s.meta?.image || s.meta?.video || s.meta?.logos),
+  revealTime: s.revealTime ?? null,
   mascotExpr: s.mascot?.expression || (s.type === "mascot" ? (s.meta?.expression || "neutral") : null),
   wordTimings: s.wordTimings || []
 })))};

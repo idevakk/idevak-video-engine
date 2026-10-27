@@ -40,6 +40,12 @@ hyperframes check / preview / render
 - **Automated Audio-Master Alignment:** Transcribes your exact voiceover with Whisper and monotonically aligns every scene down to the millisecond.
 - **Deterministic 1080p Render Pipeline:** Uses HyperFrames and GSAP with 100% reproducible frame capture.
 - **Production Prompting Guide:** See `PROMPTS.md` for the exact LLM prompt instructions to script high-retention tech explainer videos.
+- **Persistent Media Defaults:** `AGENTS.md` directs repository-aware agents to
+  `PROMPTS.md` section 0 for every new video: authentic logos and incident media,
+  real website captures, highest available source quality, Firecrawl/browser
+  skill checks, installation prompts for missing skills, and speech-synced review.
+  Both copyable generation prompts include these requirements. External LLM
+  integrations must load the guide; the CLI pipeline does not invoke an LLM.
 - **Archived Reference Projects:** See `projects/` for full production examples (including the 90-scene `emudhra-key-was-four` investigation).
 
 ---
@@ -114,3 +120,25 @@ preset; the normal render uses `looks`. Draft timing requires `npm run draft` or
 
 See [the output quality audit](docs/output-quality-audit.md) for findings,
 remaining improvements and the render verification performed.
+
+## Narration timing
+
+Scene cuts follow the first matched spoken word by default and retain the
+previous scene through its last word. Write narration in coherent beats instead
+of pairing arbitrary ASR segments. Compound names use the same tokenization as
+the transcript. For a statistic introduced later in a scene, set `meta.revealOn`
+to its exact spoken phrase. See `engine/SCHEMA.md` for the timing contract.
+
+## Long Windows exports
+
+HyperFrames 0.8.207 can report `capture_disk stalled` at the full frame count
+while the disk stage is still finishing. For a long delivery export, increase
+the stage's no-progress allowance and retain intermediate frames with `--debug`:
+
+```powershell
+$env:HF_DE_STALL_MS='1800000'
+npx hyperframes@0.8.207 render --quality delivery --debug --output renders/video.mp4
+```
+
+This changes the timeout, not the composition timing or encoding quality.
+Debug renders retain large frame directories under the CLI's `.debug` directory.

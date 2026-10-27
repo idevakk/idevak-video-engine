@@ -20,6 +20,16 @@ engine/build.mjs -> index.html + hyperframes.json
 
 ## Top-level object
 
+Aligned scenes start with their first spoken words by default. The previous
+scene stays visible through its last spoken word and any following pause.
+`engine/align.py --lead-in` is an optional anticipation setting restricted to
+silence; it cannot cut off the preceding scene's speech. Minimum spacing is a
+visual preference and never delays a matched scene past its spoken start.
+Generated `speechStart` and `speechEnd` expose the matched narration span in
+the alignment report. Match percentage measures text coverage, not acoustic
+timestamp accuracy. Write scene narration at complete thought boundaries,
+rather than copying arbitrary transcription segment pairs.
+
 | Field | Type | Required | Notes |
 |---|---|---|---|
 | `title` | string | yes | Max 120 characters. Used in `<title>` and as a fallback. |
@@ -161,6 +171,20 @@ A large title on the left, a single word mark on the right.
 |---|---|---|
 | `mark` | string | Max 8 characters. Defaults to the first word of the headline. |
 | `rule` | boolean | Adds a vertical rule beside the mark. |
+| `image` | string | Local evidence image displayed in the right-hand panel. Use the publisher's existing redactions. |
+| `alt` | string | Description of the evidence image. Defaults to the headline. |
+| `label` | string | Authored heading for this scene, for example `EXPOSED TASK LOG` or `PRODUCT DEMO`. Choose wording for the video idea and asset. Defaults to `INCIDENT EVIDENCE` when omitted. |
+| `caption` | string | Short context below the evidence image. |
+| `position` | string | Image object-position. Defaults to `center`. |
+| `video` | string | Local video in the evidence panel, muted. Framework-owned playback uses the scene timing. |
+| `poster` | string | Local video poster when `image` is absent. |
+| `mediaStart` | number | Source video offset in seconds, default `0`. Supply enough source footage for the scene. |
+| `logos` | object[] | Official brand assets: `{ "src": "assets/logos/vendor.svg", "name": "Vendor", "background": "#f5f4ef" }`. Optional background gives dark marks sufficient contrast. Used when no image or video is set. |
+| `source` | string | Source credit along the bottom safe margin. Available on every scene type. |
+
+Evidence uses the existing `hero` scene type. Video elements are emitted beside
+the timed scene sections so extraction and preview share the same global clock.
+Download source media before building; renders must not depend on remote URLs.
 
 ### statement
 
@@ -207,6 +231,7 @@ A large number that counts up from `from` to `to`.
 |---|---|---|
 | `value` | number or string | Source value. The aligner extracts the number, decimal places, and comma separator. |
 | `display` | string | Optional display override. |
+| `revealOn` | string | Exact phrase spoken in this scene, max 100 characters. Keeps the number and its decorative duplicate hidden until that phrase starts. Alignment fails if the phrase is absent. Omit for a scene-start reveal. |
 | `dec` | integer | 0-3 decimal places. |
 | `sep` | boolean | Use thousands separators. Defaults to true when `value` contains a comma. |
 | `from` | number | Count-up start. Defaults to 0. |
@@ -662,6 +687,8 @@ A browser and documentation reference window with an address bar, SSL lock, docu
 | `callout` | string | Highlighted alert box text. |
 | `calloutType` | string | `NOTE`, `IMPORTANT`, or `WARNING`. Defaults to `IMPORTANT`. |
 | `image` | string | Optional path to real screenshot image. If set, replaces the rendered HTML doc. |
+| `alt` | string | Screenshot description. Defaults to the document title. |
+| `position` | string | Screenshot crop anchor, default `top center`. Screenshots fit a bounded viewport to keep the headline and credit in frame. |
 
 ### meme
 

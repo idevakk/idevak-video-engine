@@ -75,6 +75,30 @@ hyperframes check / preview / render
   pip install faster-whisper
   ```
 
+## Optional Daytona execution
+
+To transcribe and render a particular video in disposable cloud sandboxes,
+explicitly enable the [Daytona workflow](docs/DAYTONA.md) for that video. The
+guide includes a copyable LLM instruction and setup commands for the Daytona
+skill and Python SDK. The normal local workflow stays the default.
+
+```bash
+python scripts/daytona_video.py check       # Verify remote toolchain, then delete sandbox
+python scripts/daytona_video.py transcribe  # Download word timings, then delete sandbox
+python scripts/daytona_video.py prepare     # Align/build/SFX/test/lint/check/capture QA remotely
+# Review downloaded reports and QA frames; fix source and repeat prepare as needed.
+python scripts/daytona_video.py render      # Download final MP4, then delete sandbox
+```
+
+Enabling this workflow authorizes automatic sandbox rendering after preparation
+and QA pass. Preview servers and local rendering still require permission.
+Sandboxes also have a configurable 15-minute inactivity deletion fallback.
+Outputs stay in ignored `build/` and `renders/`; no global agent policy changes.
+The host needs Python 3.10+, the Daytona SDK, credentials, network access, and
+file storage. Node, FFmpeg, Playwright, Chromium, and Whisper run in Daytona.
+Rendering reuses the prepared composition and refuses changed source/artifacts
+until preparation and QA are repeated.
+
 ---
 
 ## Quick Start (Clean Template)

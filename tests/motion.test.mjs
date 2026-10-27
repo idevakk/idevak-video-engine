@@ -108,6 +108,26 @@ test('evidence video aligns with its viewport and enters with the surrounding fr
  await page.close();
 });
 
+test('timeline geometry waits for font readiness before positioning evidence video', async()=>{
+ const page=await browser.newPage({viewport:{width:1920,height:1080}});
+ await page.addInitScript(()=>{
+  const ready=new Promise(resolve=>{window.__releaseTestFonts=resolve;});
+  Object.defineProperty(document.fonts,'ready',{value:ready});
+ });
+ await page.goto('file://'+path.join(dir,'index.html'));
+ assert.equal(await page.evaluate(()=>Boolean(window.__timelines?.['motion-test'])),false);
+ await page.evaluate(()=>window.__releaseTestFonts());
+ await page.waitForFunction(()=>Boolean(window.__timelines?.['motion-test']));
+ const bounds=await page.evaluate(()=>{
+  window.__timelines['motion-test'].seek(126,false);
+  const a=document.querySelector('#s011 .evidence-viewport').getBoundingClientRect();
+  const v=document.querySelector('#evidence-video-11').getBoundingClientRect();
+  return [v.x-a.x,v.y-a.y,v.width-a.width,v.height-a.height];
+ });
+ assert.ok(bounds.every(delta=>Math.abs(delta)<1),JSON.stringify(bounds));
+ await page.close();
+});
+
 test('documented comparison bullets and dateline fields reach the visible composition', async()=>{
  const page=await open();
  const result=await page.evaluate(()=>({

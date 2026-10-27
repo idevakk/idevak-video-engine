@@ -11,6 +11,23 @@ the user only supplies an idea or voiceover and does not repeat the production
 brief. Read `engine/SCHEMA.md` before editing `content/video.json`. Read
 `engine/build.mjs` before adding a new visual type.
 
+## Optional Daytona execution
+
+Daytona is disabled by default and must be explicitly enabled for each video.
+When enabled, follow `docs/DAYTONA.md` and use `scripts/daytona_video.py` for
+voiceover transcription, `prepare` (alignment/build/SFX/tests/lint/checks and
+headless QA frames), and final MP4 rendering. For this workflow the host only
+needs Python, the Daytona SDK, credentials, network, and file storage; install
+Node/FFmpeg/Chromium inside the sandboxes. Review downloaded preparation reports
+and frames, fix source and repeat preparation as needed, then render the checked
+artifacts. Do not run the local pipeline for an opted-in video. That opt-in
+grants standing permission for this video's sandbox renders after preparation and QA
+pass, satisfying the render-permission rules below. Preview servers and local
+video encoding still require separate permission. Download and show the MP4,
+delete each owned sandbox on success/failure, and keep a configurable 15-minute
+inactivity deletion fallback enabled. Install the Daytona skill and Python SDK
+if missing using the exact commands in `docs/DAYTONA.md`. This policy is repo-local.
+
 ## Non-negotiables
 
 1. The voiceover is the timing master. `narration` must be the words actually

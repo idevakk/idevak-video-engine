@@ -2,6 +2,18 @@
 
 Read `AGENTS.md` and `PROMPTS.md` first. Read `engine/SCHEMA.md` before editing `content/video.json`.
 
+Daytona is optional per video. If the user explicitly enables it, follow
+`docs/DAYTONA.md` for sandbox transcription, `prepare` (alignment/build/SFX,
+tests/lint/checks and QA frames), and automatic sandbox rendering
+after preparation/QA pass. That opt-in supplies render permission for the
+current video's Daytona workflow. Retrieve/show the MP4 and delete every owned
+sandbox, with 15-minute inactivity cleanup as a fallback. Preview servers and
+local encoding still need separate permission. Install the missing Daytona
+skill/SDK using the commands in that guide; do not change global instructions.
+Keep Node, FFmpeg, Playwright, and Chromium in the sandboxes for this workflow.
+The host only needs Python/SDK/credentials/network/storage. Inspect downloaded
+preparation reports and frames; fix source and repeat preparation before render.
+
 ## Short version
 
 - Aspect ratios: `"aspect": "16:9"` (default 1920x1080) or `"aspect": "9:16"` (1080x1920 portrait for YouTube Shorts, Reels, TikTok). Setting `"aspect": "9:16"` automatically configures dimensions, mobile safe zones (160px top, 240px bottom), and responsive stacked layouts.

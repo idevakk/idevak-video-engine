@@ -1,5 +1,8 @@
 /* Deterministic scene choreography. One paused timeline owns every pixel. */
 (function () {
+  // Measure evidence geometry only after local fonts have settled. Font metrics
+  // can otherwise move the viewport after its root-level video was positioned.
+  (document.fonts ? document.fonts.ready : Promise.resolve()).then(function () {
   var SCENES = window.__SCENES__;
   var TOTAL = window.__TOTAL__;
   var tl = gsap.timeline({ paused: true });
@@ -940,4 +943,5 @@
 
   window.__timelines = window.__timelines || {};
   window.__timelines["__COMPOSITION_ID__"] = tl;
+  });
 })();

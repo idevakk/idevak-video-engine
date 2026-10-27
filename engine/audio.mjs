@@ -38,6 +38,7 @@ export async function bakeSFX(html, duration, output) {
     // Fonts and media are unnecessary to construct the animation's cue schedule.
     await page.route('**/*', route => route.abort());
     await page.setContent(html, { waitUntil: 'load' });
+    await page.waitForFunction(() => typeof window.__synthesizeSFX === 'function');
     if (errors.length) throw new Error(errors.join('\n'));
     const { events, clips } = await page.evaluate(() => window.__synthesizeSFX());
     await fs.writeFile(output, mixSFX(events, clips, duration));

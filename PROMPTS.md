@@ -13,6 +13,26 @@ This section is the canonical production policy for both landscape and portrait
 prompts below. Examples elsewhere in this guide are illustrative, not verified
 source quotations or evidence.
 
+### Optional Daytona transcription and rendering
+
+Use the local workflow by default. Only when the user explicitly enables
+Daytona for the current video, follow `docs/DAYTONA.md` and the Daytona skill.
+Use `scripts/daytona_video.py transcribe` on the exact supplied audio, then
+`prepare` for sandbox alignment, builds/SFX, tests, lint, checks, and headless
+QA frames. Inspect downloaded reports and native/phone/seam images, fix source
+and repeat preparation as needed, then automatically `render` the checked
+artifacts in a fresh sandbox. The host needs Python/SDK/credentials/network and
+storage; Node, FFmpeg, Playwright, and Chromium are installed in the sandboxes.
+Do not run local builds/pipeline/checks for an opted-in video.
+This per-video opt-in grants standing permission for those sandbox renders,
+satisfying render-permission requirements elsewhere in this guide. Preview
+servers and local video encoding still need separate permission. Download and
+show the MP4 here, delete each owned sandbox after retrieving its results even
+on failure, and retain configurable 15-minute inactivity deletion as a fallback.
+Install missing skills with `npx skills add https://github.com/daytona/skills --skill daytona -g`
+and the missing SDK with `python -m pip install daytona`. See the guide for
+secure credentials, commands, exported playback review, and cleanup details.
+
 ### Agent-owned setup/build/QA; permission for preview and video render
 
 - Complete everything needed to prepare a working composition yourself: inspect

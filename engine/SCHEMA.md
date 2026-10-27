@@ -761,7 +761,7 @@ A dedicated spotlight scene featuring Devak (the iDevak mascot) delivering a tec
   "headline": "The Golden Rule of Cloud Security",
   "subline": "Three simple steps that would have prevented this entire incident.",
   "meta": {
-    "expression": "solved",
+    "expression": "pointing",
     "bubble": "Rotate your credentials before someone else does.",
     "badge": "iDevak // CLOUD SECURITY",
     "stats": [

@@ -32,6 +32,7 @@ source quotations or evidence.
 
 - Discover installed skills and callable tools first. Read the available
   HyperFrames, media-use, Firecrawl, and browser-use skills relevant to the task.
+  Read hyperframes-audio when mixing or automating audio tracks.
   Browser skill names differ by host; identify the supported equivalent rather
   than assuming a literal `browser-use` package exists.
 - Use Firecrawl for source discovery, reading primary reports, and extracting
@@ -107,6 +108,53 @@ source quotations or evidence.
   ending. Render with delivery quality at the requested resolution, verify the
   actual MP4's streams and duration, and check audio sync near the start, middle,
   and end. Deliver the real file, not only a plan or browser preview.
+
+### Contextual sound design and exported SFX
+
+- Plan sound alongside the narration and visual beats for every new video.
+  Use restrained impacts for important reveals, ticks for meaningful counters,
+  clicks for terminal actions, and a light entrance cue for a relevant mascot
+  reaction. Choose cues for their narrative purpose; leave quiet passages where
+  the voiceover or evidence needs attention. Avoid repetitive noise and a
+  whoosh on every cut. Preserve the seamless transitions without laser effects.
+- Use the engine's procedural SFX and deterministic cue schedule in
+  `engine/anim.js`. Align each cue with the actual visual event and spoken beat,
+  including `meta.revealOn` for delayed statistics. If additional sound design
+  is needed, extend the existing cue/synthesis path and inspect its mix; do not
+  invent unsupported SFX fields in `content/video.json` or rely on live browser
+  audio callbacks that disappear from the exported video.
+- Run `npm run build` after animation or cue changes. It generates
+  `build/sfx_track.wav` and `build/sfx_track.json`; inspect the schedule and
+  confirm that the track is embedded in the composition. Keep the user's
+  voiceover unchanged. Balance effects underneath clear speech, prevent
+  clipping and abrupt tails, and reduce competing effects where necessary.
+- Listen to the actual rendered MP4 on headphones and ordinary speakers.
+  Check both quiet and busy passages and cues near the beginning, middle, and
+  end. Verify audible effects, intelligible narration, and synchronization;
+  successful browser playback or the existence of a WAV alone is insufficient.
+
+### Mascot direction throughout the story
+
+- Plan Devak's appearances across the narrative wherever the context benefits:
+  investigating a clue, reacting to a twist, explaining a mechanism, or landing
+  the engineering lesson. Scale appearances to the video's length and actual
+  beats rather than limiting a long video to two or three reactions. Use both
+  the universal `mascot` overlay and dedicated `mascot` scenes where appropriate.
+- Select an expression that fits the current narration from the supported set:
+  `neutral`, `talking`, `thinking`, `shocked`, `cool`, `happy`, `angry`, `sad`,
+  `facepalm`, `pointing`, `panic`, or `skeptical`. Use the existing transparent
+  mascot assets and keep them sharp at their displayed size. Do not invent pose
+  names or carry a previous episode's reaction text into a new story.
+- Prefer silent facial reactions when they communicate the point. Use a short
+  bubble only for useful contextual commentary, not redundant emotion labels
+  or a duplicate headline. Do not add a synthetic character voice. Match each
+  entrance and reaction to its relevant spoken beat instead of revealing the
+  twist before the narration reaches it.
+- Place overlays in the schema-supported `bottom-left` or `bottom-right`
+  position according to free space. Protect evidence, logos, source credits,
+  captions, and mobile safe areas. Keep source-heavy scenes clear when a mascot
+  would obscure the finding, and inspect mascot scenes in the reduced-resolution
+  review as well as at native size.
 
 These instructions guide the authoring agent. `npm run pipeline` processes an
 already-authored project; it does not itself call an LLM, search the web, or
@@ -262,7 +310,7 @@ What is this beat about?
   "headline": "The Golden Rule of Cloud IAM",
   "subline": "Least privilege isn't paranoid — it's insurance against a $40,000 AWS bill.",
   "meta": {
-    "expression": "solved",
+    "expression": "pointing",
     "bubble": "Wildcard permissions are a zero-day waiting to happen.",
     "badge": "iDevak // BEST PRACTICES",
     "stats": [
@@ -311,6 +359,8 @@ You are the Lead Technical Director and Scriptwriter for the YouTube channel iDe
 - Research and use relevant authentic logos, incident images/footage, and real website captures. Prefer official vector logos, original high-resolution media, and verified high-DPI browser captures. Download assets locally, document sources, and choose readable crops and scene-specific labels.
 - Use Firecrawl and supported browser automation for their respective research/capture tasks. Check required skills first; if missing, identify them and prompt installation using official instructions. Explain any equivalent-tool fallback.
 - Keep cuts and statistics synchronized with speech. Preserve sharp evidence, use clean transitions, review native and reduced-resolution output, and complete the validated delivery render when video production is requested.
+- Plan contextual SFX using the engine's existing procedural cues. Sync sounds to actual reveals and actions, keep narration clear, rebuild the baked SFX track after changes, and listen to the final MP4 across its full duration. Follow section 0's sound-design and export checks; do not invent JSON audio fields.
+- Direct Devak throughout the story where the narration benefits from an investigation, reaction, explanation, or takeaway. Choose supported expressions and contextual overlays or mascot scenes, use optional concise bubbles, and keep evidence and mobile safe areas unobstructed. Match appearances to speech; do not impose a fixed reaction quota.
 
 ### Tone & Style:
 - Fast, punchy, cynical yet deeply technical ("Fireship meets Senior Cloud Architect").
@@ -322,8 +372,8 @@ You are the Lead Technical Director and Scriptwriter for the YouTube channel iDe
 1. Scene 1: Must be "cold" with 1-3 chips and a punchy 1-word ghost text.
 2. Narrative core: Use a diverse mix of "code", "terminal", "webref" (for official specs/docs), "cloud" (for infrastructure/pipelines), "diff", and "stat".
 3. Mid-video tension relief: Include 1-2 "meme" scenes with `expression: "shocked"` or `reaction: "SKILL ISSUE"` and `punch: true`.
-4. Mascot reactions: Attach `"mascot": { "expression": "...", "bubble": "..." }` to 2-3 key technical moments.
-5. Takeaway: Use a dedicated "mascot" scene near the end for the key engineering lesson.
+4. Mascot reactions: Distribute contextual `"mascot": { "expression": "..." }` overlays across relevant technical and emotional beats, scaled to the video's length. Add a bubble only when it contributes useful commentary.
+5. Takeaway: Use a dedicated "mascot" scene near the end when it helps deliver the key engineering lesson; follow section 0's expression, timing, and placement rules.
 6. Final scene: Must be "outro" with channel: "youtube.com/channel/UCEbQwm7oWRb1HjfGHMs7AzA", cta: "Subscribe", ctaSub: "More Cloud & DevOps Autopsies".
 
 Write valid JSON matching `engine/SCHEMA.md`. For a script-only request, return
@@ -364,6 +414,14 @@ and inspect both native and compressed reduced-resolution output. Without a
 voiceover, prepare a script/draft and request the recording before final delivery;
 do not add TTS or reuse previous audio.
 
+Plan restrained contextual SFX using the engine's deterministic procedural cues,
+sync them to the actual visual and spoken events, and keep speech intelligible.
+Rebuild and verify the baked SFX track, then listen to the rendered MP4 as
+required in section 0. Use Devak at relevant investigation, twist, and takeaway
+beats with supported expressions, optional concise bubbles, and overlays or
+dedicated mascot scenes that preserve evidence and mobile safe areas. Scale
+appearances to the story; avoid forcing a reaction into every short scene.
+
 ### Instructions:
 1. Top-Level: Set `"aspect": "9:16"`, `"title": "..."`, and `"channel": "youtube.com/channel/UCEbQwm7oWRb1HjfGHMs7AzA"`.
 2. New script target: 80-120 spoken words across 6-8 scenes (approx 45 seconds). Supplied audio determines the actual length.
@@ -373,7 +431,7 @@ do not add TTS or reuse previous audio.
    - Scene 1: "cold" open hook with 1-2 chips.
    - Core beats: mix of "terminal", "code", "cloud", "stat", or "webref".
    - Dramatic twist: "meme" scene with `punch: true` and an expressive mascot reaction.
-   - Climax / Takeaway: "mascot" scene with `expression: "pointing"` or `"solved"`.
+   - Climax / Takeaway: "mascot" scene with `expression: "pointing"` or `"cool"`.
    - Final scene: "outro" with subscribe CTA.
 6. Mascot rules: Use the expressive Series 2 cloud mascot (`shocked`, `panic`, `facepalm`, `cool`, `pointing`). Let the character's facial expression speak for itself—never use redundant bubble text like "Thinking" or "Shocked".
 

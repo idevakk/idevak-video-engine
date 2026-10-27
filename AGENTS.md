@@ -6,10 +6,10 @@ aligns every scene's narration to the spoken words, and builds a deterministic
 composition.
 
 Read `PROMPTS.md`, especially section 0, at the start of every new video task.
-Its authentic-media and quality defaults apply even when the user only supplies
-an idea or voiceover and does not repeat the production brief. Read
-`engine/SCHEMA.md` before editing `content/video.json`. Read `engine/build.mjs`
-before adding a new visual type.
+Its authentic-media, quality, contextual SFX, and mascot defaults apply even when
+the user only supplies an idea or voiceover and does not repeat the production
+brief. Read `engine/SCHEMA.md` before editing `content/video.json`. Read
+`engine/build.mjs` before adding a new visual type.
 
 ## Non-negotiables
 
@@ -31,6 +31,10 @@ before adding a new visual type.
 8. Source authentic logos, relevant incident images and footage, and real website
    captures by default. Follow the skill checks, sourcing, native-resolution,
    provenance, and playback review requirements in `PROMPTS.md` section 0.
+9. Plan contextual SFX and mascot direction for each new video using
+   `PROMPTS.md` section 0. Use supported expressions and the existing baked SFX
+   path, synchronize reactions and sounds to speech, preserve evidence
+   readability, and listen to the exported mix with narration clearly audible.
 
 ## Workflow
 
@@ -247,4 +251,8 @@ The old 24-minute test rendered from a 180-scene file.
   disclosed; no placeholder is presented as real evidence.
 - Website text and logos remain sharp in a reduced-resolution review. Scene
   cuts and number reveals follow the actual voiceover in playback.
+- Contextual SFX are baked into the composition and verified by listening to
+  the rendered MP4. Narration is clear, with no clipping or mistimed effects.
+- Relevant mascot appearances use supported expressions, follow the spoken
+  story, and leave evidence, credits, and mobile safe areas readable.
 - The render exists at the requested output path.

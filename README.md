@@ -44,6 +44,9 @@ hyperframes check / preview / render
   `PROMPTS.md` section 0 for every new video: authentic logos and incident media,
   real website captures, highest available source quality, Firecrawl/browser
   skill checks, installation prompts for missing skills, and speech-synced review.
+  These defaults also require contextual procedural SFX, a verified exported
+  audio mix, and relevant mascot direction throughout the story using supported
+  expressions and placements that protect evidence readability.
   Both copyable generation prompts include these requirements. External LLM
   integrations must load the guide; the CLI pipeline does not invoke an LLM.
 - **Archived Reference Projects:** See `projects/` for full production examples (including the 90-scene `emudhra-key-was-four` investigation).
@@ -100,8 +103,9 @@ npm run render
 
 Every build bakes the animation's exact cue schedule into `build/sfx_track.wav`
 (48 kHz PCM). This includes transitions, stat ticks and impacts, terminal clicks,
-mascot entrances, highlights, redactions and flares. `build/sfx_track.json` lists
-all cue timestamps and gains for review. There is no event-count cap.
+mascot entrances, highlights, and redactions as scheduled by the animation.
+`build/sfx_track.json` lists all cue timestamps and gains for review. There is
+no event-count cap.
 
 The composition declares separate voiceover and SFX audio elements, so preview
 and MP4 export use the same soundtrack. Your source recording and alignment

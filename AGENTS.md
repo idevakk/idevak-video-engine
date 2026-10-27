@@ -44,6 +44,11 @@ brief. Read `engine/SCHEMA.md` before editing `content/video.json`. Read
     mixer/HyperFrames equivalents, and any command that invokes them indirectly.
     Leave draft timing (`align:draft` / `align.py --draft`) to the user too.
     A generic request to generate a video does not authorize these actions.
+11. Every QA round must check user-produced playback for text jitter, flicker,
+    font/layout jumps, shifting counters, and unstable overlays or transitions.
+    Fix any issue immediately in source; follow `PROMPTS.md` section 0 and ask
+    the user to rebuild and recheck affected timestamps. Do not run a build,
+    preview, or render for QA, and keep verification pending until results arrive.
 
 ## Workflow
 
@@ -278,7 +283,9 @@ The old 24-minute test rendered from a 180-scene file.
   before preview, and `npm run render` / `render:hq` include their own build.
 - Include a review checklist: lint/check errors, opening/every cut/ending,
   sharp evidence at native and reduced resolution, speech timing, mascot
-  placement, and audible SFX beneath clear narration in the exported MP4.
+  placement, text/motion stability across adjacent frames, and audible SFX
+  beneath clear narration in the exported MP4. Fix any reported jitter or
+  instability immediately in source, then request user-run verification.
 - State that build, playback review, and export remain for the user to run.
   Do not claim an unperformed check passed or a new MP4 was generated. Inspect
   user-produced artifacts when supplied and fix source issues they reveal.

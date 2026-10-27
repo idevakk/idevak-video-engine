@@ -134,6 +134,22 @@ source quotations or evidence.
   and check audio sync near the start, middle, and end. Mark these user-run steps
   as pending until results are available; never run them to finish the task.
 
+### QA for text and motion stability
+
+- In every QA round, explicitly check for text jitter, flicker, baseline or
+  position jumps, font swapping, unexpected line wrapping, shifting counter
+  widths, and unstable overlays or transitions. Review user-generated playback
+  at normal speed and slow motion, comparing adjacent frames around entrances,
+  number updates, holds, and cuts. A single sharp still does not prove stability.
+- If any instability is found, fix it immediately in the authored content or
+  engine source rather than deferring it or masking it with blur. Identify the
+  cause and use the appropriate fix, such as stable layout bounds, tabular
+  counter digits, ready local fonts, or deterministic animation transforms.
+  Preserve intentional motion and speech timing. Note affected timestamps,
+  explain the correction, and ask the user to rebuild and review those passages.
+  Keep the fix's visual verification pending until updated user-produced output
+  confirms it. Never launch a build, preview, or render to perform QA yourself.
+
 ### Contextual sound design and exported SFX
 
 - Plan sound alongside the narration and visual beats for every new video.
@@ -386,6 +402,7 @@ You are the Lead Technical Director and Scriptwriter for the YouTube channel iDe
 - Research and use relevant authentic logos, incident images/footage, and real website captures. Prefer official vector logos, original high-resolution media, and verified high-DPI browser captures. Download assets locally, document sources, and choose readable crops and scene-specific labels.
 - Use Firecrawl and supported browser automation for their respective research/capture tasks. Check required skills first; if missing, identify them and prompt installation using official instructions. Explain any equivalent-tool fallback.
 - Keep cuts and statistics synchronized with speech. Preserve sharp evidence and clean transitions, and give the user native/reduced-resolution review and delivery-render instructions.
+- In every QA round, check user-generated playback for text jitter, flicker, font/layout jumps, unstable counters, and overlay/transition movement using normal speed and adjacent frames. Fix any issue immediately in source, then ask the user to rebuild and recheck affected timestamps; never build, preview, or render yourself for QA.
 - Plan contextual SFX using the engine's existing procedural cues. Sync sounds to actual reveals and actions, keep narration clear, and ask the user to rebuild the baked SFX track and listen to the final MP4 across its full duration. Follow section 0's sound-design and export checks; do not invent JSON audio fields.
 - Direct Devak throughout the story where the narration benefits from an investigation, reaction, explanation, or takeaway. Choose supported expressions and contextual overlays or mascot scenes, use optional concise bubbles, and keep evidence and mobile safe areas unobstructed. Match appearances to speech; do not impose a fixed reaction quota.
 
@@ -441,6 +458,11 @@ Never run a draft/full build, preview launch, or video render, directly or
 indirectly through pipeline, SFX, tests, or lifecycle hooks. Prepare the source
 and always ask the user to run preview or render themselves with exact commands
 and prerequisites. Keep playback/export checks pending until results are supplied.
+Every QA round must check user-generated playback for text jitter, flicker,
+font/layout jumps, unstable counters, and overlay/transition movement at normal
+speed and across adjacent frames. Fix any issue immediately in source, then ask
+the user to rebuild and recheck affected timestamps. Never build, preview, or
+render yourself for QA; keep visual verification pending until new results arrive.
 Preserve supplied audio, follow its coherent spoken beats, and cue statistics
 to speech. Frame evidence for a phone, keep text sharp, use clean transitions,
 and ask the user to inspect native and compressed reduced-resolution output.

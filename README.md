@@ -54,6 +54,10 @@ hyperframes check / preview / render
   They never execute draft/full builds, launch previews, or render videos,
   including through pipeline/SFX commands or automatic build hooks. Output
   review remains pending until user-produced results are available.
+- **Text Stability QA:** Every QA round checks user-produced playback for text
+  jitter, flicker, font/layout jumps, shifting counters, and unstable motion.
+  Agents fix any issue immediately in source and ask the user to rebuild and
+  recheck affected timestamps, preserving the user-run build/render policy.
 - **Archived Reference Projects:** See `projects/` for full production examples (including the 90-scene `emudhra-key-was-four` investigation).
 
 ---

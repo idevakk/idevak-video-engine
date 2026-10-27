@@ -174,6 +174,7 @@ def apply_timing(
     for k, row in enumerate(rows):
         hits = scene_hits[k]
         row["_matched"] = len(hits)
+        row["_hits"] = hits
         if hits:
             row["_start"] = min(h.get("s", 0.0) for h in hits)
             row["_end"] = max(h.get("e", 0.0) for h in hits)
@@ -270,7 +271,7 @@ def main() -> None:
         )
 
     # Draft / Synthetic timing mode
-    is_draft = args.draft or not vo_path.exists()
+    is_draft = args.draft
     if is_draft:
         curr_t = 0.0
         for row in rows:
@@ -306,6 +307,17 @@ def main() -> None:
 
     out_scenes = []
     for row in rows:
+        # Extract word timestamps relative to scene start
+        scene_st = float(row["start"])
+        word_hits = []
+        if "_hits" in row and row["_hits"]:
+            for h in row["_hits"]:
+                word_hits.append({
+                    "w": h.get("w", "").strip(),
+                    "t": round(max(0.0, float(h.get("s", scene_st)) - scene_st), 3),
+                    "d": round(max(0.1, float(h.get("e", 0.0)) - float(h.get("s", 0.0))), 3)
+                })
+
         out_scenes.append(
             {
                 "index": row["index"],
@@ -314,6 +326,7 @@ def main() -> None:
                 "end": round(row["end"], 3),
                 "duration": round(row["end"] - row["start"], 3),
                 "type": row["type"],
+                "act": row["act"],
                 "accent": row["accent"],
                 "eyebrow": row["eyebrow"],
                 "headline": row["headline"],
@@ -323,6 +336,7 @@ def main() -> None:
                 "meta": row["meta"],
                 "narration": row["narration"],
                 "mascot": row["mascot"],
+                "wordTimings": word_hits,
             }
         )
 

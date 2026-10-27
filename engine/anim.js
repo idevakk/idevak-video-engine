@@ -4,28 +4,225 @@
   var TOTAL = window.__TOTAL__;
   var tl = gsap.timeline({ paused: true });
   gsap.config({ nullTargetWarn: false });
-  var E = { out: "power4.out", soft: "power3.out", inOut: "power2.inOut", expo: "expo.out" };
+
+  var E = {
+    out: "power4.out",
+    soft: "power3.out",
+    inOut: "power2.inOut",
+    expo: "expo.out",
+    spring: "power3.out",
+    springSubtle: "power3.out",
+    cinematic: "sine.inOut",
+    smooth: "power2.out",
+  };
 
   function q(el, sel) { return Array.prototype.slice.call(el.querySelectorAll(sel)); }
   function rep(dur, cycle) { return Math.max(0, Math.floor(dur / cycle) - 1); }
   function ac(s) { return s.accent || "#38bdf8"; }
 
   /* ---------------------------------------------------------- backdrop */
-  gsap.set("#bg-bloom", { xPercent: -50, yPercent: -50, x: 960, y: 540 });
-  tl.to("#bg-grid", { x: -140, y: -90, duration: TOTAL, ease: "none" }, 0);
+  gsap.set("#bg-bloom", { xPercent: -50, yPercent: -50, x: 0, y: 0 });
+  tl.to("#bg-grid", { x: -40, y: -24, duration: TOTAL, ease: "none" }, 0);
   tl.to("#bg-noise", { x: 90, y: -60, duration: TOTAL, ease: "none" }, 0);
-  tl.to("#bg-bloom", { scale: 1.16, duration: TOTAL, ease: "none" }, 0);
+  tl.to("#bg-grain", { x: -70, y: 80, duration: TOTAL, ease: "none" }, 0);
   tl.to(":root", { duration: 1.8, ease: "sine.inOut" }, 0);
 
+  /* ---------------------------------------------------------- audio-visual haptics (sfx engine) */
+  // Index-based noise keeps each procedural buffer repeatable across workers.
+  function noiseSample(index) {
+    var n = Math.imul(index + 1, 374761393);
+    n = Math.imul(n ^ (n >>> 13), 1274126177);
+    return ((n ^ (n >>> 16)) >>> 0) / 2147483648 - 1;
+  }
+  // Scheduling is shared by build-time offline synthesis and the exported track.
+  var sfxEvents = [];
+  window.__SFX_EVENTS__ = sfxEvents;
+  function playSFX(type, opt, ctx) {
+    var t = 0;
+    opt = opt || {};
+
+    if (type === "whoosh") {
+      // Clean air whoosh on camera transitions
+      var bufferSize = ctx.sampleRate * 0.22;
+      var buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+      var data = buffer.getChannelData(0);
+      for (var i = 0; i < bufferSize; i++) { data[i] = noiseSample(i); }
+      var noise = ctx.createBufferSource();
+      noise.buffer = buffer;
+      var filter = ctx.createBiquadFilter();
+      filter.type = "bandpass";
+      filter.frequency.setValueAtTime(400, t);
+      filter.frequency.exponentialRampToValueAtTime(1400, t + 0.1);
+      filter.frequency.exponentialRampToValueAtTime(200, t + 0.22);
+      var gain = ctx.createGain();
+      gain.gain.setValueAtTime(0.01, t);
+      gain.gain.linearRampToValueAtTime(0.12 * (opt.vol == null ? 1 : opt.vol), t + 0.08);
+      gain.gain.linearRampToValueAtTime(0.001, t + 0.22);
+      noise.connect(filter);
+      filter.connect(gain);
+      gain.connect(ctx.destination);
+      noise.start(t);
+    } else if (type === "thud") {
+      // Sub-bass impact thud for stat reveals & punch cuts
+      var osc = ctx.createOscillator();
+      var g = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(120, t);
+      osc.frequency.exponentialRampToValueAtTime(32, t + 0.28);
+      g.gain.setValueAtTime(0.28 * (opt.vol == null ? 1 : opt.vol), t);
+      g.gain.exponentialRampToValueAtTime(0.001, t + 0.28);
+      osc.connect(g);
+      g.connect(ctx.destination);
+      osc.start(t);
+      osc.stop(t + 0.3);
+    } else if (type === "click") {
+      // Crisp mechanical keyclick for terminal typing
+      var o = ctx.createOscillator();
+      var g2 = ctx.createGain();
+      o.type = "triangle";
+      o.frequency.setValueAtTime(1600, t);
+      o.frequency.exponentialRampToValueAtTime(200, t + 0.03);
+      g2.gain.setValueAtTime(0.08 * (opt.vol == null ? 1 : opt.vol), t);
+      g2.gain.exponentialRampToValueAtTime(0.001, t + 0.03);
+      o.connect(g2);
+      g2.connect(ctx.destination);
+      o.start(t);
+      o.stop(t + 0.04);
+    } else if (type === "chime") {
+      // Cyber telemetry chime on badge reveals / mascot pop
+      var o3 = ctx.createOscillator();
+      var g3 = ctx.createGain();
+      o3.type = "sine";
+      o3.frequency.setValueAtTime(880, t);
+      o3.frequency.setValueAtTime(1320, t + 0.06);
+      g3.gain.setValueAtTime(0.07 * (opt.vol == null ? 1 : opt.vol), t);
+      g3.gain.exponentialRampToValueAtTime(0.001, t + 0.22);
+      o3.connect(g3);
+      g3.connect(ctx.destination);
+      o3.start(t);
+      o3.stop(t + 0.24);
+    } else if (type === "swipe") {
+      // Felt highlighter marker sweep sound
+      var bufferSize = Math.floor(ctx.sampleRate * 0.16);
+      var buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+      var data = buffer.getChannelData(0);
+      for (var i = 0; i < bufferSize; i++) { data[i] = (noiseSample(i)) * 0.5; }
+      var noise = ctx.createBufferSource();
+      noise.buffer = buffer;
+      var filter = ctx.createBiquadFilter();
+      filter.type = "bandpass";
+      filter.frequency.setValueAtTime(1800, t);
+      filter.frequency.linearRampToValueAtTime(3200, t + 0.12);
+      filter.Q.setValueAtTime(2.5, t);
+      var gain = ctx.createGain();
+      gain.gain.setValueAtTime(0.001, t);
+      gain.gain.linearRampToValueAtTime(0.09 * (opt.vol == null ? 1 : opt.vol), t + 0.05);
+      gain.gain.linearRampToValueAtTime(0.001, t + 0.16);
+      noise.connect(filter);
+      filter.connect(gain);
+      gain.connect(ctx.destination);
+      noise.start(t);
+    } else if (type === "unmask") {
+      // Forensic redaction peel & razor unmask chirp
+      var o4 = ctx.createOscillator();
+      var g4 = ctx.createGain();
+      o4.type = "sawtooth";
+      o4.frequency.setValueAtTime(1800, t);
+      o4.frequency.exponentialRampToValueAtTime(420, t + 0.14);
+      var f = ctx.createBiquadFilter();
+      f.type = "lowpass";
+      f.frequency.setValueAtTime(2800, t);
+      g4.gain.setValueAtTime(0.12 * (opt.vol == null ? 1 : opt.vol), t);
+      g4.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
+      o4.connect(f);
+      f.connect(g4);
+      g4.connect(ctx.destination);
+      o4.start(t);
+      o4.stop(t + 0.16);
+    } else if (type === "flare") {
+      // High-frequency optical refraction ping & sub-bass shimmer
+      var o5 = ctx.createOscillator();
+      var g5 = ctx.createGain();
+      o5.type = "sine";
+      o5.frequency.setValueAtTime(2400, t);
+      o5.frequency.exponentialRampToValueAtTime(320, t + 0.28);
+      g5.gain.setValueAtTime(0.08 * (opt.vol == null ? 1 : opt.vol), t);
+      g5.gain.exponentialRampToValueAtTime(0.001, t + 0.28);
+      o5.connect(g5);
+      g5.connect(ctx.destination);
+      o5.start(t);
+      o5.stop(t + 0.3);
+    } else if (type === "decrypt") {
+      // Rapid cyber matrix decryption data-chatter
+      var o6 = ctx.createOscillator();
+      var g6 = ctx.createGain();
+      o6.type = "sawtooth";
+      o6.frequency.setValueAtTime(1400, t);
+      o6.frequency.linearRampToValueAtTime(2200, t + 0.08);
+      g6.gain.setValueAtTime(0.035 * (opt.vol == null ? 1 : opt.vol), t);
+      g6.gain.exponentialRampToValueAtTime(0.001, t + 0.09);
+      o6.connect(g6);
+      g6.connect(ctx.destination);
+      o6.start(t);
+      o6.stop(t + 0.1);
+    } else if (type === "tick") {
+      // Crisp mechanical odometer tick
+      var o7 = ctx.createOscillator();
+      var g7 = ctx.createGain();
+      o7.type = "triangle";
+      o7.frequency.setValueAtTime(950, t);
+      o7.frequency.exponentialRampToValueAtTime(150, t + 0.015);
+      g7.gain.setValueAtTime(0.04 * (opt.vol == null ? 1 : opt.vol), t);
+      g7.gain.exponentialRampToValueAtTime(0.001, t + 0.015);
+      o7.connect(g7);
+      g7.connect(ctx.destination);
+      o7.start(t);
+      o7.stop(t + 0.02);
+    }
+  }
+
+  function queueSFX(type, at, opt) {
+    if (Number.isFinite(at) && at >= 0 && at < TOTAL) {
+      sfxEvents.push({ type: type, at: at, vol: opt && opt.vol != null ? opt.vol : 1 });
+    }
+  }
+
+  // Render each sound once; Node places these samples at the exact cue times.
+  window.__synthesizeSFX = async function () {
+    var clips = {};
+    for (var type of new Set(sfxEvents.map(function (e) { return e.type; }))) {
+      var ctx = new OfflineAudioContext(1, 16800, 48000);
+      playSFX(type, { vol: 1 }, ctx);
+      var buffer = await ctx.startRendering();
+      clips[type] = Array.from(buffer.getChannelData(0));
+    }
+    return { events: sfxEvents, clips: clips };
+  };
+
   /* ---------------------------------------------------------- helpers */
+  function normTok(s) {
+    return String(s || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+  }
+
   function words(el, at, opts) {
     var o = opts || {};
-    var nodes = q(el, ".wi");
+    var allNodes = q(el, ".wi");
+    if (!allNodes.length) return;
+    var nodes = allNodes.filter(function (n) {
+      return !n.closest(".forensic-redact");
+    });
     if (!nodes.length) return;
+
+    /* Reveal words without changing their layout or overshooting. */
+    var revealDur = o.dur || 0.82;
+    var staggerVal = o.stagger || 0.038;
     tl.fromTo(nodes,
-      { yPercent: 118, opacity: 0, x: o.x || 0, rotate: o.rotate || 0.001 },
-      { yPercent: 0, opacity: 1, rotate: 0, duration: o.dur || 0.85, ease: E.expo, stagger: o.stagger || 0.045 },
+      { yPercent: 70, opacity: 0, x: o.x || 0 },
+      { yPercent: 0, opacity: 1, x: 0, duration: revealDur, ease: E.expo, stagger: staggerVal },
       at);
+
+    // Narration matches do not restyle ordinary words during their readable hold.
+    // Intentional emphasis belongs to authored highlights and redactions below.
   }
   function fade(el, at, o) {
     if (!el) return;
@@ -64,26 +261,205 @@
       var s = dec ? v.toFixed(dec) : String(Math.round(v));
       return sep ? s.replace(/\B(?=(\d{3})+(?!\d))/g, ",") : s;
     }
-    node.textContent = fmt(from);
+    var output = node.querySelector(".stat-value") || node;
+    output.textContent = fmt(from);
     var p = { v: from };
+    var countDur = o.duration || o.dur || 1.4;
+
+    /* Monotonic count with a fixed-width final-value reserve. */
     tl.to(p, {
-      v: to, duration: o.dur || 1.5, ease: o.ease || "power2.out",
-      onUpdate: function () { node.textContent = fmt(p.v); },
+      v: to,
+      duration: countDur,
+      ease: o.ease || "power3.out",
+      onUpdate: function () {
+        output.textContent = fmt(p.v);
+      },
     }, at);
+
+    /* Acoustic tick intervals */
+    var tickSteps = 8;
+    for (var k = 0; k < tickSteps; k++) {
+      var tickTime = at + (k / tickSteps) * (countDur * 0.75);
+      queueSFX("tick", tickTime, { vol: 0.7 });
+    }
   }
   function rail(at, strength) {
     tl.fromTo("#cut-rail", { x: 0, opacity: 0 }, { x: 1980, opacity: strength || 0.5, duration: 0.22, ease: "power2.in" }, at);
     tl.to("#cut-rail", { opacity: 0, duration: 0.2, ease: "power1.out" }, at + 0.2);
   }
+  function triggerFlare(at, opt) {
+    opt = opt || {};
+    var flare = document.getElementById("bg-flare");
+    if (!flare) return;
+    var dur = opt.dur || 0.42;
+    var root = document.getElementById("root");
+    var yPos = (opt.y == null ? 540 : opt.y) * ((root && root.clientHeight) || 1080) / 1080;
+    var xPos = (opt.x == null ? 960 : opt.x) * ((root && root.clientWidth) || 1920) / 1920;
+    var rot = opt.rot == null ? (Math.round(at * 30) % 2 ? -1.8 : 1.5) : opt.rot;
+    var core = flare.querySelector(".flare-core");
+    var halo = flare.querySelector(".flare-halo");
+    var streak = flare.querySelector(".flare-streak");
+    var streakSub = flare.querySelector(".flare-streak-sub");
+
+    if (core) tl.set(core, { x: xPos, y: yPos, xPercent: -50, yPercent: -50 }, at);
+    if (halo) tl.set(halo, { x: xPos, y: yPos, xPercent: -50, yPercent: -50 }, at);
+    if (streak) tl.set(streak, { top: yPos, rotate: rot }, at);
+    if (streakSub) tl.set(streakSub, { top: yPos, rotate: rot * 0.7 }, at);
+
+    tl.fromTo(flare,
+      { opacity: 0, scaleY: 0.2 },
+      { opacity: Math.min(0.45, opt.intensity || 0.4), scaleY: 1.0, duration: 0.08, ease: "power2.out" },
+      at
+    );
+    tl.to(flare,
+      { opacity: 0, scaleY: 0.4, duration: dur - 0.08, ease: "power3.in" },
+      at + 0.08
+    );
+    queueSFX("flare", at, { vol: 0.9 });
+  }
+  function cutTransition(s, previousS, at, i, dur) {
+    if (i === 0 || s.type === "stat") return;
+    var isPunch = Boolean(s.punch || s.meta?.punch || s.type === "meme");
+    var isMajor = Boolean(s.type === "cold" || s.type === "hero" || (s.act && previousS && s.act !== previousS.act));
+    var isCyber = Boolean(i % 5 === 0 || s.meta?.rail);
+
+    if (isMajor) {
+      triggerFlare(at, { y: 480, intensity: 0.92, dur: 0.48 });
+      queueSFX("thud", at, { vol: 1.2 });
+      queueSFX("whoosh", at, { vol: 0.8 });
+    } else if (isPunch) {
+      triggerFlare(at, { y: 540, intensity: 1.0, dur: 0.36 });
+      queueSFX("thud", at, { vol: 1.4 });
+    } else if (isCyber) {
+      rail(at, 0.55);
+      queueSFX("whoosh", at, { vol: 0.7 });
+    } else {
+      queueSFX("whoosh", at, { vol: 0.5 });
+    }
+  }
   function amb(el, dur, at) {
     if (!el) return;
-    tl.fromTo(el, { scale: 1, x: 0 }, { scale: 1.06, x: 18, duration: 5, ease: "sine.inOut", repeat: rep(dur, 5) }, at);
+    // Begin after the longest entrance, with no repeating reset or competing tween.
+    var delay = 2.6;
+    if (dur <= delay) return;
+    tl.to(el, { scale: 1.025, x: 12, duration: dur - delay, ease: "sine.inOut" }, at + delay);
   }
   function pulse(el, at, dur, times, o) {
     o = o || {};
     times.forEach(function (t, i) {
       tl.fromTo(el, { opacity: 0.14 }, { opacity: o.peak || 0.3, duration: 0.16, ease: "power2.out" }, at + t);
       tl.to(el, { opacity: 0.14, duration: o.tail || 0.4, ease: "power1.out" }, at + t + 0.16 + i * 0.001);
+    });
+  }
+
+  /* ---------------------------------------------------------- forensic animations */
+  function forensicAnimations(container, at, dur, s) {
+    if (!container) return;
+
+    // 1. Live Highlighter Markers
+    var hlMarkers = q(container, ".hl-marker");
+    hlMarkers.forEach(function (m, idx) {
+      var ink = m.querySelector(".hl-ink");
+      if (!ink) return;
+
+      gsap.set(ink, { scaleX: 0, opacity: 0, transformOrigin: "left center" });
+
+      var rawTarget = m.getAttribute("data-hl") || m.textContent;
+      var hlTarget = normTok(rawTarget);
+      var targetTime = at + Math.min(dur * 0.45, 0.45 + idx * 0.4);
+      var swipeDur = 0.45;
+
+      if (s && s.wordTimings && s.wordTimings.length) {
+        for (var k = 0; k < s.wordTimings.length; k++) {
+          var wt = s.wordTimings[k];
+          var wtText = normTok(wt.w);
+          if (wtText && wtText.length >= 3 && hlTarget.indexOf(wtText) !== -1) {
+            targetTime = at + Math.max(0.2, wt.t);
+            swipeDur = Math.max(0.32, Math.min(1.0, (wt.d || 0.35) * 1.8));
+            break;
+          }
+        }
+      }
+
+      tl.to(ink, {
+        scaleX: 1,
+        opacity: 1,
+        duration: swipeDur,
+        ease: "power2.out"
+      }, targetTime);
+
+      queueSFX("swipe", targetTime, { vol: 0.85 });
+
+      var wordsInside = q(m, ".wi");
+      if (wordsInside.length) {
+        tl.to(wordsInside, {
+          color: "#ffffff",
+          textShadow: "0 0 16px rgba(255,255,255,0.7), 0 0 28px " + ac(s),
+          duration: 0.25,
+          ease: "power2.out"
+        }, targetTime + 0.05);
+      }
+    });
+
+    // 2. Forensic Redactions
+    var redacts = q(container, ".forensic-redact");
+    redacts.forEach(function (r, idx) {
+      var tape = r.querySelector(".redact-tape");
+      var laser = r.querySelector(".redact-laser");
+      var text = r.querySelector(".redact-text");
+      if (!tape || !text) return;
+
+      gsap.set(tape, { scaleX: 1, transformOrigin: "right center" });
+      if (laser) gsap.set(laser, { opacity: 1, xPercent: 0 });
+      gsap.set(text, { opacity: 0, filter: "blur(5px)" });
+
+      var rawTarget = r.getAttribute("data-redact") || r.textContent;
+      var redTarget = normTok(rawTarget);
+      var revealTime = at + Math.min(dur * 0.65, 0.85 + idx * 0.6);
+
+      if (s && s.wordTimings && s.wordTimings.length) {
+        for (var k = 0; k < s.wordTimings.length; k++) {
+          var wt = s.wordTimings[k];
+          var wtText = normTok(wt.w);
+          if (wtText && wtText.length >= 3 && redTarget.indexOf(wtText) !== -1) {
+            revealTime = at + Math.max(0.25, wt.t);
+            break;
+          }
+        }
+      }
+
+      if (laser) {
+        tl.to(laser, {
+          xPercent: 100,
+          opacity: 0,
+          duration: 0.38,
+          ease: "power2.inOut"
+        }, revealTime);
+      }
+
+      tl.to(tape, {
+        scaleX: 0,
+        duration: 0.38,
+        ease: "power3.inOut"
+      }, revealTime);
+
+      tl.to(text, {
+        opacity: 1,
+        filter: "blur(0px)",
+        duration: 0.26,
+        ease: "power2.out"
+      }, revealTime + 0.08);
+
+      queueSFX("unmask", revealTime, { vol: 1.1 });
+
+      var wordsInside = q(text, ".wi");
+      if (wordsInside.length) {
+        tl.fromTo(wordsInside,
+          { scale: 1.12, color: "#ffffff" },
+          { scale: 1.0, color: "inherit", textShadow: "0 0 22px " + ac(s) + ", 0 0 36px " + ac(s), duration: 0.35, ease: E.springSubtle },
+          revealTime + 0.1
+        );
+      }
     });
   }
 
@@ -102,22 +478,22 @@
         /* frame 0 must already read as a title card */
         tl.fromTo(ghost, { opacity: 0.45, scale: 1.05, x: 30 }, { opacity: 1, scale: 1, x: 0, duration: 2.6, ease: E.expo }, 0);
         tl.fromTo(rule, { scaleX: 0.18 }, { scaleX: 1, duration: 1.5, ease: E.expo }, 0.05);
-        tl.fromTo(q(title, ".wi"), { opacity: 1, scale: 1.045 }, { opacity: 1, scale: 1, duration: 2.4, ease: E.expo, stagger: 0.025 }, 0);
+        gsap.set(q(title, ".wi"), { opacity: 1 });
         if (sub) tl.fromTo(sub, { opacity: 0, y: 22 }, { opacity: 1, y: 0, duration: 0.9, ease: E.soft }, 0.85);
-        tl.fromTo(chips, { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.6, stagger: 0.08, ease: E.soft }, 1.15);
+        tl.fromTo(chips, { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.6, stagger: 0.08, ease: E.springSubtle }, 1.15);
         return;
       }
       tl.fromTo(ghost, { scale: 1.1, opacity: 0, x: 60 }, { scale: 1, opacity: 1, x: 0, duration: 2.4, ease: E.expo }, at);
       tl.fromTo(rule, { scaleX: 0 }, { scaleX: 1, duration: 0.7, ease: E.expo }, at + 0.15);
       fade(eyebrow, at + 0.2, { y: 14, dur: 0.6 });
-      words(title, at + 0.35, { stagger: 0.055, dur: 0.95 });
+      words(title, at + 0.35, { stagger: 0.055, dur: 0.95 }, s);
       fade(sub, at + 0.8, { dur: 0.8 });
-      tl.fromTo(chips, { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, stagger: 0.08, ease: E.soft }, at + 1.05);
+      tl.fromTo(chips, { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, stagger: 0.08, ease: E.springSubtle }, at + 1.05);
     },
 
     hero: function (el, s, at, dur) {
       fade(el.querySelector(".eyebrow"), at, { y: 12, dur: 0.55 });
-      words(el.querySelector(".hero-title"), at + 0.1, { stagger: 0.05, dur: 0.9 });
+      words(el.querySelector(".hero-title"), at + 0.1, { stagger: 0.05, dur: 0.9 }, s);
       fade(el.querySelector(".hero-sub"), at + 0.55, { dur: 0.7 });
       tl.fromTo(el.querySelector(".hero-mark"), { opacity: 0, x: 40, scale: 0.94 }, { opacity: 1, x: 0, scale: 1, duration: 1.2, ease: E.expo }, at + 0.15);
       tl.fromTo(el.querySelector(".hero-baseline"), { scaleX: 0 }, { scaleX: 1, duration: 1.1, ease: E.expo }, at + 0.3);
@@ -126,7 +502,7 @@
 
     statement: function (el, s, at, dur) {
       if (el.querySelector(".eyebrow")) fade(el.querySelector(".eyebrow"), at, { y: 12, dur: 0.55 });
-      words(el.querySelector(".statement"), at + 0.06, { stagger: 0.042, dur: 0.85, x: s.variant === 2 ? 34 : s.variant === 1 ? -34 : 0 });
+      words(el.querySelector(".statement"), at + 0.06, { stagger: 0.042, dur: 0.85, x: s.variant === 2 ? 34 : s.variant === 1 ? -34 : 0 }, s);
       if (el.querySelector(".st-sub")) fade(el.querySelector(".st-sub"), at + 0.42, { dur: 0.7 });
       if (el.querySelector(".st-ghost")) tl.fromTo(el.querySelector(".st-ghost"), { opacity: 0, x: 40 }, { opacity: 1, x: 0, duration: 1.8, ease: E.expo }, at);
       var ticks = q(el, ".st-tickrow span");
@@ -137,8 +513,10 @@
     stat: function (el, s, at, dur) {
       fade(el.querySelector(".eyebrow"), at, { y: 12, dur: 0.55 });
       var num = el.querySelector(".stat-number");
+      var countDur = Math.min(2.1, Math.max(1.1, dur * 0.3));
       tl.fromTo(el.querySelector(".stat-main"), { y: 46, opacity: 0 }, { y: 0, opacity: 1, duration: 1, ease: E.expo }, at + 0.05);
-      countUp(num, at + 0.25, { duration: Math.min(2.1, Math.max(1.1, dur * 0.3)) });
+      countUp(num, at + 0.25, { duration: countDur });
+      queueSFX("thud", at + 0.25, { vol: 1.3 });
       tl.fromTo(el.querySelector(".stat-label"), { y: 24, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7, ease: E.soft }, at + 0.5);
       if (el.querySelector(".stat-sub")) fade(el.querySelector(".stat-sub"), at + 0.65, { dur: 0.7 });
       tl.fromTo(el.querySelector(".stat-ruler"), { opacity: 0 }, { opacity: 1, duration: 0.5 }, at + 0.4);
@@ -152,15 +530,19 @@
       tl.fromTo(el.querySelector(".dl-day"), { yPercent: 30, opacity: 0 }, { yPercent: 0, opacity: 1, duration: 1.1, ease: E.expo }, at + 0.05);
       tl.fromTo(q(el, ".dl-mon, .dl-yr"), { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, stagger: 0.08, ease: E.soft }, at + 0.3);
       fade(el.querySelector(".eyebrow"), at + 0.15, { y: 12, dur: 0.55 });
-      words(el.querySelector(".dl-title"), at + 0.2, { stagger: 0.04, dur: 0.82 });
+      words(el.querySelector(".dl-title"), at + 0.2, { stagger: 0.04, dur: 0.82 }, s);
       if (el.querySelector(".dl-sub")) fade(el.querySelector(".dl-sub"), at + 0.55, { dur: 0.7 });
       tl.fromTo(el.querySelector(".dl-rail span"), { scaleX: 0 }, { scaleX: 1, duration: 1.5, ease: "power2.inOut" }, at + 0.3);
-      amb(el.querySelector(".dl-date"), dur, at);
+
     },
 
     code: function (el, s, at, dur) {
       fade(el.querySelector(".eyebrow"), at, { y: 12, dur: 0.55 });
-      tl.fromTo(el.querySelector(".code-shell"), { y: 34, opacity: 0, scale: 0.985 }, { y: 0, opacity: 1, scale: 1, duration: 0.85, ease: E.expo }, at + 0.05);
+      tl.fromTo(el.querySelector(".code-shell"),
+        { y: 34, opacity: 0, scale: 0.985, rotateX: 3, rotateY: -1.5 },
+        { y: 0, opacity: 1, scale: 1, rotateX: 0, rotateY: 0, duration: 0.85, ease: E.expo, transformPerspective: 1200 },
+        at + 0.05
+      );
       var lines = q(el, ".cl");
       tl.fromTo(lines, { x: -18, opacity: 0 }, { x: 0, opacity: 1, duration: 0.5, stagger: 0.09, ease: E.soft }, at + 0.25);
       var key = el.querySelector(".cl.is-key");
@@ -170,11 +552,11 @@
         tl.fromTo(el.querySelector(".code-scan"), { opacity: 0 }, { opacity: 0.5, duration: 0.25 }, at + 1.1);
         tl.fromTo(el.querySelector(".code-scan"), { y: 0 }, { y: Math.max(120, lines.length * 52), duration: 1.0, ease: "power1.inOut" }, at + 1.1);
         tl.to(el.querySelector(".code-scan"), { opacity: 0, duration: 0.35 }, at + 2.1);
+        tl.to(key, { backgroundColor: "rgba(56,189,248,0.06)", duration: 1.6, ease: "sine.inOut", yoyo: true, repeat: rep(dur - 2.1, 3.2) }, at + 2.2);
       }
       var call = el.querySelector(".code-callout");
       if (call) tl.fromTo(call, { clipPath: "inset(0 100% 0 0)", opacity: 1 }, { clipPath: "inset(0 0% 0 0)", duration: 0.9, ease: "steps(28)" }, at + 0.5);
       if (el.querySelector(".code-sub")) fade(el.querySelector(".code-sub"), at + 0.7, { dur: 0.6 });
-      tl.fromTo(el.querySelector(".code-shell"), { rotateX: 2 }, { rotateX: 0, duration: 1.4, ease: E.soft, transformPerspective: 1200 }, at + 0.05);
     },
 
     diff: function (el, s, at, dur) {
@@ -192,22 +574,34 @@
     flow: function (el, s, at, dur) {
       fade(el.querySelector(".eyebrow"), at, { y: 12, dur: 0.55 });
       var nodes = q(el, ".flow-node");
-      tl.fromTo(nodes, { y: 40, opacity: 0, scale: 0.97 }, { y: 0, opacity: 1, scale: 1, duration: 0.75, stagger: 0.12, ease: E.expo }, at + 0.1);
+      tl.fromTo(nodes, { y: 40, opacity: 0, scale: 0.94 }, { y: 0, opacity: 1, scale: 1, duration: 0.75, stagger: 0.14, ease: E.springSubtle }, at + 0.1);
+
+      /* Reactive SVG circuit traces with glow pulses */
       var paths = q(el, ".fl-p");
-      draw(paths, at + 0.5, { dur: 0.6, stagger: 0.1 });
+      draw(paths, at + 0.45, { dur: 0.6, stagger: 0.12 });
+      paths.forEach(function (p, i) {
+        tl.fromTo(p,
+          { stroke: "rgba(255,255,255,.15)", filter: "none" },
+          { stroke: ac(s), filter: "drop-shadow(0 0 8px " + ac(s) + ")", duration: 0.4, yoyo: true, repeat: 3 },
+          at + 0.7 + i * 0.12
+        );
+      });
+
       var arr = q(el, ".fl-a");
-      arr.forEach(function (a, i) { tl.fromTo(a, { opacity: 0 }, { opacity: 1, duration: 0.3 }, at + 0.9 + i * 0.1); });
+      arr.forEach(function (a, i) {
+        tl.fromTo(a, { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.3, ease: E.spring }, at + 0.9 + i * 0.1);
+      });
       if (el.querySelector(".flow-cap")) fade(el.querySelector(".flow-cap"), at + 0.55, { dur: 0.7 });
       if (el.querySelector(".flow-sub")) fade(el.querySelector(".flow-sub"), at + 0.7, { dur: 0.6 });
       var railEl = el.querySelector(".flow-rail");
       var packet = el.querySelector(".flow-packet");
       if (railEl && packet) {
         tl.fromTo(railEl, { scaleX: 0, transformOrigin: "left center" }, { scaleX: 1, duration: 0.9, ease: E.expo }, at + 0.3);
+        var cycleDur = Math.max(1.4, Math.min(3.2, dur * 0.35));
         tl.fromTo(packet, { x: 0, opacity: 0 }, { opacity: 1, duration: 0.2 }, at + 0.9);
-        tl.to(packet, { x: 1660, duration: Math.max(1.4, Math.min(4, dur * 0.45)), ease: "power2.inOut" }, at + 1.0);
-        tl.to(packet, { opacity: 0, duration: 0.25 }, at + 1.0 + Math.max(1.4, Math.min(4, dur * 0.45)));
+        tl.to(packet, { x: 1660, duration: cycleDur, ease: "power2.inOut", repeat: rep(dur - 1.0, cycleDur) }, at + 1.0);
       }
-      amb(nodes[0], dur, at);
+
     },
 
     ledger: function (el, s, at, dur) {
@@ -215,15 +609,15 @@
       var rows = q(el, ".lg-row");
       tl.fromTo(rows, { x: -18, opacity: 0 }, { x: 0, opacity: 1, duration: 0.45, stagger: 0.11, ease: E.soft }, at + 0.25);
       fade(el.querySelector(".eyebrow"), at + 0.2, { y: 12, dur: 0.55 });
-      words(el.querySelector(".lg-title"), at + 0.3, { stagger: 0.04, dur: 0.8 });
+      words(el.querySelector(".lg-title"), at + 0.3, { stagger: 0.04, dur: 0.8 }, s);
       if (el.querySelector(".lg-sub")) fade(el.querySelector(".lg-sub"), at + 0.65, { dur: 0.7 });
       var pts = q(el, ".lg-pt");
       tl.fromTo(pts, { x: -14, opacity: 0 }, { x: 0, opacity: 1, duration: 0.5, stagger: 0.09, ease: E.soft }, at + 0.8);
       var stamp = el.querySelector(".lg-stamp");
       if (stamp) {
-        tl.fromTo(stamp, { opacity: 0, scale: 2.1, rotate: -18 }, { opacity: 1, scale: 1, rotate: -7, duration: 0.34, ease: "back.out(2.4)" }, at + Math.min(dur * 0.55, 3.4));
+        tl.fromTo(stamp, { opacity: 0, scale: 2.1, rotate: -18 }, { opacity: 1, scale: 1, rotate: -7, duration: 0.34, ease: E.soft }, at + Math.min(dur * 0.55, 3.4));
       }
-      amb(el.querySelector(".lg-card"), dur, at);
+
     },
 
     memory: function (el, s, at, dur) {
@@ -232,7 +626,7 @@
       var count = el.querySelector(".mem-n");
       var n = parseInt((count && count.getAttribute("data-n")) || "2", 10);
       tl.fromTo(el.querySelector(".mem-shell"), { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.8, ease: E.expo }, at + 0.04);
-      tl.fromTo(cells, { scale: 0.86, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.45, stagger: 0.055, ease: "back.out(1.7)" }, at + 0.2);
+      tl.fromTo(cells, { scale: 0.86, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.45, stagger: 0.055, ease: E.soft }, at + 0.2);
       var live = cells.slice(0, n);
       tl.fromTo(live.map(function (c) { return c.querySelector(".mc-b"); }), { opacity: 0 }, { opacity: 1, duration: 0.4, stagger: 0.12 }, at + 0.7);
       tl.fromTo(live, { borderColor: "rgba(255,255,255,.11)" }, { borderColor: ac(s), duration: 0.3, stagger: 0.12 }, at + 0.7);
@@ -254,13 +648,13 @@
         draw(q(ptr, "path"), at + 1.05, { dur: 0.6 });
       }
       tl.fromTo(el.querySelector(".mem-side"), { x: 36, opacity: 0 }, { x: 0, opacity: 1, duration: 0.85, ease: E.expo }, at + 0.2);
-      words(el.querySelector(".mem-title"), at + 0.35, { stagger: 0.04, dur: 0.8 });
+      words(el.querySelector(".mem-title"), at + 0.35, { stagger: 0.04, dur: 0.8 }, s);
       if (el.querySelector(".mem-sub")) fade(el.querySelector(".mem-sub"), at + 0.7, { dur: 0.7 });
     },
 
     timeline: function (el, s, at, dur) {
       fade(el.querySelector(".eyebrow"), at, { y: 12, dur: 0.55 });
-      words(el.querySelector(".tl-head"), at + 0.05, { stagger: 0.04, dur: 0.8 });
+      words(el.querySelector(".tl-head"), at + 0.05, { stagger: 0.04, dur: 0.8 }, s);
       tl.fromTo(el.querySelector(".tl-line"), { scaleX: 0, transformOrigin: "left center" }, { scaleX: 1, duration: 0.85, ease: E.expo }, at + 0.35);
       var fill = el.querySelector(".tl-line-fill");
       tl.fromTo(fill, { scaleX: 0 }, { scaleX: 1, duration: Math.max(2.2, dur * 0.52), ease: "power2.inOut" }, at + 0.6);
@@ -268,25 +662,30 @@
       var evs = q(el, ".tl-ev");
       evs.forEach(function (e, i) {
         var t = at + 0.7 + (i / Math.max(1, evs.length)) * Math.max(1.6, dur * 0.46);
-        tl.fromTo(e.querySelector(".tl-dot"), { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.35, ease: "back.out(2.2)" }, t);
-        tl.fromTo(e.querySelector(".tl-card"), { y: e.getBoundingClientRect ? 16 : 16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.55, ease: E.soft }, t + 0.06);
+        tl.fromTo(e.querySelector(".tl-dot"), { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.35, ease: E.soft }, t);
+        tl.fromTo(e.querySelector(".tl-card"), { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.55, ease: E.soft }, t + 0.06);
       });
       if (el.querySelector(".tl-sub")) fade(el.querySelector(".tl-sub"), at + 0.8, { dur: 0.7 });
     },
 
     terminal: function (el, s, at, dur) {
       fade(el.querySelector(".eyebrow"), at, { y: 12, dur: 0.55 });
-      tl.fromTo(el.querySelector(".tm-shell"), { y: 26, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7, ease: E.expo }, at);
+      tl.fromTo(el.querySelector(".tm-shell"),
+        { y: 26, opacity: 0, scale: 0.985, rotateX: 2.5 },
+        { y: 0, opacity: 1, scale: 1, rotateX: 0, duration: 0.75, ease: E.expo, transformPerspective: 1200 },
+        at
+      );
       var lines = q(el, ".tm-line");
       lines.forEach(function (l, i) {
         var t = at + 0.25 + i * 0.42;
         tl.fromTo(l, { opacity: 0 }, { opacity: 1, duration: 0.2 }, t);
         tl.fromTo(l.querySelector(".tm-t"), { clipPath: "inset(0 100% 0 0)" }, { clipPath: "inset(0 0% 0 0)", duration: 0.34, ease: "steps(18)" }, t);
+        queueSFX("click", t, { vol: 0.9 });
       });
       var cur = el.querySelector(".tm-cursor");
       if (cur) {
         var start = at + 0.3;
-        tl.fromTo(cur, { opacity: 0 }, { opacity: 1, duration: 0.12, repeat: rep(Math.max(1.2, dur - 0.4), 0.9), yoyo: true }, start);
+        tl.fromTo(cur, { opacity: 0 }, { opacity: 1, duration: 0.16, repeat: rep(Math.max(1.2, dur - 0.4), 0.5), yoyo: true }, start);
       }
       if (el.querySelector(".tm-title")) fade(el.querySelector(".tm-title"), at + 0.55, { dur: 0.7 });
       if (el.querySelector(".tm-sub")) fade(el.querySelector(".tm-sub"), at + 0.7, { dur: 0.7 });
@@ -296,7 +695,7 @@
       fade(el.querySelector(".eyebrow"), at, { y: 12, dur: 0.55 });
       tl.fromTo(el.querySelector(".cmp-left"), { x: -54, opacity: 0 }, { x: 0, opacity: 0.72, duration: 0.9, ease: E.expo }, at + 0.02);
       tl.fromTo(el.querySelector(".cmp-right"), { x: 54, opacity: 0 }, { x: 0, opacity: 1, duration: 0.9, ease: E.expo }, at + 0.06);
-      tl.fromTo(el.querySelector(".cmp-mid"), { scale: 0, opacity: 0, rotate: -45 }, { scale: 1, opacity: 1, rotate: 0, duration: 0.7, ease: "back.out(2.2)" }, at + 0.35);
+      tl.fromTo(el.querySelector(".cmp-mid"), { scale: 0, opacity: 0, rotate: -45 }, { scale: 1, opacity: 1, rotate: 0, duration: 0.7, ease: E.soft }, at + 0.35);
       tl.fromTo(q(el, ".cmp-p"), { y: 14, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, stagger: 0.09, ease: E.soft }, at + 0.6);
       if (el.querySelector(".cmp-cap")) fade(el.querySelector(".cmp-cap"), at + 0.7, { dur: 0.65 });
       if (el.querySelector(".cmp-sub")) fade(el.querySelector(".cmp-sub"), at + 0.82, { dur: 0.65 });
@@ -304,7 +703,7 @@
 
     stack: function (el, s, at, dur) {
       fade(el.querySelector(".eyebrow"), at, { y: 12, dur: 0.55 });
-      words(el.querySelector(".stk-title"), at + 0.08, { stagger: 0.04, dur: 0.82 });
+      words(el.querySelector(".stk-title"), at + 0.08, { stagger: 0.04, dur: 0.82 }, s);
       if (el.querySelector(".stk-sub")) fade(el.querySelector(".stk-sub"), at + 0.5, { dur: 0.7 });
       var layers = q(el, ".stk-layer");
       tl.fromTo(el.querySelector(".stk-stack"), { rotateX: 14, rotateY: -8, y: 40, opacity: 0 }, { rotateX: 0, rotateY: 0, y: 0, opacity: 1, duration: 1.2, ease: E.expo, transformPerspective: 1600 }, at + 0.1);
@@ -315,14 +714,14 @@
 
     quote: function (el, s, at, dur) {
       tl.fromTo(el.querySelector(".q-mark"), { opacity: 0, scale: 0.8, y: 20 }, { opacity: 0.1, scale: 1, y: 0, duration: 1.2, ease: E.expo }, at);
-      words(el.querySelector(".q-text"), at + 0.08, { stagger: 0.035, dur: 0.85 });
+      words(el.querySelector(".q-text"), at + 0.08, { stagger: 0.035, dur: 0.85 }, s);
       fade(el.querySelector(".q-by"), at + 0.6, { dur: 0.7 });
       tl.fromTo(el.querySelector(".q-line"), { scaleX: 0, transformOrigin: "left center" }, { scaleX: 1, duration: 0.8, ease: E.expo }, at + 0.5);
     },
 
     matrix: function (el, s, at, dur) {
       fade(el.querySelector(".eyebrow"), at, { y: 12, dur: 0.55 });
-      words(el.querySelector(".mx-title"), at + 0.05, { stagger: 0.038, dur: 0.8 });
+      words(el.querySelector(".mx-title"), at + 0.05, { stagger: 0.038, dur: 0.8 }, s);
       if (el.querySelector(".mx-sub")) fade(el.querySelector(".mx-sub"), at + 0.45, { dur: 0.7 });
       fade(el.querySelector(".mx-legend"), at + 0.6, { dur: 0.6 });
       var cells = q(el, ".mx-c");
@@ -351,14 +750,14 @@
       }
       var callout = el.querySelector(".web-callout");
       if (callout) {
-        tl.fromTo(callout, { opacity: 0, scale: 0.94, x: -10 }, { opacity: 1, scale: 1, x: 0, duration: 0.65, ease: "back.out(1.4)" }, at + 0.45);
+        tl.fromTo(callout, { opacity: 0, scale: 0.94, x: -10 }, { opacity: 1, scale: 1, x: 0, duration: 0.65, ease: E.soft }, at + 0.45);
       }
       var cursor = el.querySelector(".web-cursor");
       if (cursor) {
         tl.fromTo(cursor, { opacity: 0, x: 120, y: 80 }, { opacity: 1, x: 0, y: 0, duration: 1.1, ease: "power2.out" }, at + 0.35);
         tl.to(cursor, { scale: 0.82, duration: 0.16, ease: "power2.inOut", yoyo: true, repeat: 1 }, at + 1.2);
       }
-      words(el.querySelector(".web-foot-title"), at + 0.2, { stagger: 0.04, dur: 0.8 });
+      words(el.querySelector(".web-foot-title"), at + 0.2, { stagger: 0.04, dur: 0.8 }, s);
       if (el.querySelector(".web-foot-sub")) fade(el.querySelector(".web-foot-sub"), at + 0.6, { dur: 0.65 });
     },
 
@@ -367,21 +766,13 @@
       fade(el.querySelector(".meme-badge"), at, { y: 10, dur: 0.4 });
       var card = el.querySelector(".meme-card");
       if (card) {
-        tl.fromTo(card, { scale: 0.82, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.42, ease: "back.out(1.6)" }, at + 0.05);
-      }
-      var stage = el.querySelector(".meme-stage");
-      if (stage) {
-        /* Fireship comic impact shake */
-        tl.to(stage, { x: -8, y: 4, duration: 0.06, ease: "power1.inOut" }, at + 0.08);
-        tl.to(stage, { x: 7, y: -5, duration: 0.06, ease: "power1.inOut" }, at + 0.14);
-        tl.to(stage, { x: -4, y: 2, duration: 0.06, ease: "power1.inOut" }, at + 0.20);
-        tl.to(stage, { x: 0, y: 0, duration: 0.08, ease: "power1.out" }, at + 0.26);
+        tl.fromTo(card, { scale: 0.82, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.42, ease: E.soft }, at + 0.05);
       }
       var glitch = el.querySelector(".meme-glitch-bar");
       if (glitch) {
         tl.fromTo(glitch, { y: 0, opacity: 0 }, { y: 340, opacity: 0.8, duration: 0.7, ease: "none", repeat: rep(dur, 0.7) }, at + 0.1);
       }
-      words(el.querySelector(".meme-caption"), at + 0.18, { stagger: 0.038, dur: 0.65 });
+      words(el.querySelector(".meme-caption"), at + 0.18, { stagger: 0.038, dur: 0.65 }, s);
       if (el.querySelector(".meme-sub")) fade(el.querySelector(".meme-sub"), at + 0.5, { dur: 0.6 });
     },
 
@@ -389,14 +780,15 @@
       fade(el.querySelector(".eyebrow"), at, { y: 12, dur: 0.55 });
       fade(el.querySelector(".cloud-header"), at + 0.05, { y: 10, dur: 0.5 });
       var nodes = q(el, ".cloud-node");
-      tl.fromTo(nodes, { y: 30, opacity: 0, scale: 0.92 }, { y: 0, opacity: 1, scale: 1, duration: 0.6, stagger: 0.12, ease: E.expo }, at + 0.15);
+      tl.fromTo(nodes, { y: 30, opacity: 0, scale: 0.92 }, { y: 0, opacity: 1, scale: 1, duration: 0.6, stagger: 0.12, ease: E.springSubtle }, at + 0.15);
       var paths = q(el, ".cld-path");
       draw(paths, at + 0.35, { stagger: 0.15, dur: 0.6 });
       var packet = el.querySelector(".cloud-packet");
       if (packet) {
-        tl.fromTo(packet, { x: 0 }, { x: 1540, duration: 1.8, ease: "none", repeat: rep(dur, 1.8) }, at + 0.4);
+        tl.fromTo(packet, { x: 0, opacity: 0 }, { opacity: 1, duration: 0.2 }, at + 0.35);
+        tl.to(packet, { x: 1540, duration: 1.8, ease: "none", repeat: rep(dur, 1.8) }, at + 0.4);
       }
-      words(el.querySelector(".cloud-title"), at + 0.2, { stagger: 0.038, dur: 0.8 });
+      words(el.querySelector(".cloud-title"), at + 0.2, { stagger: 0.038, dur: 0.8 }, s);
       if (el.querySelector(".cloud-sub")) fade(el.querySelector(".cloud-sub"), at + 0.6, { dur: 0.65 });
     },
 
@@ -405,12 +797,22 @@
       if (hud) {
         tl.fromTo(hud, { x: -40, opacity: 0, scale: 0.92 }, { x: 0, opacity: 1, scale: 1, duration: 0.85, ease: E.expo }, at + 0.05);
         tl.to(hud, { y: -8, duration: 2.2, ease: "sine.inOut", yoyo: true, repeat: rep(dur, 4.4) }, at + 0.8);
+        var img = hud.querySelector(".mascot-img");
+        if (img) {
+          tl.fromTo(img, { scale: 1.05 }, { scale: 1.0, duration: 1.2, ease: E.smooth }, at + 0.1);
+          tl.to(img, { y: -5, duration: 2.4, ease: "sine.inOut", yoyo: true, repeat: rep(dur, 2.4) }, at + 0.8);
+        }
+        var glare = hud.querySelector(".mascot-hud-glare");
+        if (glare) {
+          tl.fromTo(glare, { opacity: 0.3 }, { opacity: 0.7, duration: 1.8, ease: "sine.inOut", yoyo: true, repeat: rep(dur, 3.6) }, at + 0.2);
+        }
+
       }
       var bubble = el.querySelector(".mascot-bubble-box");
       if (bubble) {
-        tl.fromTo(bubble, { scale: 0.88, opacity: 0, x: 20 }, { scale: 1, opacity: 1, x: 0, duration: 0.6, ease: "back.out(1.4)" }, at + 0.2);
+        tl.fromTo(bubble, { scale: 0.88, opacity: 0, x: 20 }, { scale: 1, opacity: 1, x: 0, duration: 0.6, ease: E.soft }, at + 0.2);
       }
-      words(el.querySelector(".mascot-bubble-text"), at + 0.3, { stagger: 0.04, dur: 0.75 });
+      words(el.querySelector(".mascot-bubble-text"), at + 0.3, { stagger: 0.04, dur: 0.75 }, s);
       if (el.querySelector(".mascot-sub")) fade(el.querySelector(".mascot-sub"), at + 0.65, { dur: 0.65 });
       var statItems = q(el, ".mst-item");
       if (statItems.length) {
@@ -421,7 +823,7 @@
     outro: function (el, s, at, dur) {
       tl.fromTo(el.querySelector(".out-ghost"), { opacity: 0, scale: 1.08, x: 40 }, { opacity: 1, scale: 1, x: 0, duration: 2.2, ease: E.expo }, at);
       fade(el.querySelector(".eyebrow"), at, { y: 12, dur: 0.55 });
-      words(el.querySelector(".out-title"), at + 0.1, { stagger: 0.05, dur: 0.9 });
+      words(el.querySelector(".out-title"), at + 0.1, { stagger: 0.05, dur: 0.9 }, s);
       if (el.querySelector(".out-sub")) fade(el.querySelector(".out-sub"), at + 0.5, { dur: 0.75 });
       fade(el.querySelector(".out-cta"), at + 0.85, { dur: 0.7 });
       fade(el.querySelector(".out-ch"), at + 1.05, { dur: 0.7 });
@@ -429,57 +831,94 @@
   };
 
   /* ---------------------------------------------------------- build */
-  gsap.set(".sc-in", { transformOrigin: "50% 45%" });
+  gsap.set(".sc-in", { transformOrigin: "50% 48%" });
 
   SCENES.forEach(function (s, i) {
     var el = document.getElementById("s" + String(i + 1).padStart(3, "0"));
     if (!el) return;
     var at = s.start;
     var dur = s.end - s.start;
+    var scIn = el.querySelector(".sc-in");
+    var ambEl = el.querySelector(".amb");
 
-    /* accent for shared bloom */
-    tl.to(":root", { "--ac": s.accent || "#38bdf8", duration: 1.2, ease: "sine.inOut" }, at);
+    /* accent for shared bloom & dynamic CSS variable */
+    tl.to(":root", { "--ac": s.accent || "#38bdf8", duration: 1.0, ease: "sine.inOut" }, at);
 
-    /* slow camera push keeps every frame alive */
-    tl.fromTo(el.querySelector(".sc-in"), { scale: 1 }, { scale: 1.014, duration: Math.max(1, dur), ease: "none" }, at);
-
-    /* Fireship punch zoom on punch beats */
-    if (s.punch) {
-      tl.fromTo(el.querySelector(".sc-in"), { scale: 1.05 }, { scale: 1.014, duration: 0.38, ease: "power4.out" }, at);
+    /* One owner per transform. Data stays still; headline scenes get a small push. */
+    var isPunch = Boolean(s.punch || s.type === "meme");
+    var isHeadline = ["cold", "hero", "statement", "quote", "outro"].indexOf(s.type) !== -1;
+    if (scIn) {
+      tl.fromTo(scIn,
+        { scale: isPunch ? 1.025 : 1, x: 0, y: 0, rotate: 0 },
+        { scale: isPunch ? 1 : (isHeadline ? 1.012 : 1),
+          duration: isPunch ? Math.min(0.6, dur) : dur, ease: isPunch ? E.soft : "none" }, at);
+    }
+    tl.to("#bg-bloom", {
+      opacity: s.type === "stat" ? 0.16 : 0.13,
+      duration: Math.min(1, dur), ease: "sine.inOut"
+    }, at);
+    if (ambEl) {
+      tl.fromTo(ambEl, { opacity: 0.07 },
+        { opacity: 0.11, duration: dur, ease: "sine.inOut" }, at);
     }
 
-    /* Universal Mascot Overlay */
+    /* Universal Mascot Overlay with Living Emotion & Telemetry */
     var mOv = el.querySelector(".m-ov");
     if (mOv) {
-      tl.fromTo(mOv, { y: 60, opacity: 0, scale: 0.8 }, { y: 0, opacity: 1, scale: 1, duration: 0.5, ease: "back.out(1.5)" }, at + 0.15);
+      var expr = mOv.getAttribute("data-expr") || "neutral";
+      var isShock = expr === "shocked" || expr === "panic";
+      var isThink = expr === "thinking" || expr === "skeptical";
+
+      /* Emotion-aware entrance physics */
+      var enterScale = 0.96;
+      var enterEase = E.soft;
+      tl.fromTo(mOv,
+        { y: 24, opacity: 0, scale: enterScale },
+        { y: 0, opacity: 1, scale: 1, duration: 0.55, ease: enterEase },
+        at + 0.12
+      );
+      queueSFX(isShock ? "thud" : "chime", at + 0.15, { vol: 0.8 });
+
+      /* Living head-tilt & micro-bobbing */
+      var avatar = mOv.querySelector(".m-ov-avatar");
+      if (avatar) {
+        var tiltDeg = isThink ? -1 : (isShock ? 0.8 : 0.4);
+        tl.to(avatar, {
+          rotate: tiltDeg,
+          duration: 2.4,
+          ease: "sine.inOut",
+          yoyo: true,
+          repeat: rep(dur, 2.4)
+        }, at + 0.7);
+      }
+
+      /* Visor Glare Pulse & Telemetry Glow */
+      var mGlare = mOv.querySelector(".m-ov-glare");
+      if (mGlare) {
+        tl.fromTo(mGlare, { opacity: 0.2 }, { opacity: 0.65, duration: 1.5, ease: "sine.inOut", yoyo: true, repeat: rep(dur, 3.0) }, at + 0.3);
+      }
+
+
       var mBubble = mOv.querySelector(".m-ov-bubble");
       if (mBubble) {
-        tl.fromTo(mBubble, { scale: 0.85, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.4, ease: "back.out(1.3)" }, at + 0.3);
+        tl.fromTo(mBubble, { scale: 0.82, opacity: 0, y: 12 }, { scale: 1, opacity: 1, y: 0, duration: 0.45, ease: E.spring }, at + 0.28);
       }
       var mRing = mOv.querySelector(".m-ov-ring");
       if (mRing) {
-        tl.to(mRing, { opacity: 0.8, scale: 1.08, duration: 0.7, ease: "sine.inOut", yoyo: true, repeat: rep(dur, 1.4) }, at + 0.2);
+        tl.to(mRing, { opacity: 0.85, scale: 1.12, duration: 0.8, ease: "sine.inOut", yoyo: true, repeat: rep(dur, 1.6) }, at + 0.2);
       }
     }
 
-    /* cut rail rhythm - every scene, subtler on minor beats */
-    rail(at, i % 6 === 0 ? 0.72 : 0.38);
+    /* Contextual Scene Transition */
+    var previousS = SCENES[i - 1];
+    cutTransition(s, previousS, at, i, dur);
 
+    /* Execute scene type animation */
     var fn = ANIM[s.type] || ANIM.statement;
     fn(el, s, at, dur);
 
-    /* mid-scene camera beat so long holds never go static */
-    if (dur > 7.5) {
-      var beatAt = at + Math.max(2.4, dur * 0.52);
-      tl.to(el.querySelector(".sc-in"), { y: -9, duration: 1.3, ease: "sine.inOut", yoyo: true, repeat: 1 }, beatAt);
-      tl.to(el.querySelector(".amb"), { opacity: 0.2, duration: 0.9, ease: "sine.out" }, beatAt);
-      tl.to(el.querySelector(".amb"), { opacity: 0.1, duration: 1.2, ease: "sine.in" }, beatAt + 0.9);
-    }
-    if (dur > 10.5) {
-      var beat2 = at + dur * 0.78;
-      tl.to(el.querySelector(".amb"), { opacity: 0.24, duration: 0.8, ease: "sine.out" }, beat2);
-      tl.to(el.querySelector(".amb"), { opacity: 0.1, duration: 1.4, ease: "sine.in" }, beat2 + 0.8);
-    }
+    /* Forensic Redactions & Live Highlighting */
+    forensicAnimations(el, at, dur, s);
   });
 
   /* final fade at the very end */

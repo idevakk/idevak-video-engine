@@ -271,7 +271,7 @@ def main() -> None:
         )
 
     # Draft / Synthetic timing mode
-    is_draft = args.draft or not vo_path.exists()
+    is_draft = args.draft
     if is_draft:
         curr_t = 0.0
         for row in rows:
@@ -326,6 +326,7 @@ def main() -> None:
                 "end": round(row["end"], 3),
                 "duration": round(row["end"] - row["start"], 3),
                 "type": row["type"],
+                "act": row["act"],
                 "accent": row["accent"],
                 "eyebrow": row["eyebrow"],
                 "headline": row["headline"],

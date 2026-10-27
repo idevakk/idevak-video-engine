@@ -2,7 +2,7 @@
 
 A clean, project-agnostic, high-retention video generation engine for **iDevak** — Cloud Engineering, AI Automation, DevOps, and Software Architecture.
 
-The repo couples an authoritative 21-scene visual system, word-level audio alignment, a responsive 2D Cloud Mascot with 12 expressive poses, and deterministic GSAP composition rendering to 1080p 60fps MP4.
+The repo couples an authoritative 21-scene visual system, word-level audio alignment, a responsive 2D Cloud Mascot with 12 expressive poses, and deterministic GSAP composition rendering at the resolution and frame rate in `composition` (default: 1920x1080 at 30 fps).
 
 ```text
 content/video.json + content/voiceover.wav
@@ -14,7 +14,7 @@ engine/transcribe.py -> build/vo.json
 engine/align.py -> build/scenes.json + build/project.json + build/report.md
         |
         v
-engine/build.mjs -> index.html + hyperframes.json
+engine/build.mjs -> index.html + hyperframes.json + build/sfx_track.wav
         |
         v
 hyperframes check / preview / render
@@ -46,7 +46,7 @@ hyperframes check / preview / render
 
 ## Requirements
 
-- **Node.js** 20 or newer.
+- **Node.js** 22 or newer.
 - **Python** 3.10 or newer.
 - **FFmpeg** on `PATH`.
 - `faster-whisper` for word-level transcription:
@@ -65,6 +65,7 @@ cd idevak-video-engine
 
 # 2. Install dependencies
 npm install
+npx playwright install chromium
 
 # 3. Test and preview the clean starter template immediately (no audio needed)
 npm run draft
@@ -76,7 +77,7 @@ npm run validate
 # 5. When voiceover is recorded, place it in content/voiceover.wav and run the full pipeline:
 npm run pipeline
 
-# 6. Render final 1080p 60fps MP4
+# 6. Render MP4 at the configured resolution and frame rate
 npm run render
 ```
 
@@ -88,3 +89,28 @@ npm run render
 * **`content/video.example.json`**: Fresh starter template to reset back to anytime.
 * **`projects/`**: Archived video episodes (e.g. `projects/emudhra-key-was-four/`).
 * **`assets/mascot/`**: The complete 12-pose mascot asset library (transparent PNGs and chroma green).
+
+## Exported sound effects
+
+Every build bakes the animation's exact cue schedule into `build/sfx_track.wav`
+(48 kHz PCM). This includes transitions, stat ticks and impacts, terminal clicks,
+mascot entrances, highlights, redactions and flares. `build/sfx_track.json` lists
+all cue timestamps and gains for review. There is no event-count cap.
+
+The composition declares separate voiceover and SFX audio elements, so preview
+and MP4 export use the same soundtrack. Your source recording and alignment
+metadata are not modified. Browser audio callbacks are no longer used.
+
+`npm run render` and `npm run render:hq` rebuild before exporting, so an old
+composition cannot silently omit the new SFX track. Direct HyperFrames CLI
+renders still require `npm run build` first. `npm run sfx` and the old
+`python engine/sfx_mixer.py` entry point rebuild the composition and SFX together.
+
+Builds now require Playwright Chromium (`npx playwright install chromium`). A
+synthesis failure stops the build rather than silently exporting voiceover only.
+The verified HyperFrames CLI version is 0.8.207. `render:hq` uses the `delivery`
+preset; the normal render uses `looks`. Draft timing requires `npm run draft` or
+`python engine/align.py --draft`; normal alignment fails if its transcript is missing.
+
+See [the output quality audit](docs/output-quality-audit.md) for findings,
+remaining improvements and the render verification performed.

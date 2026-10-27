@@ -3,6 +3,8 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { createRequire } from "node:module";
+import { bakeSFX } from "./audio.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const read = (p) => fs.readFile(path.resolve(ROOT, p), "utf8");
@@ -28,6 +30,8 @@ const title = project.title || "Untitled video";
 const fontsCss = await read("engine/fonts.css");
 const CSS = await read("engine/style.css");
 const JS = (await read("engine/anim.js")).replace('"__COMPOSITION_ID__"', JSON.stringify(compositionId));
+const require = createRequire(import.meta.url);
+const gsapJS = await fs.readFile(require.resolve("gsap/dist/gsap.min.js"), "utf8");
 
 const tok = (s) => esc(s).replace(/\n/g, "<br>");
 
@@ -123,7 +127,7 @@ function splitWords(text, s = null) {
 // ---------------------------------------------------------------- scene render
 function renderScene(s, i) {
   const start = s.start;
-  const dur = Math.max(1.2, s.end - s.start);
+  const dur = s.end - s.start;
   const accent = s.accent || "#38bdf8";
   const id = `s${String(i + 1).padStart(3, "0")}`;
   const punchCls = s.meta?.punch || s.type === "meme" ? " has-punch" : "";
@@ -687,7 +691,7 @@ const html = `<!doctype html>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=${width}, height=${height}" />
 <title>${esc(title)}</title>
-<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<script>${gsapJS}</script>
 <style>
 :root {
   --composition-width: ${width}px;
@@ -706,7 +710,7 @@ body {
 </style>
 </head>
 <body>
-<div id="root" class="${isPortrait ? "is-portrait" : "is-landscape"}" data-aspect="${isPortrait ? "9:16" : "16:9"}" data-composition-id="${esc(compositionId)}" data-start="0" data-width="${width}" data-height="${height}" data-duration="${total.toFixed(3)}">
+<div id="root" class="${isPortrait ? "is-portrait" : "is-landscape"}" data-aspect="${isPortrait ? "9:16" : "16:9"}" data-composition-id="${esc(compositionId)}" data-start="0" data-width="${width}" data-height="${height}" data-fps="${fps}" data-duration="${total.toFixed(3)}">
   <div id="bg-base"></div>
   <div id="bg-grid"></div>
   <div id="bg-bloom"></div>
@@ -722,6 +726,7 @@ body {
   <div id="cut-rail"></div>
   ${body}
   <audio id="vo" src="${esc(audio)}" data-start="0" data-duration="${total.toFixed(3)}" data-track-index="1" data-volume="1"></audio>
+  <audio id="sfx" src="build/sfx_track.wav" data-start="0" data-duration="${total.toFixed(3)}" data-track-index="3" data-volume="1"></audio>
 </div>
 <script>
 window.__COMPOSITION_ID__ = ${JSON.stringify(compositionId)};
@@ -754,6 +759,7 @@ const meta = {
   channel: project.channel || "",
 };
 
+await bakeSFX(html, Number(total.toFixed(3)), path.resolve(ROOT, "build/sfx_track.wav"));
 await fs.writeFile(path.resolve(ROOT, "index.html"), html, "utf8");
 await fs.writeFile(path.resolve(ROOT, "hyperframes.json"), JSON.stringify(meta, null, 2) + "\n", "utf8");
 console.log(`index.html written: ${scenes.length} scenes, ${total.toFixed(1)}s`);

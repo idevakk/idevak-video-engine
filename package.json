@@ -3,9 +3,9 @@
   "version": "1.1.0",
   "private": true,
   "type": "module",
-  "description": "Fireship-style, high-retention video generation engine for iDevak — Cloud, AI, and DevOps engineering explainers with reactive mascot synchronization.",
+  "description": "Fireship-style, high-retention video generation engine for iDevak - Cloud, AI, and DevOps engineering explainers with reactive mascot synchronization.",
   "engines": {
-    "node": ">=20"
+    "node": ">=22"
   },
   "scripts": {
     "validate": "python3 engine/validate.py",
@@ -21,7 +21,9 @@
     "render": "npx --yes hyperframes@latest render --quality looks --output renders/video.mp4",
     "test": "node --test tests/*.test.mjs",
     "sfx": "python3 engine/sfx_mixer.py",
-    "render:hq": "npx --yes hyperframes@latest render --quality looks --crf 17 --output renders/video.mp4"
+    "render:hq": "npx --yes hyperframes@latest render --quality delivery --output renders/video.mp4",
+    "prerender": "npm run build",
+    "prerender:hq": "npm run build"
   },
   "devDependencies": {
     "@playwright/test": "1.64.1",

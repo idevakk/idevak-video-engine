@@ -34,30 +34,11 @@
     n = Math.imul(n ^ (n >>> 13), 1274126177);
     return ((n ^ (n >>> 16)) >>> 0) / 2147483648 - 1;
   }
-  var audioCtx = null;
-  function getAudioCtx() {
-    if (!audioCtx && typeof window !== "undefined") {
-      var AC = window.AudioContext || window.webkitAudioContext;
-      if (AC) {
-        audioCtx = new AC();
-        if (audioCtx.state === "suspended") {
-          var resume = function () {
-            audioCtx.resume();
-            window.removeEventListener("click", resume);
-            window.removeEventListener("keydown", resume);
-          };
-          window.addEventListener("click", resume);
-          window.addEventListener("keydown", resume);
-        }
-      }
-    }
-    return audioCtx;
-  }
-
-  function playSFX(type, opt) {
-    var ctx = getAudioCtx();
-    if (!ctx || ctx.state !== "running") return;
-    var t = ctx.currentTime;
+  // Scheduling is shared by build-time offline synthesis and the exported track.
+  var sfxEvents = [];
+  window.__SFX_EVENTS__ = sfxEvents;
+  function playSFX(type, opt, ctx) {
+    var t = 0;
     opt = opt || {};
 
     if (type === "whoosh") {
@@ -75,7 +56,7 @@
       filter.frequency.exponentialRampToValueAtTime(200, t + 0.22);
       var gain = ctx.createGain();
       gain.gain.setValueAtTime(0.01, t);
-      gain.gain.linearRampToValueAtTime(0.12 * (opt.vol || 1), t + 0.08);
+      gain.gain.linearRampToValueAtTime(0.12 * (opt.vol == null ? 1 : opt.vol), t + 0.08);
       gain.gain.linearRampToValueAtTime(0.001, t + 0.22);
       noise.connect(filter);
       filter.connect(gain);
@@ -88,7 +69,7 @@
       osc.type = "sine";
       osc.frequency.setValueAtTime(120, t);
       osc.frequency.exponentialRampToValueAtTime(32, t + 0.28);
-      g.gain.setValueAtTime(0.28 * (opt.vol || 1), t);
+      g.gain.setValueAtTime(0.28 * (opt.vol == null ? 1 : opt.vol), t);
       g.gain.exponentialRampToValueAtTime(0.001, t + 0.28);
       osc.connect(g);
       g.connect(ctx.destination);
@@ -101,7 +82,7 @@
       o.type = "triangle";
       o.frequency.setValueAtTime(1600, t);
       o.frequency.exponentialRampToValueAtTime(200, t + 0.03);
-      g2.gain.setValueAtTime(0.08 * (opt.vol || 1), t);
+      g2.gain.setValueAtTime(0.08 * (opt.vol == null ? 1 : opt.vol), t);
       g2.gain.exponentialRampToValueAtTime(0.001, t + 0.03);
       o.connect(g2);
       g2.connect(ctx.destination);
@@ -114,7 +95,7 @@
       o3.type = "sine";
       o3.frequency.setValueAtTime(880, t);
       o3.frequency.setValueAtTime(1320, t + 0.06);
-      g3.gain.setValueAtTime(0.07 * (opt.vol || 1), t);
+      g3.gain.setValueAtTime(0.07 * (opt.vol == null ? 1 : opt.vol), t);
       g3.gain.exponentialRampToValueAtTime(0.001, t + 0.22);
       o3.connect(g3);
       g3.connect(ctx.destination);
@@ -135,7 +116,7 @@
       filter.Q.setValueAtTime(2.5, t);
       var gain = ctx.createGain();
       gain.gain.setValueAtTime(0.001, t);
-      gain.gain.linearRampToValueAtTime(0.09 * (opt.vol || 1), t + 0.05);
+      gain.gain.linearRampToValueAtTime(0.09 * (opt.vol == null ? 1 : opt.vol), t + 0.05);
       gain.gain.linearRampToValueAtTime(0.001, t + 0.16);
       noise.connect(filter);
       filter.connect(gain);
@@ -151,7 +132,7 @@
       var f = ctx.createBiquadFilter();
       f.type = "lowpass";
       f.frequency.setValueAtTime(2800, t);
-      g4.gain.setValueAtTime(0.12 * (opt.vol || 1), t);
+      g4.gain.setValueAtTime(0.12 * (opt.vol == null ? 1 : opt.vol), t);
       g4.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
       o4.connect(f);
       f.connect(g4);
@@ -165,7 +146,7 @@
       o5.type = "sine";
       o5.frequency.setValueAtTime(2400, t);
       o5.frequency.exponentialRampToValueAtTime(320, t + 0.28);
-      g5.gain.setValueAtTime(0.08 * (opt.vol || 1), t);
+      g5.gain.setValueAtTime(0.08 * (opt.vol == null ? 1 : opt.vol), t);
       g5.gain.exponentialRampToValueAtTime(0.001, t + 0.28);
       o5.connect(g5);
       g5.connect(ctx.destination);
@@ -178,7 +159,7 @@
       o6.type = "sawtooth";
       o6.frequency.setValueAtTime(1400, t);
       o6.frequency.linearRampToValueAtTime(2200, t + 0.08);
-      g6.gain.setValueAtTime(0.035 * (opt.vol || 1), t);
+      g6.gain.setValueAtTime(0.035 * (opt.vol == null ? 1 : opt.vol), t);
       g6.gain.exponentialRampToValueAtTime(0.001, t + 0.09);
       o6.connect(g6);
       g6.connect(ctx.destination);
@@ -191,7 +172,7 @@
       o7.type = "triangle";
       o7.frequency.setValueAtTime(950, t);
       o7.frequency.exponentialRampToValueAtTime(150, t + 0.015);
-      g7.gain.setValueAtTime(0.04 * (opt.vol || 1), t);
+      g7.gain.setValueAtTime(0.04 * (opt.vol == null ? 1 : opt.vol), t);
       g7.gain.exponentialRampToValueAtTime(0.001, t + 0.015);
       o7.connect(g7);
       g7.connect(ctx.destination);
@@ -201,15 +182,29 @@
   }
 
   function queueSFX(type, at, opt) {
-    tl.call(function () { playSFX(type, opt); }, null, at);
+    if (Number.isFinite(at) && at >= 0 && at < TOTAL) {
+      sfxEvents.push({ type: type, at: at, vol: opt && opt.vol != null ? opt.vol : 1 });
+    }
   }
+
+  // Render each sound once; Node places these samples at the exact cue times.
+  window.__synthesizeSFX = async function () {
+    var clips = {};
+    for (var type of new Set(sfxEvents.map(function (e) { return e.type; }))) {
+      var ctx = new OfflineAudioContext(1, 16800, 48000);
+      playSFX(type, { vol: 1 }, ctx);
+      var buffer = await ctx.startRendering();
+      clips[type] = Array.from(buffer.getChannelData(0));
+    }
+    return { events: sfxEvents, clips: clips };
+  };
 
   /* ---------------------------------------------------------- helpers */
   function normTok(s) {
     return String(s || "").toLowerCase().replace(/[^a-z0-9]/g, "");
   }
 
-  function words(el, at, opts, s) {
+  function words(el, at, opts) {
     var o = opts || {};
     var allNodes = q(el, ".wi");
     if (!allNodes.length) return;
@@ -226,35 +221,8 @@
       { yPercent: 0, opacity: 1, x: 0, duration: revealDur, ease: E.expo, stagger: staggerVal },
       at);
 
-    /* Kinetic Syllable & Spoken Word Glow Punch */
-    if (s && s.wordTimings && s.wordTimings.length) {
-      nodes.forEach(function (n) {
-        var wordText = normTok(n.textContent);
-        if (!wordText || wordText.length < 3) return;
-
-        // Match against wordTimings
-        for (var k = 0; k < s.wordTimings.length; k++) {
-          var wt = s.wordTimings[k];
-          var wtText = normTok(wt.w);
-          if (wtText === wordText || (wordText.length >= 4 && (wtText.indexOf(wordText) === 0 || wordText.indexOf(wtText) === 0))) {
-            var punchAt = at + Math.max(0.2, wt.t);
-            var punchDur = Math.max(0.25, wt.d || 0.35);
-
-            // Emphasize keyword when voiceover speaks it
-            tl.fromTo(n,
-              { color: "inherit", textShadow: "none" },
-              { color: "#ffffff", textShadow: "0 0 20px " + ac(s) + ", 0 0 35px " + ac(s), duration: 0.16, ease: "power2.out" },
-              punchAt
-            );
-            tl.to(n,
-              { color: "inherit", textShadow: "none", duration: punchDur, ease: "sine.in" },
-              punchAt + 0.18
-            );
-            break;
-          }
-        }
-      });
-    }
+    // Narration matches do not restyle ordinary words during their readable hold.
+    // Intentional emphasis belongs to authored highlights and redactions below.
   }
   function fade(el, at, o) {
     if (!el) return;

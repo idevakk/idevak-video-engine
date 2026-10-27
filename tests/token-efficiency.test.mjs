@@ -78,12 +78,13 @@ const compactScenes = [
 before(async () => {
   dir = await mkdtemp(path.join(tmpdir(), 'engine-token-'));
   await cp(path.join(root, 'engine'), path.join(dir, 'engine'), { recursive: true });
-  await symlink(path.join(root, 'assets'), path.join(dir, 'assets'));
+  await symlink(path.join(root, 'assets'), path.join(dir, 'assets'), 'junction');
+  await symlink(path.join(root, 'node_modules'), path.join(dir, 'node_modules'), 'junction');
   await mkdir(path.join(dir, 'build'));
   await writeFile(path.join(dir, 'build/project.json'), JSON.stringify({ title: 'Token test', compositionId: 'token-test', width: 1920, height: 1080, fps: 30 }));
   await writeFile(path.join(dir, 'build/scenes.json'), JSON.stringify(compactScenes));
   execFileSync(process.execPath, [path.join(dir, 'engine/build.mjs')]);
-  html = (await readFile(path.join(dir, 'index.html'), 'utf8')).replace(/<audio[^>]*><\/audio>/, '');
+  html = (await readFile(path.join(dir, 'index.html'), 'utf8')).replace(/<audio[^>]*><\/audio>/g, '');
   await writeFile(path.join(dir, 'index.html'), html);
   browser = await chromium.launch({ headless: true, args: ['--no-sandbox'] });
 });

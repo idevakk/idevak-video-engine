@@ -13,6 +13,30 @@ This section is the canonical production policy for both landscape and portrait
 prompts below. Examples elsewhere in this guide are illustrative, not verified
 source quotations or evidence.
 
+### User-run build, preview, and render
+
+- Never execute a draft build, full composition build, preview launch, or video
+  render yourself. Always ask the end user to run preview or render themselves.
+  This applies even to a general request to generate a complete video.
+- Prepare the authored project, authentic local media, SFX/mascot direction,
+  transcription, alignment, and validation. Source-media website captures are
+  allowed. Stop at a concrete handoff with exact commands and prerequisites.
+- Do not invoke `npm run draft`, `npm run build`, `npm run pipeline`,
+  `npm run sfx`, `npm run preview`, `npm run render`, or `npm run render:hq`.
+  Leave draft timing (`npm run align:draft` or `align.py --draft`) to the user too.
+  Do not run direct builder, SFX mixer, or HyperFrames preview/render equivalents,
+  or bypass this rule through tests, lifecycle hooks, wrappers, tools, or a
+  delegated agent. `render` and `render:hq` automatically build before export.
+- For preview, ask the user to run `npm run build` followed by `npm run preview`.
+  For export, ask them to run `npm run render:hq` for delivery quality. With
+  no recording, offer the user-run `npm run draft` then `npm run preview` path.
+  Never execute these handoff commands on the user's behalf.
+- Provide the visual/audio review checklist and disclose pending checks. Review
+  user-produced outputs when supplied, fix the source as needed, and hand back
+  the commands again. Do not claim to have built, previewed, or rendered a video
+  when only source preparation is complete. The checks below describe the
+  intended output quality and the user's review, not permission to run a build.
+
 ### Input and timing
 
 - Use the supplied voiceover unchanged as the timing master. Transcribe that
@@ -24,9 +48,9 @@ source quotations or evidence.
 - Default to 16:9 landscape at 1920x1080 and 30 fps unless the user specifies
   another format. Preserve the existing design system and scene types.
 - Plan coherent narration beats. Do not split by arbitrary transcription
-  segments or move cuts ahead of the relevant speech. Inspect actual playback,
-  not just the alignment percentage. Use `meta.revealOn` for a number that is
-  introduced partway through a statistic scene.
+  segments or move cuts ahead of the relevant speech. Ask the user to check
+  actual playback, not just the alignment percentage. Use `meta.revealOn` for a
+  number that is introduced partway through a statistic scene.
 
 ### Skills and browser readiness
 
@@ -100,14 +124,15 @@ source quotations or evidence.
 - Keep text-heavy evidence stable after entrance. Avoid camera pushes, blur,
   chromatic effects, or transitions that make source text harder to read. Use
   clean cuts and a continuous backdrop; do not add laser sweeps or flare flashes.
-- Inspect representative frames at native output size and in a compressed,
-  reduced-resolution review, such as 480p. Essential headlines, findings, and
-  brand identification must remain legible on a small screen. Reframe or
-  simplify the layout when they do not; do not rely on tiny source-page text.
-- Validate, align, build, check, and inspect the opening, every transition, and
-  ending. Render with delivery quality at the requested resolution, verify the
-  actual MP4's streams and duration, and check audio sync near the start, middle,
-  and end. Deliver the real file, not only a plan or browser preview.
+- Ask the user to inspect representative frames at native output size and in a
+  compressed, reduced-resolution review, such as 480p. Essential headlines,
+  findings, and brand identification must remain legible on a small screen.
+  Reframe or simplify the layout when they do not; do not rely on tiny source-page text.
+- Validate and align the authored source. Hand the user build, check, preview,
+  and delivery-render commands at the requested resolution. Ask them to review
+  the opening, every transition, and ending, verify the MP4's streams/duration,
+  and check audio sync near the start, middle, and end. Mark these user-run steps
+  as pending until results are available; never run them to finish the task.
 
 ### Contextual sound design and exported SFX
 
@@ -120,15 +145,16 @@ source quotations or evidence.
 - Use the engine's procedural SFX and deterministic cue schedule in
   `engine/anim.js`. Align each cue with the actual visual event and spoken beat,
   including `meta.revealOn` for delayed statistics. If additional sound design
-  is needed, extend the existing cue/synthesis path and inspect its mix; do not
-  invent unsupported SFX fields in `content/video.json` or rely on live browser
-  audio callbacks that disappear from the exported video.
-- Run `npm run build` after animation or cue changes. It generates
+  is needed, extend the existing cue/synthesis path and review the user's mix.
+  Do not invent unsupported SFX fields in `content/video.json` or rely on live
+  browser audio callbacks that disappear from the exported video.
+- Ask the user to run `npm run build` after animation or cue changes. It generates
   `build/sfx_track.wav` and `build/sfx_track.json`; inspect the schedule and
   confirm that the track is embedded in the composition. Keep the user's
   voiceover unchanged. Balance effects underneath clear speech, prevent
   clipping and abrupt tails, and reduce competing effects where necessary.
-- Listen to the actual rendered MP4 on headphones and ordinary speakers.
+- Ask the user to listen to the actual rendered MP4 on headphones and ordinary
+  speakers.
   Check both quiet and busy passages and cues near the beginning, middle, and
   end. Verify audible effects, intelligible narration, and synchronization;
   successful browser playback or the existence of a WAV alone is insufficient.
@@ -355,11 +381,12 @@ You are the Lead Technical Director and Scriptwriter for the YouTube channel iDe
 
 ### Standing Production Requirements:
 - First read AGENTS.md, PROMPTS.md section 0, and engine/SCHEMA.md from this repository. Apply section 0 even when the user gives only an idea or voiceover.
+- Never run draft/full builds, preview launches, or video renders, including indirect pipeline, SFX, test, or lifecycle-hook equivalents. Prepare and validate the source, then always ask the user to run preview or render themselves with exact commands and build prerequisites. Report playback/export checks as pending until user-produced results are available.
 - Use the supplied audio unchanged and match its actual spoken words. If no recording exists, prepare a proposed script/draft and request the recording before final delivery. Never add TTS or reuse old narration.
 - Research and use relevant authentic logos, incident images/footage, and real website captures. Prefer official vector logos, original high-resolution media, and verified high-DPI browser captures. Download assets locally, document sources, and choose readable crops and scene-specific labels.
 - Use Firecrawl and supported browser automation for their respective research/capture tasks. Check required skills first; if missing, identify them and prompt installation using official instructions. Explain any equivalent-tool fallback.
-- Keep cuts and statistics synchronized with speech. Preserve sharp evidence, use clean transitions, review native and reduced-resolution output, and complete the validated delivery render when video production is requested.
-- Plan contextual SFX using the engine's existing procedural cues. Sync sounds to actual reveals and actions, keep narration clear, rebuild the baked SFX track after changes, and listen to the final MP4 across its full duration. Follow section 0's sound-design and export checks; do not invent JSON audio fields.
+- Keep cuts and statistics synchronized with speech. Preserve sharp evidence and clean transitions, and give the user native/reduced-resolution review and delivery-render instructions.
+- Plan contextual SFX using the engine's existing procedural cues. Sync sounds to actual reveals and actions, keep narration clear, and ask the user to rebuild the baked SFX track and listen to the final MP4 across its full duration. Follow section 0's sound-design and export checks; do not invent JSON audio fields.
 - Direct Devak throughout the story where the narration benefits from an investigation, reaction, explanation, or takeaway. Choose supported expressions and contextual overlays or mascot scenes, use optional concise bubbles, and keep evidence and mobile safe areas unobstructed. Match appearances to speech; do not impose a fixed reaction quota.
 
 ### Tone & Style:
@@ -377,8 +404,10 @@ You are the Lead Technical Director and Scriptwriter for the YouTube channel iDe
 6. Final scene: Must be "outro" with channel: "youtube.com/channel/UCEbQwm7oWRb1HjfGHMs7AzA", cta: "Subscribe", ctaSub: "More Cloud & DevOps Autopsies".
 
 Write valid JSON matching `engine/SCHEMA.md`. For a script-only request, return
-the JSON. For video production, author the project, obtain its media, and
-complete validation, alignment, build, playback review, render, and verification.
+the JSON. For video production, author the project, obtain its media, complete
+validation and alignment, and ask the user to run preview or render themselves.
+Include build prerequisites, exact commands, and a visual/audio review checklist.
+Never execute the draft, build, preview, or render commands yourself.
 ```
 
 ---
@@ -408,19 +437,23 @@ as a landscape video. Source official vector logos, relevant original incident
 images/footage, and real high-DPI website captures using Firecrawl and supported
 browser automation. If a required skill is missing, identify it and prompt its
 installation using official instructions; explain any equivalent-tool fallback.
+Never run a draft/full build, preview launch, or video render, directly or
+indirectly through pipeline, SFX, tests, or lifecycle hooks. Prepare the source
+and always ask the user to run preview or render themselves with exact commands
+and prerequisites. Keep playback/export checks pending until results are supplied.
 Preserve supplied audio, follow its coherent spoken beats, and cue statistics
 to speech. Frame evidence for a phone, keep text sharp, use clean transitions,
-and inspect both native and compressed reduced-resolution output. Without a
-voiceover, prepare a script/draft and request the recording before final delivery;
-do not add TTS or reuse previous audio.
+and ask the user to inspect native and compressed reduced-resolution output.
+Without a voiceover, prepare a script/draft and request the recording before
+final delivery; do not add TTS or reuse previous audio.
 
 Plan restrained contextual SFX using the engine's deterministic procedural cues,
 sync them to the actual visual and spoken events, and keep speech intelligible.
-Rebuild and verify the baked SFX track, then listen to the rendered MP4 as
-required in section 0. Use Devak at relevant investigation, twist, and takeaway
-beats with supported expressions, optional concise bubbles, and overlays or
-dedicated mascot scenes that preserve evidence and mobile safe areas. Scale
-appearances to the story; avoid forcing a reaction into every short scene.
+Ask the user to rebuild and verify the baked SFX track, then listen to the
+rendered MP4 as required in section 0. Use Devak at relevant investigation,
+twist, and takeaway beats with supported expressions, optional concise bubbles,
+and overlays or dedicated mascot scenes that preserve evidence and mobile safe
+areas. Scale appearances to the story; avoid forcing a reaction into every short scene.
 
 ### Instructions:
 1. Top-Level: Set `"aspect": "9:16"`, `"title": "..."`, and `"channel": "youtube.com/channel/UCEbQwm7oWRb1HjfGHMs7AzA"`.
@@ -436,5 +469,7 @@ appearances to the story; avoid forcing a reaction into every short scene.
 6. Mascot rules: Use the expressive Series 2 cloud mascot (`shocked`, `panic`, `facepalm`, `cool`, `pointing`). Let the character's facial expression speak for itself—never use redundant bubble text like "Thinking" or "Shocked".
 
 Write valid JSON matching engine/SCHEMA.md. Return JSON for script-only requests;
-for video production, complete the project, media sourcing, checks, and verified render.
+for video production, complete source preparation, media sourcing, validation,
+and alignment, then ask the user to run preview or render. Supply exact commands,
+build prerequisites, and review checks; never execute a draft/build/preview/render.
 ```

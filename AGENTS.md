@@ -34,9 +34,24 @@ brief. Read `engine/SCHEMA.md` before editing `content/video.json`. Read
 9. Plan contextual SFX and mascot direction for each new video using
    `PROMPTS.md` section 0. Use supported expressions and the existing baked SFX
    path, synchronize reactions and sounds to speech, preserve evidence
-   readability, and listen to the exported mix with narration clearly audible.
+   readability, and give the user exported-mix review instructions.
+10. Never execute a draft build, full composition build, preview launch, or video
+    render. These actions belong to the end user. Prepare the source and always
+    ask the user to run preview or render themselves, with build prerequisites
+    and exact commands. Do not bypass this through another tool, subagent,
+    wrapper, test, or lifecycle hook. This includes `npm run draft`, `build`,
+    `pipeline`, `sfx`, `preview`, `render`, and `render:hq`, direct builder/SFX
+    mixer/HyperFrames equivalents, and any command that invokes them indirectly.
+    Leave draft timing (`align:draft` / `align.py --draft`) to the user too.
+    A generic request to generate a video does not authorize these actions.
 
 ## Workflow
+
+Steps 1-5 are source preparation. Agents may research, acquire source media,
+edit authored files, transcribe, validate, and align the supplied narration.
+Run only checks that do not trigger a composition build, preview, or render.
+Steps 6-8 and the fast path below are commands to give the user, never commands
+for the agent to execute. Website research screenshots remain allowed.
 
 ### 1. Put the voiceover in place
 
@@ -125,7 +140,9 @@ Read the report:
 Do not hand-edit `build/scenes.json` or `build/project.json`. They are
 generated. Change `content/video.json` and re-run the aligner.
 
-### 6. Build
+### 6. Build (end user only)
+
+Ask the user to run this prerequisite before previewing changed source:
 
 ```bash
 node engine/build.mjs
@@ -138,7 +155,9 @@ paused GSAP timeline. The builder inlines `engine/fonts.css`, `engine/style.css`
 and `engine/anim.js`, and replaces the `"__COMPOSITION_ID__"` placeholder in the
 animation registry with the project's composition id.
 
-### 7. Check and preview
+### 7. Check and preview (end user only)
+
+Ask the user to run these commands after their build:
 
 ```bash
 npx hyperframes@latest lint
@@ -152,12 +171,15 @@ timeline density, negative z-index background layers, and small mono labels.
 These are expected for this engine. Do not split the composition into
 sub-compositions just to silence them.
 
-Preview at several timestamps, including the first frame, every scene
-transition, and the last frame. Look for clipped text, overlapping elements,
-and text that is too small to read. Fix the CSS or the content, then rebuild and
-re-check.
+Ask the user to preview at several timestamps, including the first frame,
+every scene transition, and the last frame. Look for clipped text, overlapping
+elements, and text that is too small to read. Fix reported CSS or content issues,
+then hand back rebuild and review commands. Do not launch the preview yourself.
 
-### 8. Render
+### 8. Render (end user only)
+
+Always ask the user to run the render themselves. `npm run render` includes a
+build hook; agents must not execute it even to test the export.
 
 ```bash
 npx hyperframes@latest render --quality looks --output renders/video.mp4
@@ -169,7 +191,7 @@ The render reads `index.html` and the audio path in the composition. The audio
 file must exist at render time. Use `--quality draft` for a fast review and
 `--quality delivery` for the final master.
 
-## Fast path
+## Fast path (end user only)
 
 ```bash
 npm run pipeline
@@ -203,6 +225,10 @@ one stage.
 | `renders/` | Rendered output. Ignored. |
 
 ## Troubleshooting
+
+Build, preview, and render remedies below are instructions for the user to run.
+Agents may fix source files and inspect user-provided results, but must not
+execute those remedies themselves.
 
 **`missing file: build/vo.json`**
 Run `python engine/transcribe.py` first.
@@ -238,21 +264,21 @@ The composition is one large HTML file. Use `--quality draft` for review. For a
 long video, render with more workers only if the machine has memory to spare.
 The old 24-minute test rendered from a 180-scene file.
 
-## Definition of done
+## Definition of done for agent handoff
 
-- `python engine/validate.py` reports 0 errors.
-- `python engine/align.py` reports a high match percentage and no no-match or
-  weak-match warnings.
-- `node engine/build.mjs` writes the composition.
-- `npx hyperframes@latest lint` and `check` report 0 errors.
-- The preview looks correct at the start, at every transition, and at the end.
-- Relevant authentic assets were researched, downloaded locally, credited, and
-  inspected at their actual rendered size. Missing media or sourcing tools are
-  disclosed; no placeholder is presented as real evidence.
-- Website text and logos remain sharp in a reduced-resolution review. Scene
-  cuts and number reveals follow the actual voiceover in playback.
-- Contextual SFX are baked into the composition and verified by listening to
-  the rendered MP4. Narration is clear, with no clipping or mistimed effects.
-- Relevant mascot appearances use supported expressions, follow the spoken
-  story, and leave evidence, credits, and mobile safe areas readable.
-- The render exists at the requested output path.
+- `python engine/validate.py` reports 0 errors; any unavailable input is disclosed.
+- When final audio is available, transcription and alignment are complete with
+  a high match percentage and no no-match or weak-match warnings.
+- Relevant authentic assets are local, credited, and inspected at native size
+  against their planned display footprint. Source limitations are disclosed.
+- Contextual SFX and mascot direction are authored using the supported engine
+  paths, expressions, and positions, with clear evidence and narration in mind.
+- Give the user exact commands and prerequisites, and explicitly ask them to
+  run preview or render. Explain that changed source needs a user-run build
+  before preview, and `npm run render` / `render:hq` include their own build.
+- Include a review checklist: lint/check errors, opening/every cut/ending,
+  sharp evidence at native and reduced resolution, speech timing, mascot
+  placement, and audible SFX beneath clear narration in the exported MP4.
+- State that build, playback review, and export remain for the user to run.
+  Do not claim an unperformed check passed or a new MP4 was generated. Inspect
+  user-produced artifacts when supplied and fix source issues they reveal.

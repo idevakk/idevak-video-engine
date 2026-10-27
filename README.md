@@ -49,6 +49,11 @@ hyperframes check / preview / render
   expressions and placements that protect evidence readability.
   Both copyable generation prompts include these requirements. External LLM
   integrations must load the guide; the CLI pipeline does not invoke an LLM.
+- **User-Run Output:** Agents prepare source, media, transcription, alignment,
+  and validation, then ask the user to run preview or render with exact commands.
+  They never execute draft/full builds, launch previews, or render videos,
+  including through pipeline/SFX commands or automatic build hooks. Output
+  review remains pending until user-produced results are available.
 - **Archived Reference Projects:** See `projects/` for full production examples (including the 90-scene `emudhra-key-was-four` investigation).
 
 ---
@@ -66,6 +71,10 @@ hyperframes check / preview / render
 ---
 
 ## Quick Start (Clean Template)
+
+These commands are for the end user. An LLM or agent must hand them off rather
+than execute draft, build, preview, or render steps itself. After source changes,
+preview requires a user-run build; rendering through npm includes that build.
 
 ```bash
 # 1. Clone the repository
@@ -101,7 +110,7 @@ npm run render
 
 ## Exported sound effects
 
-Every build bakes the animation's exact cue schedule into `build/sfx_track.wav`
+Every user-run build bakes the animation's exact cue schedule into `build/sfx_track.wav`
 (48 kHz PCM). This includes transitions, stat ticks and impacts, terminal clicks,
 mascot entrances, highlights, and redactions as scheduled by the animation.
 `build/sfx_track.json` lists all cue timestamps and gains for review. There is
@@ -115,6 +124,9 @@ metadata are not modified. Browser audio callbacks are no longer used.
 composition cannot silently omit the new SFX track. Direct HyperFrames CLI
 renders still require `npm run build` first. `npm run sfx` and the old
 `python engine/sfx_mixer.py` entry point rebuild the composition and SFX together.
+These commands are user-run only; agents must not execute them as a workaround
+for the build/render restriction. Ask the user to listen to the exported mix
+and check cue synchronization, clear speech, and balanced effect levels.
 
 Builds now require Playwright Chromium (`npx playwright install chromium`). A
 synthesis failure stops the build rather than silently exporting voiceover only.
@@ -134,6 +146,8 @@ the transcript. For a statistic introduced later in a scene, set `meta.revealOn`
 to its exact spoken phrase. See `engine/SCHEMA.md` for the timing contract.
 
 ## Long Windows exports
+
+The following is a user-run troubleshooting command, not an agent action.
 
 HyperFrames 0.8.207 can report `capture_disk stalled` at the full frame count
 while the disk stage is still finishing. For a long delivery export, increase

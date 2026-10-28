@@ -152,6 +152,9 @@ A full-frame title card with a huge ghost word, a rule, chips, and the title.
 | `chips` | string[] | 1-5 short labels. |
 | `ghost` | string | Max 12 characters. |
 
+The ghost word resolves as the scene `ghost`, then `meta.ghost`, then the project
+`ghost`, then the first word of the title.
+
 ### hero
 
 A large title on the left, a single word mark on the right.
@@ -389,6 +392,9 @@ A compact table of findings on the left and the argument on the right.
 | `stamp` | string | Optional stamp below the rows. |
 | `points` | string[] | 0-4 bullets on the right. |
 
+`label` and `status` are accepted as aliases for `head` and `live`. The
+`AUDIT RECORD` / `VERIFIED` fallback only applies when neither is set.
+
 ### memory
 
 A cell grid with a pointer, a count, and a legend.
@@ -401,26 +407,27 @@ A cell grid with a pointer, a count, and a legend.
   "headline": "The slot is reused before the key exists",
   "subline": "The pointer outlives the allocation.",
   "meta": {
-    "cells": 12,
-    "n": 4,
-    "name": "cache_map",
-    "unit": "live",
-    "ptr": "dangling key",
-    "legendOk": "active",
-    "legendBad": "unused"
+    "segment": "cache_map",
+    "allocated": 4,
+    "pointer": "dangling key",
+    "cells": [
+      { "addr": "4f2a1c", "live": true },
+      { "addr": "8b01de", "live": true },
+      { "addr": "0c77a4", "bad": true },
+      { "addr": "d3e900", "bad": true }
+    ]
   }
 }
 ```
 
 | Meta field | Type | Notes |
 |---|---|---|
-| `cells` | integer | 4-16. Defaults to 8. |
-| `n` | integer | 1 to `cells`. Defaults to 2. |
-| `name` | string | Grid label. Defaults to `memory`. |
-| `unit` | string | Count unit. Defaults to `live`. |
-| `ptr` | string or false | Pointer label. Defaults to `pointer`; `false` hides it. |
-| `legendOk` | string | Defaults to `active`. |
-| `legendBad` | string | Defaults to `unused`. |
+| `cells` | object[] | Required, 4-16. Each `{ "addr": string, "live"?: boolean, "bad"?: boolean }`. The first cell marked `bad` gets the corruption pulse. |
+| `segment` | string | Grid label. Defaults to `HEAP BUFFER`. |
+| `allocated` | integer | Count shown in the header and animated up from zero. `liveCount` also accepted. |
+| `pointer` | string | Pointer label. Defaults to `CORRUPT`. |
+
+The legend is fixed chrome (`VALID` / `CORRUPTED`), not authored per scene.
 
 ### timeline
 
@@ -720,6 +727,9 @@ A fast-paced, high-impact dev reaction card with comic recoil shake, glitch swee
 | `image` | string | Optional custom meme image path. Defaults to iDevak mascot with chosen expression. |
 | `punch` | boolean | Enables instant Fireship-style camera recoil punch zoom. |
 
+`caption`, `badge`, and `sub` are accepted as aliases for `text`, `reaction`, and
+`subtext`. `expression` selects the mascot image when `image` is absent.
+
 ### cloud
 
 A cloud infrastructure and systems topology diagram with node cards, status badges, and animated data packet transmission.
@@ -747,7 +757,7 @@ A cloud infrastructure and systems topology diagram with node cards, status badg
 | Meta field | Type | Notes |
 |---|---|---|
 | `nodes` | object[] | 2-6 node items. Required fields: `t` (title). Optional: `k` (badge), `s` (sub), `icon`, `status`, `hot`, `bad`. |
-| `flow` | string | Subtitle describing the data pipeline or architecture. |
+| `flow` | string | Subtitle describing the data pipeline or architecture. Rendered as a dim mono line under the canvas header. |
 
 ### mascot
 

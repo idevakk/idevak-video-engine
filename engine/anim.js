@@ -633,7 +633,7 @@
       }
       var bad = cells.filter(function (c) { return c.classList.contains("is-bad"); })[0];
       if (bad) {
-        tl.fromTo(bad, { opacity: 0.25 }, { opacity: 1, duration: 0.12, repeat: 5, yoyo: true }, at + Math.min(dur * 0.5, 3.2));
+        tl.fromTo(bad, { opacity: 0.25 }, { opacity: 1, duration: 0.12, repeat: 4, yoyo: true }, at + Math.min(dur * 0.5, 3.2));
         tl.to(bad, { boxShadow: "0 0 34px -2px rgba(255,92,114,.85)", duration: 0.4 }, at + Math.min(dur * 0.5, 3.2) + 0.7);
       }
       var ptr = el.querySelector(".mem-ptr");

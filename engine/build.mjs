@@ -148,7 +148,7 @@ const eyebrow = (s) => (s.eyebrow ? `<div class="eyebrow"><span class="eyebrow-d
 
 const RENDER = {
   cold(s) {
-    const ghost = s.ghost || project.ghost || String(project.title || "VIDEO").trim().split(/\s+/)[0].toUpperCase();
+    const ghost = s.ghost || s.meta?.ghost || project.ghost || String(project.title || "VIDEO").trim().split(/\s+/)[0].toUpperCase();
     return `
     <div class="cold-wrap">
       <div class="cold-ghost" data-layout-allow-overflow>${esc(ghost)}</div>
@@ -332,13 +332,15 @@ const RENDER = {
     const rows = s.meta?.rows || [];
     const points = s.meta?.points || [];
     const stamp = s.meta?.stamp || "";
+    const label = s.meta?.head || s.meta?.label || "AUDIT RECORD";
+    const status = s.meta?.live || s.meta?.status || "VERIFIED";
     return `
     <div class="lg-grid">
       <div class="lg-left">
         <div class="lg-card">
           <div class="lg-head">
-            <span>${esc(s.meta?.label || "AUDIT RECORD")}</span>
-            <span class="lg-live">${esc(s.meta?.status || "VERIFIED")}</span>
+            <span>${esc(label)}</span>
+            <span class="lg-live">${esc(status)}</span>
           </div>
           ${rows
             .map(
@@ -570,10 +572,10 @@ const RENDER = {
 
   meme(s) {
     const ghost = s.ghost || s.meta?.ghost || "WAIT WHAT";
-    const caption = s.meta?.caption || s.headline || "";
-    const badge = s.meta?.badge || "SYSTEM PANIC";
-    const sub = s.subline || s.meta?.sub || "";
-    const customImg = s.meta?.image || "assets/mascot/shocked.png";
+    const caption = s.meta?.caption || s.meta?.text || s.headline || "";
+    const badge = s.meta?.badge || s.meta?.reaction || "SYSTEM PANIC";
+    const sub = s.meta?.subtext || s.meta?.sub || s.subline || "";
+    const image = s.meta?.image || MASCOT_IMAGES[s.meta?.expression] || "assets/mascot/shocked.png";
 
     return `
     <div class="meme-stage">
@@ -581,7 +583,7 @@ const RENDER = {
       <div class="meme-badge"><span>INCIDENT_REPORT</span><b>${esc(badge)}</b></div>
       <div class="meme-card">
         <div class="meme-media-wrap">
-          <img class="meme-img" src="${esc(customImg)}" alt="reaction" />
+          <img class="meme-img" src="${esc(image)}" alt="reaction" />
           <div class="meme-scanlines"></div>
           <div class="meme-glitch-bar"></div>
         </div>
@@ -605,6 +607,7 @@ const RENDER = {
           <span class="cloud-tag">${esc(tag)}</span>
           <span class="cloud-flow-label">TOPOLOGY MATRIX</span>
         </div>
+        ${s.meta?.flow ? `<div class="cloud-flow">${esc(s.meta.flow)}</div>` : ""}
         <div class="cloud-nodes">
           ${nodes.map((n, k) => `
             ${k > 0 ? `<div class="cloud-edge"><svg viewBox="0 0 100 24"><path d="M0 12 H90" class="cld-path"/><polygon points="90 8, 98 12, 90 16" class="cld-arrow"/></svg></div>` : ""}

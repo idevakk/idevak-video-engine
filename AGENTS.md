@@ -85,9 +85,11 @@ Check the repo's Node, Python, FFmpeg, Python transcription, and browser
 requirements. Install missing project dependencies using the existing lockfile
 and documented commands (`npm ci` when a lockfile is present, otherwise
 `npm install`), plus Playwright Chromium (`npx playwright install chromium`) and
-required Python packages as needed. Resolve setup/build/check failures yourself;
-report genuine external blockers. Do not launch preview or render as an install
-or test side effect. Follow `PROMPTS.md` for missing research skills/tools.
+required Python packages as needed. Local npm scripts call `python`; the Daytona
+sandbox is Linux and its remote commands call `python3`. Keep those as they are.
+Resolve setup/build/check failures yourself; report genuine external blockers.
+Do not launch preview or render as an install or test side effect. Follow
+`PROMPTS.md` for missing research skills/tools.
 
 ### 1. Put the voiceover in place
 
@@ -211,12 +213,16 @@ npx hyperframes@latest check
 for a long one-file composition: one section per scene, composition size,
 timeline density, negative z-index background layers, and small mono labels.
 These are expected for this engine. Do not split the composition into
-sub-compositions just to silence them.
+sub-compositions just to silence them. An asset over the 2 MB inline limit stays
+external by design; keep evidence at native resolution instead of downscaling it
+to silence that warning.
 
 Inspect available frames at the first frame, every transition, and the last
 frame for clipped/overlapping text, readability, jitter, and layout instability.
 Fix issues immediately, rebuild, and repeat the relevant checks. Headless
 composition checks and still-frame inspection are allowed without permission.
+`npm run qa:frames` and `npm run qa:sheets` are optional local checks; they
+write frames, a report, and contact sheets under `build/qa/local`.
 
 After preparation and checks, ask permission to start `npm run preview` unless
 the user already explicitly authorized it, or give the command for them to run.

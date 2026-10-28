@@ -8,11 +8,11 @@
     "node": ">=22"
   },
   "scripts": {
-    "validate": "python3 engine/validate.py",
-    "transcribe": "python3 engine/transcribe.py",
-    "align": "python3 engine/align.py",
-    "align:draft": "python3 engine/align.py --draft",
-    "draft": "python3 engine/align.py --draft && node engine/build.mjs",
+    "validate": "python engine/validate.py",
+    "transcribe": "python engine/transcribe.py",
+    "align": "python engine/align.py",
+    "align:draft": "python engine/align.py --draft",
+    "draft": "python engine/align.py --draft && node engine/build.mjs",
     "build": "node engine/build.mjs",
     "pipeline": "npm run validate && npm run transcribe && npm run align && npm run build",
     "lint": "npx --yes hyperframes@latest lint",
@@ -20,7 +20,10 @@
     "preview": "npx --yes hyperframes@latest preview",
     "render": "npx --yes hyperframes@latest render --quality looks --output renders/video.mp4",
     "test": "node --test tests/*.test.mjs",
-    "sfx": "python3 engine/sfx_mixer.py",
+    "test:py": "python -m unittest tests.test_daytona_video",
+    "qa:frames": "node scripts/qa_frames.mjs",
+    "qa:sheets": "python scripts/qa_sheets.py",
+    "sfx": "python engine/sfx_mixer.py",
     "render:hq": "npx --yes hyperframes@latest render --quality delivery --output renders/video.mp4",
     "prerender": "npm run build",
     "prerender:hq": "npm run build"

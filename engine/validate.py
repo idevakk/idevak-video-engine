@@ -334,13 +334,25 @@ def validate_scene(
         check_str_array(points, f"{where}.meta.points", errors)
 
     elif scene_type == "memory":
-        cells = ifield(meta, "cells", where, errors, lo=4, hi=16)
-        n = ifield(meta, "n", where, errors, lo=1, hi=cells or 24)
-        if n is not None and cells is not None and n > cells:
-            errors.append(f"{where}.meta.n: cannot exceed cells")
-        if "ptr" in meta and not isinstance(meta["ptr"], (str, bool)):
-            errors.append(f"{where}.meta.ptr: must be a string or false")
-        for key in ("name", "unit", "legendOk", "legendBad"):
+        cells = listfield(meta, "cells", where, errors, required=True, lo=4, hi=16)
+        items = check_items(cells, f"{where}.meta.cells", errors, ("addr",))
+        for k, item in enumerate(items):
+            for flag in ("live", "bad"):
+                if flag in item and not isinstance(item[flag], bool):
+                    errors.append(f"{where}.meta.cells[{k}].{flag}: must be a boolean")
+            if "state" in item and item["state"] not in ("live", "bad"):
+                errors.append(f"{where}.meta.cells[{k}].state: must be live or bad")
+        count = meta.get("liveCount")
+        count_key = "liveCount"
+        if count is None:
+            count = meta.get("allocated")
+            count_key = "allocated"
+        limit = len(cells) or 16
+        if count is not None and (not isinstance(count, int) or isinstance(count, bool)):
+            errors.append(f"{where}.meta.{count_key}: must be an integer")
+        elif count is not None and not 0 <= count <= limit:
+            errors.append(f"{where}.meta.{count_key}: {count} (max {limit})")
+        for key in ("segment", "pointer"):
             sfield(meta, key, where, errors)
 
     elif scene_type == "timeline":
@@ -422,7 +434,6 @@ def validate_scene(
                 if bkey in item and not isinstance(item[bkey], bool):
                     errors.append(f"{where}.meta.nodes[{k}].{bkey}: must be a boolean")
         sfield(meta, "flow", where, errors)
-        sfield(meta, "topology", where, errors)
 
     elif scene_type == "mascot":
         expr = sfield(meta, "expression", where, errors)

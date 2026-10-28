@@ -32,6 +32,10 @@ If the Python SDK is missing, install it in the agent's Python environment:
 python -m pip install daytona
 ```
 
+`python -m unittest tests.test_daytona_video` runs the helper's lifecycle and
+transfer tests locally against a fake sandbox and needs the Daytona SDK
+installed.
+
 Use the host's private secret input for a missing `DAYTONA_API_KEY`; never ask
 for it in ordinary chat or put it in source, logs, or uploaded files. Obtain a
 key from https://app.daytona.io/dashboard/keys. The helper reads the environment;
@@ -109,17 +113,20 @@ Once preparation and checks pass, render automatically in a fresh sandbox:
 python scripts/daytona_video.py render
 ```
 
-The default is `delivery` quality with two render workers, 4 vCPUs, 8 GiB RAM,
-and 10 GiB disk. The helper requires a successful sandbox preparation and
-checks source/artifact hashes against `build/daytona/prepared.json` before
-allocating a render sandbox. Source, transcript, media, test/engine changes, or
-modified build files require preparation and visual review again. Additional
-media includes from preparation are reused automatically. The render sandbox
+The default is `delivery` quality with one render worker, 4 vCPUs, 8 GiB RAM,
+and 10 GiB disk. Sandbox disk is capped at 10 GiB per sandbox, and multi-worker
+capture stages every frame on disk (about 10.8 GB for a seven-minute video), so
+keep the single-worker default unless the composition is short enough to fit.
+The helper requires a successful sandbox preparation and checks
+source/artifact hashes against `build/daytona/prepared.json` before allocating a
+render sandbox. Source, transcript, media, test/engine changes, or modified
+build files require preparation and visual review again. Additional media
+includes from preparation are reused automatically. The render sandbox
 installs dependencies, reruns lint/check, and encodes the prepared HTML/SFX
 without realigning or rebuilding different artifacts. The final MP4 downloads
 to `renders/video.mp4`, with stream metadata in `renders/daytona-probe.json`.
-Stream presence, dimensions,
-and duration are checked before accepting the export.
+Stream presence, dimensions, and duration are checked before accepting the
+export.
 
 Only the required engine/build inputs, `assets/`, tests/helper source, the
 configured voiceover, and explicit additional media are uploaded. Local

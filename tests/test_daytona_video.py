@@ -1,5 +1,6 @@
 """Offline lifecycle/transfer tests. These never create sandboxes or encode video."""
 import argparse
+import hashlib
 import importlib.util
 import io
 import json
@@ -30,8 +31,10 @@ class DaytonaVideoTests(unittest.TestCase):
         self.sandbox = Mock(id="owned-sandbox")
         self.sandbox.process.execute_session_command.return_value = types.SimpleNamespace(cmd_id="command")
         self.sandbox.process.get_session_command.return_value = types.SimpleNamespace(exit_code=0)
-        self.sandbox.process.exec.return_value = types.SimpleNamespace(exit_code=0, result="")
+        self.sandbox.process.exec.side_effect = self.exec_remote
         self.sandbox.fs.download_file.side_effect = self.download
+        self.uploaded = {}
+        self.sandbox.fs.upload_file.side_effect = self.upload
         self.sandbox.delete.side_effect = lambda **kw: self.events.append(("delete", kw))
         self.client = Mock()
         self.client.create.return_value = self.sandbox
@@ -57,9 +60,43 @@ class DaytonaVideoTests(unittest.TestCase):
         path.write_bytes(value if isinstance(value, bytes) else value.encode())
         return path
 
+    def exec_remote(self, command, timeout=None):
+        self.events.append(("exec", command))
+        if command.startswith("rm -rf "):
+            for path in command.removeprefix("rm -rf ").split("\n"):
+                self.uploaded = {name: value for name, value in self.uploaded.items()
+                                 if not name.startswith(path)}
+            return types.SimpleNamespace(exit_code=0, result="")
+        if command.startswith("cat ") and " > " in command:
+            parts, remote = command.split("\n")[0].removeprefix("cat ").split(" > ")
+            parts = parts.removesuffix("/part-*")
+            data = b"".join(value for name, value in sorted(self.uploaded.items())
+                           if name.startswith(parts))
+            self.remote[remote] = data
+            return types.SimpleNamespace(
+                exit_code=0, result=f"{hashlib.sha256(data).hexdigest()}  {remote}\n")
+        if command.startswith("ls ") and command.endswith(".parts"):
+            data = self.remote[command.split()[1][: -len(".parts")]]
+            count = -(-len(data) // helper.CHUNK)
+            return types.SimpleNamespace(
+                exit_code=0, result="\n".join(f"part-{index:04d}" for index in range(count)) + "\n")
+        if command.startswith("sha256sum "):
+            digest = hashlib.sha256(self.remote[command.split()[1]]).hexdigest()
+            return types.SimpleNamespace(exit_code=0, result=f"{digest}  remote\n")
+        return types.SimpleNamespace(exit_code=0, result="")
+
+    def upload(self, source, destination):
+        self.events.append(("upload", destination))
+        self.uploaded[destination] = bytes(source)
+
     def download(self, remote, destination=None):
         self.events.append(("download", remote))
-        data = self.remote[remote]
+        source, _, part = remote.partition(".parts/part-")
+        if part:
+            start = int(part) * helper.CHUNK
+            data = self.remote[source][start:start + helper.CHUNK]
+        else:
+            data = self.remote[remote]
         if destination:
             Path(destination).write_bytes(data)
         else:
@@ -150,14 +187,9 @@ class DaytonaVideoTests(unittest.TestCase):
         payload = json.dumps({"audio": "content/my voice.wav", "segments": [{"words": [
             {"w": "Hello", "s": 0.1, "e": 0.5}]}]}).encode()
         self.remote[f"{helper.REMOTE}/build/vo.json"] = payload
-        archive_members = {}
-
-        def upload(source, destination):
-            with tarfile.open(source) as archive:
-                for entry in archive:
-                    archive_members[entry.name] = archive.extractfile(entry).read()
-        self.sandbox.fs.upload_file.side_effect = upload
         helper.execute(self.args("transcribe"), self.root, self.client)
+        with tarfile.open(fileobj=io.BytesIO(self.remote["/tmp/video-inputs.tar.gz"])) as archive:
+            archive_members = {entry.name: archive.extractfile(entry).read() for entry in archive}
         self.assertEqual(archive_members["content/my voice.wav"], b"exact recording bytes")
         self.assertEqual(set(archive_members), {"content/my voice.wav", "engine/transcribe.py"})
         self.assertEqual((self.root / "build/vo.json").read_bytes(), payload)
@@ -178,15 +210,16 @@ class DaytonaVideoTests(unittest.TestCase):
                              {"codec_type": "audio"}], "format": {"duration": "12"}}
         self.remote[f"{helper.REMOTE}/renders/probe.json"] = json.dumps(probe).encode()
         self.put("renders/video.mp4", b"previous complete export")
+        self.remote[f"{helper.REMOTE}/renders/video.mp4"] = b"complete test artifact"
         download = self.download
 
         def failing_download(remote, destination=None):
-            if remote.endswith("video.mp4"):
-                Path(destination).write_bytes(b"partial")
+            if ".parts/" in remote and remote.startswith(f"{helper.REMOTE}/renders/video.mp4"):
                 raise OSError("connection lost")
             return download(remote, destination)
         self.sandbox.fs.download_file.side_effect = failing_download
-        with self.assertRaisesRegex(OSError, "connection lost"):
+        with patch.object(helper.time, "sleep"), \
+                self.assertRaisesRegex(RuntimeError, "connection lost"):
             helper.execute(self.args("render"), self.root, self.client)
         self.assertFalse((self.root / "renders/video.mp4.partial").exists())
         self.assertEqual((self.root / "renders/video.mp4").read_bytes(), b"previous complete export")
@@ -200,9 +233,28 @@ class DaytonaVideoTests(unittest.TestCase):
         self.remote[f"{helper.REMOTE}/renders/video.mp4"] = b"complete test artifact"
         helper.execute(self.args("render"), self.root, self.client)
         self.assertEqual((self.root / "renders/video.mp4").read_bytes(), b"complete test artifact")
-        self.assertLess(self.events.index(("download", f"{helper.REMOTE}/renders/video.mp4")),
+        self.assertLess(self.events.index(("download", f"{helper.REMOTE}/renders/video.mp4.parts/part-0000")),
                         len(self.events) - 1)
         self.assertEqual(self.events[-1][0], "delete")
+
+    def test_large_download_batches_parts_and_writes_them_in_order(self):
+        payload = b"".join(bytes([value]) * helper.CHUNK for value in range(5))
+        self.remote["/tmp/artifact.bin"] = payload
+        batches = []
+
+        class RecordingPool(helper.ThreadPoolExecutor):
+            def map(self, fn, iterable):
+                batch = list(iterable)
+                batches.append(batch)
+                return super().map(fn, batch)
+
+        destination = self.root / "renders/artifact.bin"
+        with patch.object(helper, "ThreadPoolExecutor", RecordingPool):
+            helper.download_large(self.sandbox, "/tmp/artifact.bin", destination, workers=2)
+        self.assertEqual(destination.read_bytes(), payload)
+        self.assertEqual([name for batch in batches for name in batch],
+                         [f"part-{index:04d}" for index in range(5)])
+        self.assertEqual([len(batch) for batch in batches], [4, 1])
 
     def test_invalid_export_is_rejected_and_sandbox_deleted(self):
         self.render_fixture()

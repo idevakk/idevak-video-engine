@@ -15,10 +15,12 @@ import tempfile
 import threading
 import time
 import uuid
+from concurrent.futures import ThreadPoolExecutor
 
 ROOT = Path(__file__).resolve().parent.parent
 REMOTE = "/root/video-engine"
 LOG = "/tmp/video-engine-job.log"
+CHUNK = 1 << 20
 EXCLUDED = {".git", "node_modules", "__pycache__", ".venv", "venv", ".hyperframes"}
 PREPARED = ("index.html", "hyperframes.json", "build/project.json", "build/scenes.json",
             "build/report.md", "build/sfx_track.wav", "build/sfx_track.json")
@@ -124,6 +126,51 @@ def run_remote(sandbox, command: str, deadline: float) -> None:
         time.sleep(5)
 
 
+def upload_large(sandbox, local: Path, remote: str, chunk: int = CHUNK, attempts: int = 4) -> None:
+    """Chunked upload; the SDK resets on multi-megabyte transfers."""
+    parts = remote + ".parts"
+    sandbox.process.exec(f"rm -rf {parts}\nmkdir -p {parts}", timeout=120)
+    hasher = hashlib.sha256()
+    index = 0
+    with local.open("rb") as stream:
+        while data := stream.read(chunk):
+            hasher.update(data)
+            name = f"{parts}/part-{index:04d}"
+            for attempt in range(1, attempts + 1):
+                try:
+                    sandbox.fs.upload_file(data, name)
+                    break
+                except Exception as exc:
+                    if attempt == attempts:
+                        raise RuntimeError(f"Could not upload {name}: {exc}") from exc
+                    print(f"[daytona] Retry {attempt} upload {name}: {exc}", file=sys.stderr, flush=True)
+                    time.sleep(3 * attempt)
+            index += 1
+            if index % 10 == 0:
+                print(f"[daytona] Uploaded {index} chunks", flush=True)
+    if not index:
+        raise RuntimeError(f"Nothing to upload: {local}")
+    joined = sandbox.process.exec(f"cat {parts}/part-* > {remote}\nsha256sum {remote}", timeout=600)
+    if joined.exit_code != 0 or hasher.hexdigest() not in joined.result:
+        raise RuntimeError(f"Upload checksum mismatch for {remote}")
+    try:
+        sandbox.process.exec(f"rm -rf {parts}", timeout=120)
+    except Exception as exc:
+        print(f"[daytona] Could not remove {parts}: {exc}", file=sys.stderr, flush=True)
+
+
+def replace_retry(temporary: Path, target: Path, attempts: int = 5) -> None:
+    """Windows scanners briefly lock freshly written files."""
+    for attempt in range(1, attempts + 1):
+        try:
+            temporary.replace(target)
+            return
+        except PermissionError:
+            if attempt == attempts:
+                raise
+            time.sleep(attempt)
+
+
 def download_atomic(sandbox, remote: str, local: Path) -> None:
     local.parent.mkdir(parents=True, exist_ok=True)
     temporary = local.with_name(local.name + ".partial")
@@ -131,9 +178,97 @@ def download_atomic(sandbox, remote: str, local: Path) -> None:
         sandbox.fs.download_file(remote, str(temporary))
         if not temporary.is_file() or temporary.stat().st_size == 0:
             raise RuntimeError(f"Empty download: {remote}")
-        temporary.replace(local)
+        replace_retry(temporary, local)
     finally:
         temporary.unlink(missing_ok=True)
+
+
+def download_large(sandbox, remote: str, local: Path, chunk: int = CHUNK, attempts: int = 4,
+                   workers: int = 8) -> None:
+    """The SDK resets on multi-megabyte single-shot downloads, so fetch retried chunks in parallel."""
+    parts = remote + ".parts"
+    split = sandbox.process.exec(
+        f"rm -rf {parts}\nmkdir -p {parts}\nsplit -b {chunk} -d -a 4 {remote} {parts}/part-", timeout=600)
+    if split.exit_code != 0:
+        raise RuntimeError(f"Could not split {remote}: {split.result}")
+    listing = sandbox.process.exec(f"ls {parts}", timeout=120)
+    digest = sandbox.process.exec(f"sha256sum {remote}", timeout=600).result.split()[0]
+    names = listing.result.split()
+    local.parent.mkdir(parents=True, exist_ok=True)
+    temporary = local.with_name(local.name + ".partial")
+    hasher = hashlib.sha256()
+
+    def fetch(name: str) -> bytes:
+        for attempt in range(1, attempts + 1):
+            try:
+                data = sandbox.fs.download_file(f"{parts}/{name}")
+            except Exception as exc:
+                if attempt == attempts:
+                    raise RuntimeError(f"Could not download {name}: {exc}") from exc
+                print(f"[daytona] Retry {attempt} {name}: {exc}", file=sys.stderr, flush=True)
+                time.sleep(3 * attempt)
+            else:
+                if not data:
+                    raise RuntimeError(f"Empty download: {parts}/{name}")
+                return data
+
+    try:
+        with ThreadPoolExecutor(max_workers=workers) as pool, temporary.open("wb") as out:
+            # Bound memory: one pool.map call submits every part up front, so
+            # completed 1 MiB parts pile up while an early part is still in
+            # flight. Batches of workers * 2 keep the window small and ordered.
+            batch = workers * 2
+            index = 0
+            for offset in range(0, len(names), batch):
+                for data in pool.map(fetch, names[offset:offset + batch]):
+                    out.write(data)
+                    hasher.update(data)
+                    index += 1
+                    if index % 10 == 0 or index == len(names):
+                        print(f"[daytona] Downloaded {index}/{len(names)} chunks", flush=True)
+        if hasher.hexdigest() != digest:
+            raise RuntimeError(f"Checksum mismatch for {remote}")
+        replace_retry(temporary, local)
+    finally:
+        temporary.unlink(missing_ok=True)
+        try:
+            sandbox.process.exec(f"rm -rf {parts}", timeout=120)
+        except Exception as exc:
+            print(f"[daytona] Could not remove {parts}: {exc}", file=sys.stderr, flush=True)
+
+
+def extract_results(root: Path, archive: Path) -> None:
+    with tarfile.open(archive, "r:gz") as contents:
+        # No extractall: accept regular output files only, never links/traversal.
+        members = []
+        for member in contents:
+            name = PurePosixPath(member.name)
+            if (name.is_absolute() or ".." in name.parts or "\\" in member.name
+                    or ":" in member.name or not name.parts
+                    or not (name.parts[0] == "build" or member.name in ("index.html", "hyperframes.json"))
+                    or not (member.isdir() or member.isfile())):
+                raise ValueError(f"Unexpected preparation output: {member.name}")
+            target = root / member.name
+            if not target.resolve().is_relative_to(root.resolve()):
+                raise ValueError(f"Output escapes project: {member.name}")
+            members.append(member)
+        qa = root / "build/qa"
+        if qa.exists():
+            if qa.is_symlink() or getattr(qa, "is_junction", lambda: False)() or not qa.resolve().is_relative_to(root.resolve()):
+                raise ValueError("QA output directory must stay inside the project")
+            shutil.rmtree(qa)
+        for member in members:
+            if member.isdir():
+                continue
+            target = root / member.name
+            target.parent.mkdir(parents=True, exist_ok=True)
+            temporary = target.with_name(target.name + ".partial")
+            try:
+                with contents.extractfile(member) as source, temporary.open("wb") as destination:
+                    shutil.copyfileobj(source, destination)
+                replace_retry(temporary, target)
+            finally:
+                temporary.unlink(missing_ok=True)
 
 
 def retrieve_preparation(sandbox, root: Path, qa_format: str = "jpg") -> None:
@@ -161,38 +296,8 @@ def retrieve_preparation(sandbox, root: Path, qa_format: str = "jpg") -> None:
         raise RuntimeError(f"Could not package preparation reports: {result.result}")
     with tempfile.TemporaryDirectory(prefix="video-results-") as temp:
         archive = Path(temp) / "results.tar.gz"
-        download_atomic(sandbox, "/tmp/video-results.tar.gz", archive)
-        with tarfile.open(archive, "r:gz") as contents:
-            # No extractall: accept regular output files only, never links/traversal.
-            members = []
-            for member in contents:
-                name = PurePosixPath(member.name)
-                if (name.is_absolute() or ".." in name.parts or "\\" in member.name
-                        or ":" in member.name or not name.parts
-                        or not (name.parts[0] == "build" or member.name in ("index.html", "hyperframes.json"))
-                        or not (member.isdir() or member.isfile())):
-                    raise ValueError(f"Unexpected preparation output: {member.name}")
-                target = root / member.name
-                if not target.resolve().is_relative_to(root.resolve()):
-                    raise ValueError(f"Output escapes project: {member.name}")
-                members.append(member)
-            qa = root / "build/qa"
-            if qa.exists():
-                if qa.is_symlink() or getattr(qa, "is_junction", lambda: False)() or not qa.resolve().is_relative_to(root.resolve()):
-                    raise ValueError("QA output directory must stay inside the project")
-                shutil.rmtree(qa)
-            for member in members:
-                if member.isdir():
-                    continue
-                target = root / member.name
-                target.parent.mkdir(parents=True, exist_ok=True)
-                temporary = target.with_name(target.name + ".partial")
-                try:
-                    with contents.extractfile(member) as source, temporary.open("wb") as destination:
-                        shutil.copyfileobj(source, destination)
-                    temporary.replace(target)
-                finally:
-                    temporary.unlink(missing_ok=True)
+        download_large(sandbox, "/tmp/video-results.tar.gz", archive)
+        extract_results(root, archive)
 
 
 def commands(args, audio: str) -> str:
@@ -299,7 +404,7 @@ def execute(args, root: Path = ROOT, client=None) -> None:
             with tempfile.TemporaryDirectory(prefix="video-daytona-") as temp:
                 archive = Path(temp) / "inputs.tar.gz"
                 archive_inputs(root, files, archive)
-                sandbox.fs.upload_file(str(archive), "/tmp/video-inputs.tar.gz")
+                upload_large(sandbox, archive, "/tmp/video-inputs.tar.gz")
             run_remote(sandbox, f"mkdir -p {REMOTE}\ntar -xzf /tmp/video-inputs.tar.gz -C {REMOTE}", deadline)
         audio = ""
         if args.job == "transcribe":
@@ -318,7 +423,7 @@ def execute(args, root: Path = ROOT, client=None) -> None:
             temporary = destination.with_suffix(".json.partial")
             try:
                 temporary.write_bytes(data)
-                temporary.replace(destination)
+                replace_retry(temporary, destination)
             finally:
                 temporary.unlink(missing_ok=True)
             print(f"[daytona] Transcript: {destination}", flush=True)
@@ -345,7 +450,7 @@ def execute(args, root: Path = ROOT, client=None) -> None:
                 raise RuntimeError("Export dimensions do not match the composition")
             if abs(float(probe["format"]["duration"]) - project["duration"]) > 0.25:
                 raise RuntimeError("Export duration does not match the composition")
-            download_atomic(sandbox, f"{REMOTE}/renders/video.mp4", root / "renders/video.mp4")
+            download_large(sandbox, f"{REMOTE}/renders/video.mp4", root / "renders/video.mp4")
             print(f"[daytona] MP4: {root / 'renders/video.mp4'}", flush=True)
         else:
             print("[daytona] Remote toolchain check passed", flush=True)
@@ -403,7 +508,8 @@ def main() -> None:
     parser.add_argument("--model", default="large-v3-turbo")
     parser.add_argument("--language", default="en")
     parser.add_argument("--quality", choices=["draft", "looks", "delivery"], default="delivery")
-    parser.add_argument("--workers", type=positive, default=2)
+    parser.add_argument("--workers", type=positive, default=1,
+                        help="render workers (default: 1; multi-worker capture needs a large frame disk)")
     parser.add_argument("--qa-format", choices=["jpg", "png"], default="jpg",
                         help="native-resolution QA still format (default: high-quality jpg; png is lossless)")
     parser.add_argument("--include", action="append", default=[], metavar="PATH",

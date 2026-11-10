@@ -490,6 +490,7 @@
       fade(el.querySelector(".hero-sub"), at + 0.55, { dur: 0.7 });
       tl.fromTo(el.querySelector(".hero-mark"), { opacity: 0, x: 40, scale: 0.94 }, { opacity: 1, x: 0, scale: 1, duration: 1.2, ease: E.expo }, at + 0.15);
       tl.fromTo(el.querySelector(".hero-baseline"), { scaleX: 0 }, { scaleX: 1, duration: 1.1, ease: E.expo }, at + 0.3);
+      queueSFX("whoosh", at + 0.15, { vol: 0.5 });
       amb(el.querySelector(".hero-mark"), dur, at);
     },
 
@@ -500,6 +501,9 @@
       if (el.querySelector(".st-ghost")) tl.fromTo(el.querySelector(".st-ghost"), { opacity: 0, x: 40 }, { opacity: 1, x: 0, duration: 1.8, ease: E.expo }, at);
       var ticks = q(el, ".st-tickrow span");
       tl.fromTo(ticks, { scaleX: 0, opacity: 0 }, { scaleX: 1, opacity: 1, duration: 0.5, stagger: 0.07, ease: E.soft }, at + 0.6);
+      if (ticks.length) {
+        queueSFX("click", at + 0.6, { vol: 0.5 });
+      }
       amb(el.querySelector(".st-ghost"), dur, at);
     },
 
@@ -529,7 +533,7 @@
       words(el.querySelector(".dl-title"), at + 0.2, { stagger: 0.04, dur: 0.82 }, s);
       if (el.querySelector(".dl-sub")) fade(el.querySelector(".dl-sub"), at + 0.55, { dur: 0.7 });
       tl.fromTo(el.querySelector(".dl-rail span"), { scaleX: 0 }, { scaleX: 1, duration: 1.5, ease: "power2.inOut" }, at + 0.3);
-
+      queueSFX("whoosh", at + 0.35, { vol: 0.45 });
     },
 
     code: function (el, s, at, dur) {
@@ -637,9 +641,17 @@
       if (el.querySelector(".lg-sub")) fade(el.querySelector(".lg-sub"), at + 0.65, { dur: 0.7 });
       var pts = q(el, ".lg-pt");
       tl.fromTo(pts, { x: -14, opacity: 0 }, { x: 0, opacity: 1, duration: 0.5, stagger: 0.09, ease: E.soft }, at + 0.8);
+      var badRows = q(el, ".lg-row .is-bad");
+      if (badRows.length) {
+        var rowAt = at + 0.6;
+        tl.fromTo(badRows, { color: "rgba(255,255,255,0.7)" }, { color: "#ff3b5c", textShadow: "0 0 16px rgba(255,59,92,0.6)", duration: 0.3 }, rowAt);
+        queueSFX("thud", rowAt, { vol: 0.85 });
+      }
       var stamp = el.querySelector(".lg-stamp");
       if (stamp) {
-        tl.fromTo(stamp, { opacity: 0, scale: 2.1, rotate: -18 }, { opacity: 1, scale: 1, rotate: -7, duration: 0.34, ease: E.soft }, at + Math.min(dur * 0.55, 3.4));
+        var stampTime = at + Math.min(dur * 0.55, 3.4);
+        tl.fromTo(stamp, { opacity: 0, scale: 2.1, rotate: -18 }, { opacity: 1, scale: 1, rotate: -7, duration: 0.34, ease: E.soft }, stampTime);
+        queueSFX("thud", stampTime, { vol: 1.1 });
       }
 
     },
@@ -765,7 +777,17 @@
       tl.fromTo(el.querySelector(".stk-stack"), { rotateX: 14, rotateY: -8, y: 40, opacity: 0 }, { rotateX: 0, rotateY: 0, y: 0, opacity: 1, duration: 1.2, ease: E.expo, transformPerspective: 1600 }, at + 0.1);
       tl.fromTo(layers, { z: -80, opacity: 0 }, { z: 0, opacity: 1, duration: 0.7, stagger: 0.12, ease: E.out }, at + 0.25);
       var hot = el.querySelector(".stk-layer.is-hot");
-      if (hot) tl.fromTo(hot, { borderColor: "rgba(255,255,255,.11)" }, { borderColor: ac(s), duration: 0.4 }, at + 1.4);
+      if (hot) {
+        tl.fromTo(hot, { borderColor: "rgba(255,255,255,.11)" }, { borderColor: ac(s), boxShadow: "0 0 28px -2px " + ac(s), duration: 0.4 }, at + 1.4);
+        queueSFX("chime", at + 1.4, { vol: 0.75 });
+      }
+      var bad = el.querySelector(".stk-layer.is-bad");
+      if (bad) {
+        var badAt = at + 1.4;
+        tl.fromTo(bad, { borderColor: "rgba(255,255,255,.11)" }, { borderColor: "#ff3b5c", boxShadow: "0 0 32px -4px rgba(255,59,92,0.85)", duration: 0.4 }, badAt);
+        tl.fromTo(bad, { x: 8 }, { x: 0, duration: 0.25, ease: "power2.out" }, badAt);
+        queueSFX("thud", badAt, { vol: 1.0 });
+      }
     },
 
     quote: function (el, s, at, dur) {
@@ -773,6 +795,7 @@
       words(el.querySelector(".q-text"), at + 0.08, { stagger: 0.035, dur: 0.85 }, s);
       fade(el.querySelector(".q-by"), at + 0.6, { dur: 0.7 });
       tl.fromTo(el.querySelector(".q-line"), { scaleX: 0, transformOrigin: "left center" }, { scaleX: 1, duration: 0.8, ease: E.expo }, at + 0.5);
+      queueSFX("whoosh", at + 0.45, { vol: 0.45 });
     },
 
     matrix: function (el, s, at, dur) {
@@ -791,6 +814,9 @@
       tl.fromTo(cells, { opacity: 0, scale: 0.4 }, { opacity: 1, scale: 1, duration: 0.5, stagger: { each: 0.004, from: "center", grid: "auto" }, ease: "power2.out" }, at + 0.15);
       tl.fromTo(bad, { backgroundColor: "rgba(255,255,255,.055)" }, { backgroundColor: ac(s), duration: 0.3, stagger: { each: 0.012, from: "start" } }, at + 1.1);
       tl.fromTo(bad, { boxShadow: "0 0 0px rgba(0,0,0,0)" }, { boxShadow: "0 0 12px -2px " + ac(s), duration: 0.4, stagger: 0.012 }, at + 1.1);
+      if (bad.length) {
+        queueSFX("thud", at + 1.1, { vol: 0.95 });
+      }
       if (el.querySelector(".mx-count")) fade(el.querySelector(".mx-count"), at + 0.9, { dur: 0.6 });
     },
 
@@ -939,6 +965,7 @@
       words(el.querySelector(".out-title"), at + 0.1, { stagger: 0.05, dur: 0.9 }, s);
       if (el.querySelector(".out-sub")) fade(el.querySelector(".out-sub"), at + 0.5, { dur: 0.75 });
       fade(el.querySelector(".out-cta"), at + 0.85, { dur: 0.7 });
+      queueSFX("chime", at + 0.85, { vol: 0.85 });
       fade(el.querySelector(".out-ch"), at + 1.05, { dur: 0.7 });
     },
   };

@@ -402,8 +402,9 @@ def validate_scene(
         layers = listfield(meta, "layers", where, errors, required=True, lo=2, hi=6)
         items = check_items(layers, f"{where}.meta.layers", errors, ("t",), ("s",))
         for k, item in enumerate(items):
-            if "hot" in item and not isinstance(item["hot"], bool):
-                errors.append(f"{where}.meta.layers[{k}].hot: must be a boolean")
+            for bkey in ("hot", "bad"):
+                if bkey in item and not isinstance(item[bkey], bool):
+                    errors.append(f"{where}.meta.layers[{k}].{bkey}: must be a boolean")
 
     elif scene_type == "quote":
         if not subline:

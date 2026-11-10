@@ -541,7 +541,7 @@ A vertical stack of 2-6 layers.
 
 | Meta field | Type | Notes |
 |---|---|---|
-| `layers` | object[] | 2-6 items. Each item needs `t`; optional `s` and `hot`. |
+| `layers` | object[] | 2-6 items. Each item needs `t`; optional `s`, `hot`, and `bad`. `bad: true` triggers a red security alert pulse and impact recoil. |
 
 ### quote
 

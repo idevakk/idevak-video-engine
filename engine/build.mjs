@@ -565,7 +565,7 @@ const RENDER = {
         <div class="stk-stack">
           ${layers
             .map(
-              (l, k) => `<div class="stk-layer ${l.hot ? "is-hot" : ""}" data-k="${k}">
+              (l, k) => `<div class="stk-layer ${l.hot ? "is-hot" : ""} ${l.bad ? "is-bad" : ""}" data-k="${k}">
               <span class="stk-i">${String(layers.length - k).padStart(2, "0")}</span>
               <span class="stk-t">${esc(l.t)}</span>
               ${l.s ? `<span class="stk-s">${esc(l.s)}</span>` : ""}

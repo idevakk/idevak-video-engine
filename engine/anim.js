@@ -574,8 +574,16 @@
       tl.fromTo(el.querySelector(".diff-shell"), { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.8, ease: E.expo }, at + 0.05);
       var lines = q(el, ".df-line");
       tl.fromTo(lines, { x: -14, opacity: 0 }, { x: 0, opacity: 1, duration: 0.4, stagger: 0.075, ease: E.soft }, at + 0.2);
+      var del = q(el, ".df-del");
+      if (del.length) {
+        tl.fromTo(del, { backgroundColor: "rgba(255,59,92,0)" }, { backgroundColor: "rgba(255,59,92,0.1)", duration: 0.5, stagger: 0.08 }, at + 0.45);
+        queueSFX("click", at + 0.45, { vol: 0.7 });
+      }
       var add = q(el, ".df-add");
-      if (add.length) tl.fromTo(add, { backgroundColor: "rgba(45,212,191,0)" }, { backgroundColor: "rgba(45,212,191,0.09)", duration: 0.6, stagger: 0.1 }, at + 0.6);
+      if (add.length) {
+        tl.fromTo(add, { backgroundColor: "rgba(45,212,191,0)" }, { backgroundColor: "rgba(45,212,191,0.09)", duration: 0.6, stagger: 0.1 }, at + 0.6);
+        queueSFX("chime", at + 0.6, { vol: 0.65 });
+      }
       var call = el.querySelector(".code-callout");
       if (call) tl.fromTo(call, { clipPath: "inset(0 100% 0 0)" }, { clipPath: "inset(0 0% 0 0)", duration: 0.8, ease: "steps(24)" }, at + 0.55);
       if (el.querySelector(".code-sub")) fade(el.querySelector(".code-sub"), at + 0.8, { dur: 0.6 });
@@ -826,6 +834,17 @@
       if (shell) {
         tl.fromTo(shell, { y: 35, opacity: 0, scale: 0.96 }, { y: 0, opacity: 1, scale: 1, duration: 0.75, ease: E.expo }, at + 0.05);
       }
+      var urlNode = el.querySelector(".web-url");
+      if (urlNode) {
+        var urlText = urlNode.textContent || "";
+        var typeSteps = Math.max(8, Math.min(28, urlText.length));
+        tl.fromTo(urlNode,
+          { clipPath: "inset(0 100% 0 0)" },
+          { clipPath: "inset(0 0% 0 0)", duration: 0.55, ease: "steps(" + typeSteps + ")" },
+          at + 0.15
+        );
+        queueSFX("click", at + 0.15, { vol: 0.65 });
+      }
       var ps = q(el, ".web-p");
       if (ps.length) {
         tl.fromTo(ps, { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.6, stagger: 0.1, ease: E.soft }, at + 0.25);
@@ -854,10 +873,12 @@
       var card = el.querySelector(".meme-card");
       if (card) {
         tl.fromTo(card, { scale: 0.82, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.42, ease: E.soft }, at + 0.05);
+        queueSFX("thud", at + 0.08, { vol: 1.1 });
       }
       var glitch = el.querySelector(".meme-glitch-bar");
       if (glitch) {
         tl.fromTo(glitch, { y: 0, opacity: 0 }, { y: 340, opacity: 0.8, duration: 0.7, ease: "none", repeat: rep(dur, 0.7) }, at + 0.1);
+        queueSFX("decrypt", at + 0.1, { vol: 0.75 });
       }
       words(el.querySelector(".meme-caption"), at + 0.18, { stagger: 0.038, dur: 0.65 }, s);
       if (el.querySelector(".meme-sub")) fade(el.querySelector(".meme-sub"), at + 0.5, { dur: 0.6 });

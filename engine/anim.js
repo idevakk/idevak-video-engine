@@ -474,14 +474,17 @@
         tl.fromTo(title, { y: 12, opacity: 0.9 }, { y: 0, opacity: 1, duration: 0.9, ease: E.expo }, 0);
         if (sub) tl.fromTo(sub, { opacity: 0, y: 22 }, { opacity: 1, y: 0, duration: 0.9, ease: E.soft }, 0.85);
         tl.fromTo(chips, { opacity: 0, y: 18, scale: 0.94 }, { opacity: 1, y: 0, scale: 1, duration: 0.6, stagger: 0.08, ease: E.springSubtle }, 1.15);
+        if (chips.length) queueSFX("click", 1.15, { vol: 0.65 });
         return;
       }
       tl.fromTo(ghost, { scale: 1.12, opacity: 0, x: 70, rotateX: 6 }, { scale: 1, opacity: 1, x: 0, rotateX: 0, duration: 2.2, ease: E.expo, transformPerspective: 1200 }, at);
       tl.fromTo(rule, { scaleX: 0 }, { scaleX: 1, duration: 0.7, ease: E.expo }, at + 0.15);
+      queueSFX("whoosh", at + 0.15, { vol: 0.45 });
       fade(eyebrow, at + 0.2, { y: 14, dur: 0.6 });
       words(title, at + 0.35, { stagger: 0.048, dur: 0.9 }, s);
       fade(sub, at + 0.8, { dur: 0.8 });
       tl.fromTo(chips, { y: 18, opacity: 0, scale: 0.94 }, { y: 0, opacity: 1, scale: 1, duration: 0.6, stagger: 0.08, ease: E.springSubtle }, at + 1.05);
+      if (chips.length) queueSFX("click", at + 1.05, { vol: 0.65 });
     },
 
     hero: function (el, s, at, dur) {
@@ -943,6 +946,7 @@
       var statItems = q(el, ".mst-item");
       if (statItems.length) {
         tl.fromTo(statItems, { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.5, stagger: 0.08, ease: E.soft }, at + 0.6);
+        queueSFX("click", at + 0.6, { vol: 0.7 });
       }
     },
 
@@ -951,30 +955,38 @@
       fade(el.querySelector(".split-header"), at + 0.05, { y: 10, dur: 0.5 });
       var leftPane = el.querySelector(".split-left");
       var rightPane = el.querySelector(".split-right");
+      var curT = at + 0.25;
       if (leftPane) {
         tl.fromTo(leftPane, { x: -40, opacity: 0, scale: 0.96 }, { x: 0, opacity: 1, scale: 1, duration: 0.8, ease: E.expo }, at + 0.1);
         var lines = q(leftPane, ".sp-line");
-        var curT = at + 0.25;
         lines.forEach(function (l) {
           tl.fromTo(l, { opacity: 0, x: -10 }, { opacity: 1, x: 0, duration: 0.25, ease: E.soft }, curT);
           queueSFX("click", curT, { vol: 0.75 });
           curT += 0.22;
         });
       }
+      var pkt = el.querySelector(".sp-conn-pkt");
+      var shootAt = Math.max(at + 0.45, curT - 0.15);
+      if (pkt) {
+        tl.fromTo(pkt, { cx: 6, opacity: 0 }, { opacity: 1, duration: 0.15 }, shootAt);
+        tl.to(pkt, { cx: 40, duration: 0.35, ease: "power2.in" }, shootAt + 0.05);
+        queueSFX("unmask", shootAt + 0.05, { vol: 0.7 });
+      }
       if (rightPane) {
-        tl.fromTo(rightPane, { x: 40, opacity: 0, scale: 0.96 }, { x: 0, opacity: 1, scale: 1, duration: 0.8, ease: E.expo }, at + 0.25);
+        tl.fromTo(rightPane, { x: 40, opacity: 0, scale: 0.96 }, { x: 0, opacity: 1, scale: 1, duration: 0.8, ease: E.expo }, at + 0.2);
         var isBad = rightPane.classList.contains("is-bad");
+        var impactT = shootAt + 0.4;
         if (isBad) {
-          var impactT = at + Math.min(dur * 0.45, 1.8);
-          queueSFX("thud", impactT, { vol: 1.1 });
+          queueSFX("thud", impactT, { vol: 1.15 });
           tl.fromTo(rightPane,
             { boxShadow: "0 0 0px rgba(0,0,0,0)" },
-            { boxShadow: "0 0 36px -4px rgba(255,59,92,0.65)", duration: 0.4, yoyo: true, repeat: 3 },
+            { boxShadow: "0 0 38px -4px rgba(255,59,92,0.75)", duration: 0.4, yoyo: true, repeat: 3 },
             impactT
           );
+          tl.fromTo(rightPane, { x: 8 }, { x: 0, duration: 0.25, ease: "power2.out" }, impactT);
         }
         var pts = q(rightPane, ".sp-pt");
-        tl.fromTo(pts, { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.45, stagger: 0.1, ease: E.soft }, at + 0.6);
+        tl.fromTo(pts, { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.45, stagger: 0.1, ease: E.soft }, impactT + 0.15);
       }
       words(el.querySelector(".split-title"), at + 0.35, { stagger: 0.04, dur: 0.8 }, s);
       if (el.querySelector(".split-sub")) fade(el.querySelector(".split-sub"), at + 0.7, { dur: 0.65 });

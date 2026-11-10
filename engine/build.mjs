@@ -809,6 +809,13 @@ const RENDER = {
             ${leftLines.join("")}
           </div>
         </div>
+        <div class="split-connector">
+          <svg viewBox="0 0 48 48" class="split-conn-svg">
+            <path class="sp-conn-p" d="M 6 24 L 40 24"/>
+            <path class="sp-conn-a" d="M 30 16 L 40 24 L 30 32"/>
+            <circle class="sp-conn-pkt" cx="6" cy="24" r="4.5" fill="var(--ac)"/>
+          </svg>
+        </div>
         <div class="split-pane split-right ${isBad ? "is-bad" : "is-ok"}">
           <div class="split-pane-bar">
             <span class="split-pane-title">${esc(rightTitle)}</span>

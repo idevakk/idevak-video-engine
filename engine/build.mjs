@@ -29,8 +29,6 @@ const audio = project.audio || "content/voiceover.wav";
 const title = project.title || "Untitled video";
 const fontsCss = await read("engine/fonts.css");
 const CSS = await read("engine/style.css");
-const repochadCss = await read("engine/repochad.css");
-const styleName = project.style === "repochad" ? "repochad" : "classic";
 const JS = (await read("engine/anim.js")).replace('"__COMPOSITION_ID__"', JSON.stringify(compositionId));
 const require = createRequire(import.meta.url);
 const gsapJS = await fs.readFile(require.resolve("gsap/dist/gsap.min.js"), "utf8");
@@ -861,7 +859,6 @@ const html = `<!doctype html>
 }
 ${fontsCss}
 ${CSS}
-${repochadCss}
 body {
   width: ${width}px;
   height: ${height}px;
@@ -873,7 +870,7 @@ body {
 </style>
 </head>
 <body>
-<div id="root" class="${isPortrait ? "is-portrait" : "is-landscape"} style-${styleName}" data-style="${styleName}" data-aspect="${isPortrait ? "9:16" : "16:9"}" data-composition-id="${esc(compositionId)}" data-start="0" data-width="${width}" data-height="${height}" data-fps="${fps}" data-duration="${total.toFixed(3)}">
+<div id="root" class="${isPortrait ? "is-portrait" : "is-landscape"}" data-aspect="${isPortrait ? "9:16" : "16:9"}" data-composition-id="${esc(compositionId)}" data-start="0" data-width="${width}" data-height="${height}" data-fps="${fps}" data-duration="${total.toFixed(3)}">
   <div id="bg-base"></div>
   <div id="bg-grid"></div>
   <div id="bg-bloom"></div>

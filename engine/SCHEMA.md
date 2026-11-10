@@ -41,7 +41,6 @@ rather than copying arbitrary transcription segment pairs.
 | `cta` | string | no | Outro CTA label. Defaults to `Subscribe`. |
 | `ctaSub` | string | no | Outro CTA detail. Defaults to `More investigations`. |
 | `defaultAccent` | string | no | `#rrggbb` fallback when neither the scene nor its act has an accent. |
-| `style` | string | no | Visual style preset: `"classic"` (default) or `"repochad"`. When omitted or set to `"classic"`, generates the signature iDevak explainer style. When set to `"repochad"`, activates the information-dense developer-dark theme with macOS window chrome, benchmark comparison cards, and neon cyan accents. |
 | `aspect` | string | no | `"16:9"` (default, 1920x1080) or `"9:16"` (1080x1920 portrait for YouTube Shorts, Reels, TikTok). When set to `"9:16"`, the engine automatically configures 1080x1920 resolution, mobile safe zones, single-column stacked grids, and vertical mascot positioning. |
 | `aspectRatio` | string | no | Alias for `aspect` (e.g. `"9:16"`). |
 | `composition` | object | no | `{ "width": 1920, "height": 1080, "fps": 30 }` (or `{ "width": 1080, "height": 1920, "fps": 30 }` for 9:16). Automatically defaulted by `aspect`. |

@@ -591,6 +591,17 @@
       arr.forEach(function (a, i) {
         tl.fromTo(a, { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.3, ease: E.spring }, at + 0.9 + i * 0.1);
       });
+      var edgePackets = q(el, ".fl-packet");
+      edgePackets.forEach(function (pkt, idx) {
+        var cycle = Math.max(1.0, Math.min(2.0, dur * 0.28));
+        tl.fromTo(pkt, { cx: 4, opacity: 0 }, { opacity: 1, duration: 0.15 }, at + 0.8 + idx * 0.16);
+        tl.to(pkt, {
+          cx: 104,
+          duration: cycle,
+          ease: "none",
+          repeat: rep(dur - 0.9, cycle)
+        }, at + 0.85 + idx * 0.16);
+      });
       if (el.querySelector(".flow-cap")) fade(el.querySelector(".flow-cap"), at + 0.55, { dur: 0.7 });
       if (el.querySelector(".flow-sub")) fade(el.querySelector(".flow-sub"), at + 0.7, { dur: 0.6 });
       var railEl = el.querySelector(".flow-rail");
@@ -639,13 +650,20 @@
       }
       var bad = cells.filter(function (c) { return c.classList.contains("is-bad"); })[0];
       if (bad) {
-        tl.fromTo(bad, { opacity: 0.25 }, { opacity: 1, duration: 0.12, repeat: 4, yoyo: true }, at + Math.min(dur * 0.5, 3.2));
-        tl.to(bad, { boxShadow: "0 0 34px -2px rgba(255,92,114,.85)", duration: 0.4 }, at + Math.min(dur * 0.5, 3.2) + 0.7);
+        var badTime = at + Math.min(dur * 0.5, 3.2);
+        tl.fromTo(bad, { opacity: 0.25 }, { opacity: 1, duration: 0.12, repeat: 4, yoyo: true }, badTime);
+        tl.to(bad, { boxShadow: "0 0 34px -2px rgba(255,92,114,.85)", duration: 0.4 }, badTime + 0.7);
+        queueSFX("thud", badTime, { vol: 1.1 });
+        var shell = el.querySelector(".mem-shell");
+        if (shell) {
+          tl.fromTo(shell, { x: 5 }, { x: 0, duration: 0.25, ease: "power2.out" }, badTime);
+        }
       }
       var ptr = el.querySelector(".mem-ptr");
       if (ptr) {
         tl.fromTo(ptr, { opacity: 0, y: -10 }, { opacity: 1, y: 0, duration: 0.5 }, at + 1.0);
         draw(q(ptr, "path"), at + 1.05, { dur: 0.6 });
+        queueSFX("click", at + 1.05, { vol: 0.75 });
       }
       tl.fromTo(el.querySelector(".mem-side"), { x: 36, opacity: 0 }, { x: 0, opacity: 1, duration: 0.85, ease: E.expo }, at + 0.2);
       words(el.querySelector(".mem-title"), at + 0.35, { stagger: 0.04, dur: 0.8 }, s);
@@ -799,6 +817,17 @@
       tl.fromTo(nodes, { y: 30, opacity: 0, scale: 0.92 }, { y: 0, opacity: 1, scale: 1, duration: 0.6, stagger: 0.12, ease: E.springSubtle }, at + 0.15);
       var paths = q(el, ".cld-path");
       draw(paths, at + 0.35, { stagger: 0.15, dur: 0.6 });
+      var edgePackets = q(el, ".cld-packet");
+      edgePackets.forEach(function (pkt, idx) {
+        var cycle = Math.max(0.8, Math.min(1.8, dur * 0.22));
+        tl.fromTo(pkt, { cx: 4, opacity: 0 }, { opacity: 1, duration: 0.15 }, at + 0.6 + idx * 0.16);
+        tl.to(pkt, {
+          cx: 90,
+          duration: cycle,
+          ease: "none",
+          repeat: rep(dur - 0.7, cycle)
+        }, at + 0.65 + idx * 0.16);
+      });
       var packet = el.querySelector(".cloud-packet");
       if (packet) {
         tl.fromTo(packet, { x: 0, opacity: 0 }, { opacity: 1, duration: 0.2 }, at + 0.35);

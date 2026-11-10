@@ -300,6 +300,7 @@ body{width:var(--composition-width,1920px);height:var(--composition-height,1080p
 .flow-sub{margin-top:14px;font-size:25px;color:var(--dim)}
 .flow-rail{position:absolute;left:128px;right:128px;bottom:76px;height:1px;background:var(--line-soft)}
 .flow-packet{position:absolute;top:-3px;left:0;width:7px;height:7px;background:var(--ac);box-shadow:0 0 18px var(--ac);border-radius:50%}
+.fl-packet,.cld-packet{filter:drop-shadow(0 0 6px var(--ac));opacity:0}
 
 /* ============================================================ ledger */
 .lg-grid{display:grid;grid-template-columns:820px 1fr;gap:92px;height:100%;align-items:center}

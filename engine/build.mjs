@@ -385,7 +385,7 @@ const RENDER = {
       <div class="flow-row">
         ${nodes
           .map(
-            (n, k) => `${k ? '<div class="flow-link"><svg viewBox="0 0 120 24" preserveAspectRatio="none"><path class="fl-p" d="M0 12 H104"/><path class="fl-a" d="M96 5 L110 12 L96 19"/></svg></div>' : ""}
+            (n, k) => `${k ? '<div class="flow-link"><svg viewBox="0 0 120 24" preserveAspectRatio="none"><path class="fl-p" d="M0 12 H104"/><path class="fl-a" d="M96 5 L110 12 L96 19"/><circle class="fl-packet" cx="0" cy="12" r="3.5" fill="var(--ac)"/></svg></div>' : ""}
           <div class="flow-node ${n.hot ? "is-hot" : ""}" data-k="${k}">
             <div class="fn-k">${esc(n.k || "")}</div>
             <div class="fn-t">${esc(n.t || n.title || n.name || "")}</div>
@@ -685,7 +685,7 @@ const RENDER = {
         ${s.meta?.flow ? `<div class="cloud-flow">${esc(s.meta.flow)}</div>` : ""}
         <div class="cloud-nodes">
           ${nodes.map((n, k) => `
-            ${k > 0 ? `<div class="cloud-edge"><svg viewBox="0 0 100 24"><path d="M0 12 H90" class="cld-path"/><polygon points="90 8, 98 12, 90 16" class="cld-arrow"/></svg></div>` : ""}
+            ${k > 0 ? `<div class="cloud-edge"><svg viewBox="0 0 100 24"><path d="M0 12 H90" class="cld-path"/><polygon points="90 8, 98 12, 90 16" class="cld-arrow"/><circle class="cld-packet" cx="0" cy="12" r="3.5" fill="var(--ac)"/></svg></div>` : ""}
             <div class="cloud-node ${n.hot ? "is-hot" : ""} ${n.bad ? "is-bad" : ""}">
               <span class="cld-badge">${esc(n.kind || n.k || "NODE")}</span>
               <div class="cld-icon-box"><span class="cld-icon">${esc(n.icon || "☁")}</span></div>

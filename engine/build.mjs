@@ -127,8 +127,11 @@ function renderMascotOverlay(mascot) {
     return `<img class="m-ov-avatar m-ov-avatar-step" data-step-idx="${idx}" data-expr="${esc(stepExpr)}" src="${stepSrc}" alt="${esc(stepExpr)}" style="opacity:0;position:absolute;inset:6px;z-index:2;" />`;
   }).join("");
 
+  const hudTag = mascot.hud ? `<div class="m-ov-hud"><span class="m-ov-hud-scan"></span><span class="m-ov-hud-tag">${esc(mascot.hud)}</span></div>` : "";
+
   return `
   <div class="m-ov ${pos} m-expr-${expr}" data-expr="${esc(expr)}">
+    ${hudTag}
     ${bubble}
     <div class="m-ov-avatar-wrap">
       <div class="m-ov-ring"></div>
@@ -307,7 +310,8 @@ const RENDER = {
     const lines = rawLines.map((rawL, k) => {
       const l = typeof rawL === "string" ? { t: rawL } : (rawL || {});
       const kind = l.cls || l.k || (l.hot ? "hot" : "");
-      const cls = ["cl", l.key ? "is-key" : "", kind ? `cl-${kind}` : ""].filter(Boolean).join(" ");
+      const isBad = Boolean(l.bad || kind === "bad" || kind === "err");
+      const cls = ["cl", l.key ? "is-key" : "", isBad ? "is-bad cl-err" : "", kind ? `cl-${kind}` : ""].filter(Boolean).join(" ");
       let rawText = l.c ?? l.t ?? l.text ?? "";
       if (l.redact && !rawText.includes("~~")) {
         rawText = `~~${rawText}~~`;
@@ -386,7 +390,7 @@ const RENDER = {
         ${nodes
           .map(
             (n, k) => `${k ? '<div class="flow-link"><svg viewBox="0 0 120 24" preserveAspectRatio="none"><path class="fl-p" d="M0 12 H104"/><path class="fl-a" d="M96 5 L110 12 L96 19"/><circle class="fl-packet" cx="0" cy="12" r="3.5" fill="var(--ac)"/></svg></div>' : ""}
-          <div class="flow-node ${n.hot ? "is-hot" : ""}" data-k="${k}">
+          <div class="flow-node ${n.hot ? "is-hot" : ""} ${n.bad ? "is-bad" : ""}" data-k="${k}">
             <div class="fn-k">${esc(n.k || "")}</div>
             <div class="fn-t">${esc(n.t || n.title || n.name || "")}</div>
             ${n.s ? `<div class="fn-s">${esc(n.s)}</div>` : ""}

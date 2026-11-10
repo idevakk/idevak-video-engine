@@ -494,6 +494,19 @@ body{width:var(--composition-width,1920px);height:var(--composition-height,1080p
 
 .m-expr-panic .m-ov-avatar-wrap{border-color:#f59e0b;box-shadow:0 0 45px rgba(245,158,11,.7)}
 
+.m-ov-hud{position:absolute;top:-42px;right:14px;background:rgba(7,10,19,.94);border:1px solid var(--ac,#38bdf8);
+  box-shadow:0 0 16px -2px var(--ac,#38bdf8),inset 0 0 8px rgba(56,189,248,.2);padding:4px 12px;border-radius:5px;
+  font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:.08em;color:var(--ac,#38bdf8);
+  white-space:nowrap;pointer-events:none;z-index:30;text-transform:uppercase;overflow:hidden}
+.m-ov-hud-scan{position:absolute;top:0;left:0;right:0;height:1px;background:rgba(255,255,255,.8);opacity:.4}
+.pos-bl .m-ov-hud{right:auto;left:14px}
+
+.flow-node.is-bad{border-color:#ff3b5c !important;color:#ff3b5c !important;box-shadow:0 0 24px -2px rgba(255,59,92,.45)}
+.flow-node.is-bad .fn-k{color:#ff3b5c !important}
+.cl.is-bad,.cl-bad{background:rgba(255,59,92,.09) !important;border-left-color:#ff3b5c !important}
+.cl.is-bad .cl-n,.cl-bad .cl-n{color:#ff3b5c !important}
+.cmp-col.cmp-right{border-color:var(--ac);box-shadow:0 0 24px -4px rgba(56,189,248,.25)}
+
 
 /* ============================================================ webref */
 .web-shell{width:100%;max-width:1480px;background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.6);margin:20px 0 28px}

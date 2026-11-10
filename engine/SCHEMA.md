@@ -293,13 +293,13 @@ A source excerpt in a window, with a large callout below.
 
 | Meta field | Type | Notes |
 |---|---|---|
-| `lines` | object[] | 1-10 items. Each item needs `t`; optional `k` and `key`. |
+| `lines` | object[] | 1-10 items. Each item needs `t`; optional `k`, `key`, and `bad`. |
 | `file` | string | Window title. Defaults to `source`. |
 | `tag` | string | Small accent label in the window bar. |
 | `announce` | string | Large callout. Falls back to the headline. |
 
-Line `k` values: `code`, `hot`, `dim`, `str`, `com`, `fn`, `kw`, `key`, `err`,
-`out`. `key: true` or `k: "hot"` highlights the line.
+Line `k` values: `code`, `hot`, `dim`, `str`, `com`, `fn`, `kw`, `key`, `err`, `bad`,
+`out`. `key: true` or `k: "hot"` highlights the line. `bad: true` or `k: "err"` / `k: "bad"` highlights a critical error/bug with red alerting and impact sound.
 
 ### diff
 
@@ -358,8 +358,9 @@ A left-to-right causal chain of 2-4 nodes.
 
 | Meta field | Type | Notes |
 |---|---|---|
-| `nodes` | object[] | 2-4 items. Each item needs `t`; optional `k`, `s`, `hot`. |
-| `hot` | boolean | Marks the payoff node. |
+| `nodes` | object[] | 2-4 items. Each item needs `t`; optional `k`, `s`, `hot`, `bad`. |
+| `hot` | boolean | Marks the payoff node with act accent highlight. |
+| `bad` | boolean | Marks a failure/compromised node with red alert pulse and impact recoil. |
 
 ### ledger
 
@@ -859,6 +860,7 @@ You can add the iDevak mascot as an expressive reaction overlay to **ANY** scene
 |---|---|---|
 | `expression` | string | `neutral`, `talking`, `thinking`, `shocked`, `cool`, `happy`, `angry`, `sad`, `facepalm`, `pointing`, `panic`, `skeptical`. |
 | `bubble` | string | Optional speech bubble text that pops up with the mascot. |
+| `hud` | string | Optional holographic telemetry badge projecting from Devak's cyber visor (e.g. `CVE-2026-3841`, `SEV-1 ALERT`, `MEMORY CORRUPTION`). |
 | `position` | string | `bottom-right` (default) or `bottom-left`. |
 | `timeline` | object[] | Optional mid-scene expression and bubble changes: `[{ "at": 1.4, "expression": "shocked", "bubble": "Wait, what?!" }]`. Enables dynamic emotional arcs during narration. |
 

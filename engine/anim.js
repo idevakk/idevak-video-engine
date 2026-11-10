@@ -554,6 +554,12 @@
           tl.to(otherLines, { opacity: 0.45, duration: 0.45, ease: "power2.out" }, at + 1.3);
         }
       }
+      var badLines = q(el, ".cl.is-bad, .cl-bad");
+      badLines.forEach(function (bl) {
+        var badAt = at + 1.2;
+        tl.to(bl, { backgroundColor: "rgba(255,59,92,0.14)", duration: 0.35 }, badAt);
+        queueSFX("thud", badAt, { vol: 0.9 });
+      });
       var call = el.querySelector(".code-callout");
       if (call) tl.fromTo(call, { clipPath: "inset(0 100% 0 0)", opacity: 1 }, { clipPath: "inset(0 0% 0 0)", duration: 0.9, ease: "steps(28)" }, at + 0.5);
       if (el.querySelector(".code-sub")) fade(el.querySelector(".code-sub"), at + 0.7, { dur: 0.6 });
@@ -601,6 +607,13 @@
           ease: "none",
           repeat: rep(dur - 0.9, cycle)
         }, at + 0.85 + idx * 0.16);
+      });
+      var badFlowNodes = q(el, ".flow-node.is-bad");
+      badFlowNodes.forEach(function (bf) {
+        var badAt = at + Math.min(dur * 0.45, 2.5);
+        tl.to(bf, { borderColor: "#ff3b5c", boxShadow: "0 0 28px -2px rgba(255,59,92,0.85)", duration: 0.35 }, badAt);
+        tl.fromTo(bf, { x: 4 }, { x: 0, duration: 0.2, ease: "power2.out" }, badAt);
+        queueSFX("thud", badAt, { vol: 1.0 });
       });
       if (el.querySelector(".flow-cap")) fade(el.querySelector(".flow-cap"), at + 0.55, { dur: 0.7 });
       if (el.querySelector(".flow-sub")) fade(el.querySelector(".flow-sub"), at + 0.7, { dur: 0.6 });
@@ -682,6 +695,7 @@
         var t = at + 0.7 + (i / Math.max(1, evs.length)) * Math.max(1.6, dur * 0.46);
         tl.fromTo(e.querySelector(".tl-dot"), { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.35, ease: E.soft }, t);
         tl.fromTo(e.querySelector(".tl-card"), { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.55, ease: E.soft }, t + 0.06);
+        queueSFX("tick", t, { vol: 0.6 });
       });
       if (el.querySelector(".tl-sub")) fade(el.querySelector(".tl-sub"), at + 0.8, { dur: 0.7 });
     },
@@ -722,9 +736,22 @@
 
     compare: function (el, s, at, dur) {
       fade(el.querySelector(".eyebrow"), at, { y: 12, dur: 0.55 });
-      tl.fromTo(el.querySelector(".cmp-left"), { x: -54, opacity: 0 }, { x: 0, opacity: 0.72, duration: 0.9, ease: E.expo }, at + 0.02);
-      tl.fromTo(el.querySelector(".cmp-right"), { x: 54, opacity: 0 }, { x: 0, opacity: 1, duration: 0.9, ease: E.expo }, at + 0.06);
-      tl.fromTo(el.querySelector(".cmp-mid"), { scale: 0, opacity: 0, rotate: -45 }, { scale: 1, opacity: 1, rotate: 0, duration: 0.7, ease: E.soft }, at + 0.35);
+      var left = el.querySelector(".cmp-left");
+      var right = el.querySelector(".cmp-right");
+      var mid = el.querySelector(".cmp-mid");
+
+      tl.fromTo(left, { x: -48, opacity: 0 }, { x: 0, opacity: 0.72, duration: 0.75, ease: E.expo }, at + 0.02);
+      tl.fromTo(mid, { scale: 0, opacity: 0, rotate: -60 }, { scale: 1, opacity: 1, rotate: 0, duration: 0.55, ease: E.soft }, at + 0.22);
+      queueSFX("click", at + 0.25, { vol: 0.7 });
+
+      var slamTime = at + 0.32;
+      tl.fromTo(right, { y: 36, opacity: 0, scale: 1.04 }, { y: 0, opacity: 1, scale: 1, duration: 0.65, ease: E.springSubtle }, slamTime);
+      tl.to(right, { borderColor: ac(s), boxShadow: "0 0 32px -4px " + ac(s), duration: 0.4 }, slamTime + 0.18);
+      queueSFX("thud", slamTime + 0.05, { vol: 0.95 });
+      if (left) {
+        tl.fromTo(left, { x: 0 }, { x: -12, duration: 0.2, yoyo: true, repeat: 1, ease: "power2.out" }, slamTime + 0.05);
+      }
+
       tl.fromTo(q(el, ".cmp-p"), { y: 14, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, stagger: 0.09, ease: E.soft }, at + 0.6);
       if (el.querySelector(".cmp-cap")) fade(el.querySelector(".cmp-cap"), at + 0.7, { dur: 0.65 });
       if (el.querySelector(".cmp-sub")) fade(el.querySelector(".cmp-sub"), at + 0.82, { dur: 0.65 });
@@ -827,6 +854,13 @@
           ease: "none",
           repeat: rep(dur - 0.7, cycle)
         }, at + 0.65 + idx * 0.16);
+      });
+      var badCloudNodes = q(el, ".cloud-node.is-bad");
+      badCloudNodes.forEach(function (bn) {
+        var badAt = at + Math.min(dur * 0.45, 2.5);
+        tl.to(bn, { borderColor: "#ff3b5c", boxShadow: "0 0 28px -2px rgba(255,59,92,0.85)", duration: 0.35 }, badAt);
+        tl.fromTo(bn, { x: 4 }, { x: 0, duration: 0.2, ease: "power2.out" }, badAt);
+        queueSFX("thud", badAt, { vol: 1.0 });
       });
       var packet = el.querySelector(".cloud-packet");
       if (packet) {
@@ -995,6 +1029,12 @@
       var mBubble = mOv.querySelector(".m-ov-bubble");
       if (mBubble) {
         tl.fromTo(mBubble, { scale: 0.82, opacity: 0, y: 12 }, { scale: 1, opacity: 1, y: 0, duration: 0.45, ease: E.spring }, at + 0.28);
+      }
+      var mHud = mOv.querySelector(".m-ov-hud");
+      if (mHud) {
+        tl.fromTo(mHud, { scale: 0.72, opacity: 0, y: 12 }, { scale: 1, opacity: 1, y: 0, duration: 0.45, ease: E.springSubtle }, at + 0.28);
+        queueSFX("unmask", at + 0.28, { vol: 0.65 });
+        tl.to(mHud, { y: -3, duration: 2.0, ease: "sine.inOut", yoyo: true, repeat: rep(dur, 4.0) }, at + 0.75);
       }
       var mRing = mOv.querySelector(".m-ov-ring");
       if (mRing) {

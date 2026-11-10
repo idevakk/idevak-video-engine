@@ -1,0 +1,335 @@
+/* ============================================================
+   RepoChad Visual Style (Developer Dark Mode & Technical Aesthetic)
+   Cloned from RepoChad AI / GPU / LLM engineering video productions
+   ============================================================ */
+
+#root[data-style="repochad"],
+.style-repochad {
+  --ink: #f8fafc;
+  --dim: rgba(248, 250, 252, 0.65);
+  --faint: rgba(248, 250, 252, 0.35);
+  --line: rgba(255, 255, 255, 0.08);
+  --line-soft: rgba(255, 255, 255, 0.04);
+  --panel: rgba(18, 22, 32, 0.88);
+  --panel-card: #121620;
+  --ac: #00f2fe;        /* Neon Terminal Cyan */
+  --ac-alt: #10b981;    /* Matrix Emerald Green */
+  --ac-amber: #f59e0b;  /* Hardware / Dial Gold */
+  --ac-coral: #f43f5e;  /* Alert / VRAM Red */
+  --mono: "JetBrains Mono", ui-monospace, Menlo, Monaco, monospace;
+  --sans: "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  background: #08090c;
+  color: var(--ink);
+}
+
+/* ------------------------------------------------------------ Background */
+#root[data-style="repochad"] #bg-base {
+  background:
+    radial-gradient(100% 70% at 50% 0%, #0d1322 0%, transparent 68%),
+    radial-gradient(80% 60% at 85% 90%, #0a0e1a 0%, transparent 60%),
+    linear-gradient(180deg, #090b10 0%, #06070a 100%);
+}
+
+#root[data-style="repochad"] #bg-grid {
+  opacity: 0.45;
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+  background-size: 64px 64px, 64px 64px;
+  -webkit-mask-image: radial-gradient(110% 90% at 50% 45%, #000 20%, rgba(0,0,0,0.4) 60%, transparent 85%);
+  mask-image: radial-gradient(110% 90% at 50% 45%, #000 20%, rgba(0,0,0,0.4) 60%, transparent 85%);
+}
+
+#root[data-style="repochad"] #bg-bloom {
+  width: 1400px;
+  height: 1400px;
+  opacity: 0.10;
+  background: radial-gradient(circle, var(--ac) 0%, rgba(16, 185, 129, 0.15) 40%, transparent 70%);
+}
+
+/* ------------------------------------------------------------ Typography & Eyebrow */
+#root[data-style="repochad"] .eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ac);
+  background: rgba(0, 242, 254, 0.06);
+  border: 1px solid rgba(0, 242, 254, 0.22);
+  border-radius: 6px;
+  padding: 5px 14px;
+  margin-bottom: 24px;
+  box-shadow: 0 0 20px rgba(0, 242, 254, 0.10);
+}
+
+#root[data-style="repochad"] .eyebrow-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ac);
+  box-shadow: 0 0 10px var(--ac);
+}
+
+#root[data-style="repochad"] h1,
+#root[data-style="repochad"] h2,
+#root[data-style="repochad"] .headline {
+  letter-spacing: -0.035em;
+  font-weight: 700;
+}
+
+/* ------------------------------------------------------------ macOS Window Chrome */
+#root[data-style="repochad"] .terminal-stage,
+#root[data-style="repochad"] .code-box,
+#root[data-style="repochad"] .compare-wrap,
+#root[data-style="repochad"] .split-col,
+#root[data-style="repochad"] .webref-card {
+  position: relative;
+  background: var(--panel-card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  box-shadow: 0 28px 70px -15px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(16px);
+}
+
+/* Window Header Bar with Traffic Lights */
+.repochad-window-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 14px 14px 0 0;
+}
+
+.repochad-traffic-lights {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.repochad-dot {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.repochad-dot.red { background: #ff5f56; box-shadow: 0 0 6px rgba(255, 95, 86, 0.4); }
+.repochad-dot.yellow { background: #ffbd2e; box-shadow: 0 0 6px rgba(255, 189, 46, 0.4); }
+.repochad-dot.green { background: #27c93f; box-shadow: 0 0 6px rgba(39, 201, 63, 0.4); }
+
+.repochad-window-title {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--dim);
+  letter-spacing: 0.06em;
+  text-transform: lowercase;
+}
+
+.repochad-window-badge {
+  font-family: var(--mono);
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--ac);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* ------------------------------------------------------------ Benchmarks & Comparisons */
+#root[data-style="repochad"] .compare-col {
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 24px;
+}
+
+#root[data-style="repochad"] .compare-col.is-winner {
+  border-color: rgba(0, 242, 254, 0.35);
+  background: linear-gradient(180deg, rgba(0, 242, 254, 0.06) 0%, rgba(18, 22, 32, 0.95) 100%);
+  box-shadow: 0 0 35px rgba(0, 242, 254, 0.12);
+}
+
+#root[data-style="repochad"] .repochad-metric-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: rgba(16, 185, 129, 0.12);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+#root[data-style="repochad"] .repochad-metric-pill.vram {
+  background: rgba(245, 158, 11, 0.12);
+  color: #f59e0b;
+  border-color: rgba(245, 158, 11, 0.3);
+}
+
+/* ------------------------------------------------------------ Live Highlight Markers */
+#root[data-style="repochad"] .hl-ink {
+  background: linear-gradient(100deg, rgba(0, 242, 254, 0.35) 0%, rgba(56, 189, 248, 0.45) 70%, rgba(0, 242, 254, 0.30) 100%);
+  border-radius: 4px;
+  box-shadow: 0 0 14px rgba(0, 242, 254, 0.25);
+}
+
+/* ------------------------------------------------------------ Paper Snippets */
+#root[data-style="repochad"] .repochad-paper-card {
+  background: #ffffff;
+  color: #0f172a;
+  border-radius: 12px;
+  padding: 32px;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.85);
+  font-family: "Charter", "Georgia", serif;
+  line-height: 1.6;
+}
+
+#root[data-style="repochad"] .repochad-paper-card .paper-title {
+  font-family: var(--sans);
+  font-size: 20px;
+  font-weight: 800;
+  color: #020617;
+  margin-bottom: 12px;
+}
+
+#root[data-style="repochad"] .repochad-paper-card .paper-highlight {
+  background: rgba(253, 224, 71, 0.55);
+  padding: 2px 4px;
+  border-radius: 3px;
+}
+
+/* ============================================================
+   9:16 Portrait (Mobile Shorts / Reels / TikTok) Responsiveness
+   ============================================================ */
+#root[data-style="repochad"].is-portrait,
+.style-repochad.is-portrait,
+@media (max-aspect-ratio: 1/1) {
+  #root[data-style="repochad"] {
+    --portrait-pad-top: 160px;
+    --portrait-pad-bot: 240px;
+    --portrait-pad-x: 52px;
+  }
+
+  /* Safe padding for vertical screens */
+  #root[data-style="repochad"] .sc-in {
+    padding: 160px 52px 240px !important;
+  }
+
+  /* Scaled background bloom for 1080x1920 */
+  #root[data-style="repochad"] #bg-bloom {
+    width: 1080px;
+    height: 1080px;
+    top: 38%;
+  }
+
+  /* Eyebrows in portrait */
+  #root[data-style="repochad"] .eyebrow {
+    font-size: 13px;
+    padding: 5px 12px;
+    margin-bottom: 18px;
+  }
+
+  /* Containers & window cards full width in portrait */
+  #root[data-style="repochad"] .terminal-stage,
+  #root[data-style="repochad"] .code-box,
+  #root[data-style="repochad"] .compare-wrap,
+  #root[data-style="repochad"] .split-col,
+  #root[data-style="repochad"] .webref-card {
+    border-radius: 12px;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .repochad-window-bar {
+    padding: 10px 14px;
+  }
+
+  .repochad-window-title {
+    font-size: 12px;
+    max-width: 220px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .repochad-window-badge {
+    font-size: 10px;
+    padding: 2px 6px;
+  }
+
+  /* Compare Scene - vertical stacking for 9:16 mobile */
+  #root[data-style="repochad"] .cmp-stage {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    width: 100%;
+  }
+
+  #root[data-style="repochad"] .cmp-col {
+    width: 100% !important;
+    padding: 22px 20px;
+  }
+
+  #root[data-style="repochad"] .cmp-t {
+    font-size: 26px;
+    margin-bottom: 10px;
+  }
+
+  #root[data-style="repochad"] .cmp-p {
+    font-size: 16px;
+    padding-top: 6px;
+  }
+
+  #root[data-style="repochad"] .cmp-mid {
+    margin: 4px auto;
+    font-size: 14px;
+  }
+
+  /* Terminal & Code scenes in Portrait */
+  #root[data-style="repochad"] .tm-shell {
+    width: 100% !important;
+    margin: 0 auto;
+  }
+
+  #root[data-style="repochad"] .tm-body {
+    padding: 18px;
+    font-size: 16px;
+    line-height: 1.5;
+  }
+
+  #root[data-style="repochad"] .tm-title {
+    font-size: 38px;
+    line-height: 1.15;
+  }
+
+  #root[data-style="repochad"] .tm-sub {
+    font-size: 20px;
+    line-height: 1.4;
+    margin-top: 10px;
+  }
+
+  /* Paper / ArXiv card in Portrait */
+  #root[data-style="repochad"] .repochad-paper-card {
+    padding: 22px;
+    border-radius: 10px;
+  }
+
+  #root[data-style="repochad"] .repochad-paper-card .paper-title {
+    font-size: 18px;
+    line-height: 1.3;
+  }
+
+  /* Retention Subtitles Safe Zone */
+  #root[data-style="repochad"] .retention-subtitles {
+    bottom: 220px;
+  }
+}

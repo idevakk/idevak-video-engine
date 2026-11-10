@@ -83,6 +83,16 @@ secure credentials, commands, exported playback review, and cleanup details.
   actual playback, not just the alignment percentage. Use `meta.revealOn` for a
   number that is introduced partway through a statistic scene.
 
+### Visual Style Selection (Classic vs RepoChad)
+
+- **Default Style (`classic`)**: When generating a video, if the user has not defined any visual style, proceed with `classic` (set `"style": "classic"` or omit). The engine generates the signature iDevak explainer visual system.
+- **RepoChad Style (`repochad`)**: If explicitly mentioned to use `repochad` style, set `"style": "repochad"` in `content/video.json` and ensure the complete video is built in the `repochad` visual style:
+  * Information-dense developer dark mode (`#08090c` obsidian canvas).
+  * macOS window chrome with traffic light controls (`.repochad-traffic-lights`) and monospace breadcrumb headers (`llama.cpp // inference`).
+  * High-density benchmark comparison cards, latency counters (tokens/sec), and memory footprints (VRAM GB).
+  * Crisp research paper panels with glowing highlight ink (`.hl-marker`) and forensic redaction tape.
+  * Snappy spring animations (`power3.out`) and rapid terminal command streaming.
+
 ### Skills and browser readiness
 
 - Discover installed skills and callable tools first. Read the available

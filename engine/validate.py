@@ -511,6 +511,12 @@ def main() -> None:
         if not isinstance(accent, str) or not HEX.match(accent):
             errors.append("video.defaultAccent: must be a #rrggbb string")
 
+    style = data.get("style", "classic")
+    if style is not None and not isinstance(style, str):
+        errors.append("video.style: must be a string ('classic' or 'repochad')")
+    elif style not in ("classic", "repochad"):
+        warnings.append(f"video.style: unknown style '{style}'; supported values are 'classic' (default) and 'repochad'")
+
     audio = data.get("audio") or "content/voiceover.wav"
     if not isinstance(audio, str):
         errors.append("video.audio: must be a string")

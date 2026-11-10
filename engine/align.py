@@ -401,6 +401,7 @@ def main() -> None:
         "cta": video.get("cta") or "",
         "ctaSub": video.get("ctaSub") or "",
         "ghost": video.get("ghost") or "",
+        "style": video.get("style") or "classic",
         "aspect": "9:16" if is_portrait else "16:9",
         "isPortrait": is_portrait,
         "width": w,

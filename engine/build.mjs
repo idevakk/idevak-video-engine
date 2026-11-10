@@ -35,6 +35,62 @@ const gsapJS = await fs.readFile(require.resolve("gsap/dist/gsap.min.js"), "utf8
 
 const tok = (s) => esc(s).replace(/\n/g, "<br>");
 
+// ---------------------------------------------------------------- syntax highlighting
+const CODE_KW = new Set([
+  "const", "let", "var", "function", "return", "if", "else", "for", "while",
+  "class", "import", "export", "from", "async", "await", "new", "try", "catch",
+  "throw", "typedef", "struct", "int", "void", "char", "bool", "float", "double",
+  "unsigned", "size_t", "nullptr", "NULL", "true", "false", "static", "public", "private", "auto"
+]);
+
+function colorizeText(raw) {
+  const tokenRegex = /(\/\/.*$|\/\*[\s\S]*?\*\/|"(?:\\.|[^"\\\n])*"|'(?:\\.|[^'\\\n])*'|`(?:\\.|[^`\\])*`|\b(?:0x[0-9a-fA-F]+|\d+(?:\.\d+)?)\b|[a-zA-Z_$][a-zA-Z0-9_$]*|[^\s\w]+|\s+)/g;
+  let result = "";
+  let match;
+  while ((match = tokenRegex.exec(raw)) !== null) {
+    const m = match[0];
+    if (m.startsWith("//") || m.startsWith("/*")) {
+      result += `<span class="tok-com">${esc(m)}</span>`;
+    } else if ((m.startsWith('"') && m.endsWith('"')) || (m.startsWith("'") && m.endsWith("'")) || (m.startsWith("`") && m.endsWith("`"))) {
+      result += `<span class="tok-str">${esc(m)}</span>`;
+    } else if (/^(?:0x[0-9a-fA-F]+|\d+(?:\.\d+)?)$/.test(m)) {
+      result += `<span class="tok-num">${esc(m)}</span>`;
+    } else if (CODE_KW.has(m)) {
+      result += `<span class="tok-kw">${esc(m)}</span>`;
+    } else if (/^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(m)) {
+      const rest = raw.slice(tokenRegex.lastIndex);
+      if (/^\s*\(/.test(rest)) {
+        result += `<span class="tok-fn">${esc(m)}</span>`;
+      } else {
+        result += esc(m);
+      }
+    } else {
+      result += esc(m).replace(/\n/g, "<br>");
+    }
+  }
+  return result;
+}
+
+function colorizeCode(raw) {
+  if (!raw) return "";
+  const str = String(raw);
+  if (!str.includes("==") && !str.includes("~~")) {
+    return colorizeText(str);
+  }
+  const parts = str.split(/(==.*?==|~~.*?~~)/g);
+  return parts.map(part => {
+    if (part.startsWith("==") && part.endsWith("==") && part.length > 4) {
+      const inner = part.slice(2, -2);
+      return `<span class="hl-marker is-live-hl" data-hl="${esc(inner)}"><span class="hl-ink"></span><span class="hl-text">${colorizeText(inner)}</span></span>`;
+    }
+    if (part.startsWith("~~") && part.endsWith("~~") && part.length > 4) {
+      const inner = part.slice(2, -2);
+      return `<span class="forensic-redact is-live-redact" data-redact="${esc(inner)}"><span class="redact-tape"><span class="redact-laser"></span></span><span class="redact-text">${colorizeText(inner)}</span></span>`;
+    }
+    return colorizeText(part);
+  }).join("");
+}
+
 // ---------------------------------------------------------------- mascot assets
 const MASCOT_IMAGES = {};
 const MASCOT_EXPRS = [
@@ -61,14 +117,27 @@ function renderMascotOverlay(mascot) {
   const expr = rawExpr === "solved" ? "happy" : rawExpr;
   const pos = mascot.position === "bottom-left" ? "pos-bl" : "pos-br";
   const imgSrc = MASCOT_IMAGES[expr] || MASCOT_IMAGES["neutral"] || "";
-  const bubble = mascot.bubble ? `<div class="m-ov-bubble"><div class="m-ov-btext">${esc(mascot.bubble)}</div></div>` : "";
+  const bubble = mascot.bubble ? `<div class="m-ov-bubble"><div class="m-ov-btext">${esc(mascot.bubble)}</div></div>` : (Array.isArray(mascot.timeline) && mascot.timeline.some(t => t.bubble) ? `<div class="m-ov-bubble" style="display:none"><div class="m-ov-btext"></div></div>` : "");
+
+  const timeline = Array.isArray(mascot.timeline) ? mascot.timeline : [];
+  const extraImgs = timeline.map((step, idx) => {
+    const rawStepExpr = step.expression || "neutral";
+    const stepExpr = rawStepExpr === "solved" ? "happy" : rawStepExpr;
+    const stepSrc = MASCOT_IMAGES[stepExpr] || MASCOT_IMAGES["neutral"] || "";
+    return `<img class="m-ov-avatar m-ov-avatar-step" data-step-idx="${idx}" data-expr="${esc(stepExpr)}" src="${stepSrc}" alt="${esc(stepExpr)}" style="opacity:0;position:absolute;inset:6px;z-index:2;" />`;
+  }).join("");
+
+  const hudTag = mascot.hud ? `<div class="m-ov-hud"><span class="m-ov-hud-scan"></span><span class="m-ov-hud-tag">${esc(mascot.hud)}</span></div>` : "";
+
   return `
   <div class="m-ov ${pos} m-expr-${expr}" data-expr="${esc(expr)}">
+    ${hudTag}
     ${bubble}
     <div class="m-ov-avatar-wrap">
       <div class="m-ov-ring"></div>
       <div class="m-ov-glare"></div>
       <img class="m-ov-avatar" src="${imgSrc}" alt="${esc(expr)}" />
+      ${extraImgs}
     </div>
   </div>`;
 }
@@ -241,18 +310,16 @@ const RENDER = {
     const lines = rawLines.map((rawL, k) => {
       const l = typeof rawL === "string" ? { t: rawL } : (rawL || {});
       const kind = l.cls || l.k || (l.hot ? "hot" : "");
-      const cls = ["cl", l.key ? "is-key" : "", kind ? `cl-${kind}` : ""].filter(Boolean).join(" ");
-      let content = tok(l.c ?? l.t ?? l.text ?? "");
-      if (l.redact || content.includes("~~")) {
-        if (l.redact && !content.includes("~~")) {
-          content = `<span class="forensic-redact is-live-redact" data-redact="${esc(l.c)}"><span class="redact-tape"><span class="redact-laser"></span></span><span class="redact-text">${content}</span></span>`;
-        } else {
-          content = content.replace(/~~(.*?)~~/g, (_, inner) => `<span class="forensic-redact is-live-redact" data-redact="${esc(inner)}"><span class="redact-tape"><span class="redact-laser"></span></span><span class="redact-text">${inner}</span></span>`);
-        }
+      const isBad = Boolean(l.bad || kind === "bad" || kind === "err");
+      const cls = ["cl", l.key ? "is-key" : "", isBad ? "is-bad cl-err" : "", kind ? `cl-${kind}` : ""].filter(Boolean).join(" ");
+      let rawText = l.c ?? l.t ?? l.text ?? "";
+      if (l.redact && !rawText.includes("~~")) {
+        rawText = `~~${rawText}~~`;
       }
-      if (l.hl || content.includes("==")) {
-        content = content.replace(/==(.*?)==/g, (_, inner) => `<span class="hl-marker is-live-hl" data-hl="${esc(inner)}"><span class="hl-ink"></span><span class="hl-text">${inner}</span></span>`);
+      if (l.hl && !rawText.includes("==")) {
+        rawText = `==${rawText}==`;
       }
+      const content = colorizeCode(rawText);
       return `<div class="${cls}" data-k="${k}"><span class="cl-n">${l.n ?? k + 1}</span><span class="cl-c">${content}</span></div>`;
     });
     const callout = s.meta?.announce || s.headline || s.subline || "";
@@ -266,7 +333,10 @@ const RENDER = {
     ${eyebrow(s)}
     <div class="code-shell">
       <div class="code-bar">
-        <span class="code-file">${esc(file)}</span>
+        <div style="display:flex;align-items:center;gap:14px">
+          <div class="mac-dots"><span></span><span></span><span></span></div>
+          <span class="code-file">${esc(file)}</span>
+        </div>
         ${tag ? `<span class="code-tag">${esc(tag)}</span>` : ""}
       </div>
       <div class="code-body">${lines.join("")}</div>
@@ -286,7 +356,7 @@ const RENDER = {
       const kind = l.k || l.kind || (l.add ? "add" : l.del ? "del" : "ctx");
       const sig = kind === "add" ? "+" : kind === "del" ? "-" : " ";
       let text = l.t ?? l.text ?? l.c ?? "";
-      return `<div class="df-line df-${kind}" data-k="${k}"><span class="df-sig">${sig}</span><span class="df-t">${tok(text)}</span></div>`;
+      return `<div class="df-line df-${kind}" data-k="${k}"><span class="df-sig">${sig}</span><span class="df-t">${colorizeCode(text)}</span></div>`;
     });
     const file = s.meta?.file || "source";
     const ver = s.meta?.ver || "";
@@ -298,7 +368,13 @@ const RENDER = {
     return `
     ${eyebrow(s)}
     <div class="diff-shell">
-      <div class="diff-head"><span class="df-file">${esc(file)}</span>${ver ? `<span class="df-ver">${esc(ver)}</span>` : ""}</div>
+      <div class="diff-head">
+        <div style="display:flex;align-items:center;gap:14px">
+          <div class="mac-dots"><span></span><span></span><span></span></div>
+          <span class="df-file">${esc(file)}</span>
+        </div>
+        ${ver ? `<span class="df-ver">${esc(ver)}</span>` : ""}
+      </div>
       <div class="diff-body">${lines.join("")}</div>
     </div>
     ${foot}`;
@@ -313,8 +389,8 @@ const RENDER = {
       <div class="flow-row">
         ${nodes
           .map(
-            (n, k) => `${k ? '<div class="flow-link"><svg viewBox="0 0 120 24" preserveAspectRatio="none"><path class="fl-p" d="M0 12 H104"/><path class="fl-a" d="M96 5 L110 12 L96 19"/></svg></div>' : ""}
-          <div class="flow-node ${n.hot ? "is-hot" : ""}" data-k="${k}">
+            (n, k) => `${k ? '<div class="flow-link"><svg viewBox="0 0 120 24" preserveAspectRatio="none"><path class="fl-p" d="M0 12 H104"/><path class="fl-a" d="M96 5 L110 12 L96 19"/><circle class="fl-packet" cx="0" cy="12" r="3.5" fill="var(--ac)"/></svg></div>' : ""}
+          <div class="flow-node ${n.hot ? "is-hot" : ""} ${n.bad ? "is-bad" : ""}" data-k="${k}">
             <div class="fn-k">${esc(n.k || "")}</div>
             <div class="fn-t">${esc(n.t || n.title || n.name || "")}</div>
             ${n.s ? `<div class="fn-s">${esc(n.s)}</div>` : ""}
@@ -436,7 +512,10 @@ const RENDER = {
     ${eyebrow(s)}
     <div class="tm-shell">
       <div class="tm-bar">
-        <span>${esc(s.meta?.host || "terminal@idevak")}</span>
+        <div style="display:flex;align-items:center;gap:14px">
+          <div class="mac-dots"><span></span><span></span><span></span></div>
+          <span>${esc(s.meta?.host || "terminal@idevak")}</span>
+        </div>
         <span class="tm-led"></span>
       </div>
       <div class="tm-body">
@@ -486,7 +565,7 @@ const RENDER = {
         <div class="stk-stack">
           ${layers
             .map(
-              (l, k) => `<div class="stk-layer ${l.hot ? "is-hot" : ""}" data-k="${k}">
+              (l, k) => `<div class="stk-layer ${l.hot ? "is-hot" : ""} ${l.bad ? "is-bad" : ""}" data-k="${k}">
               <span class="stk-i">${String(layers.length - k).padStart(2, "0")}</span>
               <span class="stk-t">${esc(l.t)}</span>
               ${l.s ? `<span class="stk-s">${esc(l.s)}</span>` : ""}
@@ -610,7 +689,7 @@ const RENDER = {
         ${s.meta?.flow ? `<div class="cloud-flow">${esc(s.meta.flow)}</div>` : ""}
         <div class="cloud-nodes">
           ${nodes.map((n, k) => `
-            ${k > 0 ? `<div class="cloud-edge"><svg viewBox="0 0 100 24"><path d="M0 12 H90" class="cld-path"/><polygon points="90 8, 98 12, 90 16" class="cld-arrow"/></svg></div>` : ""}
+            ${k > 0 ? `<div class="cloud-edge"><svg viewBox="0 0 100 24"><path d="M0 12 H90" class="cld-path"/><polygon points="90 8, 98 12, 90 16" class="cld-arrow"/><circle class="cld-packet" cx="0" cy="12" r="3.5" fill="var(--ac)"/></svg></div>` : ""}
             <div class="cloud-node ${n.hot ? "is-hot" : ""} ${n.bad ? "is-bad" : ""}">
               <span class="cld-badge">${esc(n.kind || n.k || "NODE")}</span>
               <div class="cld-icon-box"><span class="cld-icon">${esc(n.icon || "☁")}</span></div>
@@ -686,6 +765,73 @@ const RENDER = {
       <div class="out-ch">${esc(channel)}</div>
     </div>`;
   },
+
+  split(s) {
+    const left = s.meta?.left || {};
+    const right = s.meta?.right || {};
+    const tag = s.meta?.tag || "INCIDENT INVESTIGATION";
+    const leftTitle = left.title || "ATTACK VECTOR";
+    const leftBadge = left.badge || "SHELL";
+    const leftLines = (left.lines || []).map((rawL, k) => {
+      const l = typeof rawL === "string" ? { t: rawL } : (rawL || {});
+      const kind = l.k || (l.cmd ? "cmd" : l.err ? "err" : "out");
+      const pfx = kind === "cmd" ? "$" : ">";
+      return `<div class="sp-line sp-${kind}" data-k="${k}"><span class="sp-pfx">${pfx}</span><span class="sp-t">${colorizeCode(l.t || l.cmd || "")}</span></div>`;
+    });
+
+    const rightTitle = right.title || "TARGET IMPACT";
+    const rightStatus = right.status || "COMPROMISED";
+    const isBad = !right.ok && (right.bad || /compromised|breached|corrupted|vulnerable|fail/i.test(rightStatus));
+    const rightPts = (right.pts || []).map((p, k) => `
+      <div class="sp-pt" data-k="${k}">
+        <span class="sp-pt-dot ${isBad ? "is-bad" : "is-ok"}"></span>
+        <span>${esc(p)}</span>
+      </div>
+    `).join("");
+
+    return `
+    <div class="split-stage">
+      ${eyebrow(s)}
+      <div class="split-header">
+        <span class="split-tag">${esc(tag)}</span>
+        <span class="split-label">DUAL-PANE FORENSIC INVESTIGATION</span>
+      </div>
+      <div class="split-grid">
+        <div class="split-pane split-left">
+          <div class="split-pane-bar">
+            <div style="display:flex;align-items:center;gap:12px">
+              <div class="mac-dots"><span></span><span></span><span></span></div>
+              <span class="split-pane-title">${esc(leftTitle)}</span>
+            </div>
+            <span class="split-pane-badge">${esc(leftBadge)}</span>
+          </div>
+          <div class="split-pane-body split-term-body">
+            ${leftLines.join("")}
+          </div>
+        </div>
+        <div class="split-connector">
+          <svg viewBox="0 0 48 48" class="split-conn-svg">
+            <path class="sp-conn-p" d="M 6 24 L 40 24"/>
+            <path class="sp-conn-a" d="M 30 16 L 40 24 L 30 32"/>
+            <circle class="sp-conn-pkt" cx="6" cy="24" r="4.5" fill="var(--ac)"/>
+          </svg>
+        </div>
+        <div class="split-pane split-right ${isBad ? "is-bad" : "is-ok"}">
+          <div class="split-pane-bar">
+            <span class="split-pane-title">${esc(rightTitle)}</span>
+            <span class="split-status-badge ${isBad ? "is-bad" : "is-ok"}">${esc(rightStatus)}</span>
+          </div>
+          <div class="split-pane-body split-diag-body">
+            ${rightPts}
+          </div>
+        </div>
+      </div>
+      <div class="split-foot">
+        ${s.headline ? `<h2 class="split-title">${splitWords(s.headline, s)}</h2>` : ""}
+        ${s.subline ? `<p class="split-sub">${esc(s.subline)}</p>` : ""}
+      </div>
+    </div>`;
+  },
 };
 
 // ---------------------------------------------------------------- document
@@ -695,6 +841,9 @@ const body = scenes.map(renderScene).join("\n");
 const evidenceVideos = scenes.map((s, i) => s.type === "hero" && s.meta?.video
   ? `<video id="evidence-video-${i + 1}" class="clip evidence-video" src="${esc(s.meta.video)}" poster="${esc(s.meta.image || s.meta.poster || "")}" data-start="${s.start.toFixed(3)}" data-duration="${(s.end - s.start).toFixed(3)}" data-media-start="${Number(s.meta.mediaStart || 0)}" data-track-index="4" muted playsinline preload="metadata"></video>`
   : "").join("\n");
+
+const hasSubtitles = Boolean(project.subtitles || project.karaoke);
+const bgm = project.bgm || project.music || null;
 
 const html = `<!doctype html>
 <html lang="en">
@@ -737,6 +886,8 @@ body {
   <div id="cut-rail"></div>
   ${body}
   ${evidenceVideos}
+  ${hasSubtitles ? `<div id="retention-subtitles" class="retention-subtitles"><div class="retention-sub-track"></div></div>` : ""}
+  ${bgm ? `<audio id="bgm" src="${esc(bgm)}" data-start="0" data-duration="${total.toFixed(3)}" data-track-index="5" data-volume="0.18"></audio>` : ""}
   <audio id="vo" src="${esc(audio)}" data-start="0" data-duration="${total.toFixed(3)}" data-track-index="1" data-volume="1"></audio>
   <audio id="sfx" src="build/sfx_track.wav" data-start="0" data-duration="${total.toFixed(3)}" data-track-index="3" data-volume="1"></audio>
 </div>
@@ -754,6 +905,7 @@ window.__SCENES__ = ${JSON.stringify(scenes.map((s) => ({
   hasEvidence: Boolean(s.meta?.image || s.meta?.video || s.meta?.logos),
   revealTime: s.revealTime ?? null,
   mascotExpr: s.mascot?.expression || (s.type === "mascot" ? (s.meta?.expression || "neutral") : null),
+  mascotTimeline: s.mascot?.timeline || null,
   wordTimings: s.wordTimings || []
 })))};
 window.__TOTAL__ = ${total.toFixed(3)};

@@ -40,8 +40,9 @@ TYPES = {
     "meme",
     "cloud",
     "mascot",
+    "split",
 }
-CODE_KINDS = {"code", "hot", "dim", "str", "com", "fn", "kw", "key", "err", "out"}
+CODE_KINDS = {"code", "hot", "dim", "str", "com", "fn", "kw", "key", "err", "bad", "out"}
 DIFF_KINDS = {"ctx", "add", "del"}
 TERM_KINDS = {"cmd", "out", "err"}
 MASCOT_EXPRESSIONS = {"neutral", "talking", "thinking", "shocked", "cool", "happy", "angry", "sad", "facepalm", "pointing", "panic", "skeptical", "solved"}
@@ -194,9 +195,23 @@ def validate_scene(
             if expr is not None and expr not in MASCOT_EXPRESSIONS:
                 warnings.append(f"{where}.mascot.expression: unknown {expr!r} (expected: {', '.join(sorted(MASCOT_EXPRESSIONS))})")
             sfield(m, "bubble", f"{where}.mascot", errors, max_len=180)
+            sfield(m, "hud", f"{where}.mascot", errors, max_len=80)
             pos = m.get("position")
             if pos is not None and pos not in {"bottom-right", "bottom-left"}:
                 warnings.append(f"{where}.mascot.position: unknown {pos!r} (expected bottom-right or bottom-left)")
+            tl = m.get("timeline")
+            if tl is not None:
+                if not isinstance(tl, list):
+                    errors.append(f"{where}.mascot.timeline: must be a list of steps")
+                else:
+                    for idx, step in enumerate(tl):
+                        if not isinstance(step, dict):
+                            errors.append(f"{where}.mascot.timeline[{idx}]: must be an object")
+                        else:
+                            st_expr = step.get("expression")
+                            if st_expr is not None and st_expr not in MASCOT_EXPRESSIONS:
+                                warnings.append(f"{where}.mascot.timeline[{idx}].expression: unknown {st_expr!r}")
+                            sfield(step, "bubble", f"{where}.mascot.timeline[{idx}]", errors, max_len=180)
 
     if headline:
         soft = 120 if scene_type in {"quote", "webref"} else 64
@@ -299,8 +314,9 @@ def validate_scene(
             kind = item.get("k")
             if kind is not None and kind not in CODE_KINDS:
                 warnings.append(f"{where}.meta.lines[{k}].k: unknown kind {kind!r}")
-            if "key" in item and not isinstance(item["key"], bool):
-                errors.append(f"{where}.meta.lines[{k}].key: must be a boolean")
+            for bkey in ("key", "bad"):
+                if bkey in item and not isinstance(item[bkey], bool):
+                    errors.append(f"{where}.meta.lines[{k}].{bkey}: must be a boolean")
         for key in ("file", "tag", "announce"):
             sfield(meta, key, where, errors)
 
@@ -317,8 +333,9 @@ def validate_scene(
         nodes = listfield(meta, "nodes", where, errors, required=True, lo=2, hi=4)
         items = check_items(nodes, f"{where}.meta.nodes", errors, ("t",), ("k", "s"))
         for k, item in enumerate(items):
-            if "hot" in item and not isinstance(item["hot"], bool):
-                errors.append(f"{where}.meta.nodes[{k}].hot: must be a boolean")
+            for bkey in ("hot", "bad"):
+                if bkey in item and not isinstance(item[bkey], bool):
+                    errors.append(f"{where}.meta.nodes[{k}].{bkey}: must be a boolean")
 
     elif scene_type == "ledger":
         rows = listfield(meta, "rows", where, errors, required=True, lo=1, hi=6)
@@ -385,8 +402,9 @@ def validate_scene(
         layers = listfield(meta, "layers", where, errors, required=True, lo=2, hi=6)
         items = check_items(layers, f"{where}.meta.layers", errors, ("t",), ("s",))
         for k, item in enumerate(items):
-            if "hot" in item and not isinstance(item["hot"], bool):
-                errors.append(f"{where}.meta.layers[{k}].hot: must be a boolean")
+            for bkey in ("hot", "bad"):
+                if bkey in item and not isinstance(item[bkey], bool):
+                    errors.append(f"{where}.meta.layers[{k}].{bkey}: must be a boolean")
 
     elif scene_type == "quote":
         if not subline:
@@ -448,6 +466,21 @@ def validate_scene(
             for k, item in enumerate(items):
                 if "hot" in item and not isinstance(item["hot"], (bool, str)):
                     errors.append(f"{where}.meta.stats[{k}].hot: must be boolean or string")
+
+    elif scene_type == "split":
+        left = objectfield(meta, "left", where, errors, required=True)
+        right = objectfield(meta, "right", where, errors, required=True)
+        sfield(meta, "tag", where, errors)
+        if left:
+            sfield(left, "title", f"{where}.meta.left", errors)
+            sfield(left, "badge", f"{where}.meta.left", errors)
+            lines = listfield(left, "lines", f"{where}.meta.left", errors, lo=1, hi=8)
+            check_items(lines, f"{where}.meta.left.lines", errors, ("t",), ("k", "cmd"))
+        if right:
+            sfield(right, "title", f"{where}.meta.right", errors)
+            sfield(right, "status", f"{where}.meta.right", errors)
+            pts = listfield(right, "pts", f"{where}.meta.right", errors, hi=4)
+            check_str_array(pts, f"{where}.meta.right.pts", errors)
 
 
 def main() -> None:

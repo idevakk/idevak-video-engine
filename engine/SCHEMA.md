@@ -45,6 +45,7 @@ rather than copying arbitrary transcription segment pairs.
 | `aspectRatio` | string | no | Alias for `aspect` (e.g. `"9:16"`). |
 | `composition` | object | no | `{ "width": 1920, "height": 1080, "fps": 30 }` (or `{ "width": 1080, "height": 1920, "fps": 30 }` for 9:16). Automatically defaulted by `aspect`. |
 | `acts` | array | no | Act objects. Used for eyebrow fallback and accent fallback. |
+| `subtitles` | boolean | no | `false` by default. When `true` (or `\"karaoke\": true`), renders a bottom speech-synced karaoke caption rail bound to wordTimings for mobile & retention. |
 | `scenes` | array | yes | Non-empty. Each item is one visual scene. |
 
 ## Aspect Ratios & Formats (16:9 Landscape vs 9:16 Portrait)
@@ -292,13 +293,13 @@ A source excerpt in a window, with a large callout below.
 
 | Meta field | Type | Notes |
 |---|---|---|
-| `lines` | object[] | 1-10 items. Each item needs `t`; optional `k` and `key`. |
+| `lines` | object[] | 1-10 items. Each item needs `t`; optional `k`, `key`, and `bad`. |
 | `file` | string | Window title. Defaults to `source`. |
 | `tag` | string | Small accent label in the window bar. |
 | `announce` | string | Large callout. Falls back to the headline. |
 
-Line `k` values: `code`, `hot`, `dim`, `str`, `com`, `fn`, `kw`, `key`, `err`,
-`out`. `key: true` or `k: "hot"` highlights the line.
+Line `k` values: `code`, `hot`, `dim`, `str`, `com`, `fn`, `kw`, `key`, `err`, `bad`,
+`out`. `key: true` or `k: "hot"` highlights the line. `bad: true` or `k: "err"` / `k: "bad"` highlights a critical error/bug with red alerting and impact sound.
 
 ### diff
 
@@ -357,8 +358,9 @@ A left-to-right causal chain of 2-4 nodes.
 
 | Meta field | Type | Notes |
 |---|---|---|
-| `nodes` | object[] | 2-4 items. Each item needs `t`; optional `k`, `s`, `hot`. |
-| `hot` | boolean | Marks the payoff node. |
+| `nodes` | object[] | 2-4 items. Each item needs `t`; optional `k`, `s`, `hot`, `bad`. |
+| `hot` | boolean | Marks the payoff node with act accent highlight. |
+| `bad` | boolean | Marks a failure/compromised node with red alert pulse and impact recoil. |
 
 ### ledger
 
@@ -539,7 +541,7 @@ A vertical stack of 2-6 layers.
 
 | Meta field | Type | Notes |
 |---|---|---|
-| `layers` | object[] | 2-6 items. Each item needs `t`; optional `s` and `hot`. |
+| `layers` | object[] | 2-6 items. Each item needs `t`; optional `s`, `hot`, and `bad`. `bad: true` triggers a red security alert pulse and impact recoil. |
 
 ### quote
 
@@ -790,6 +792,48 @@ A dedicated spotlight scene featuring Devak (the iDevak mascot) delivering a tec
 | `badge` | string | HUD badge tag (e.g. `iDevak // ANALYSIS`). |
 | `stats` | object[] | Up to 4 telemetry chips with `label` and `val`, plus optional `hot: true`. |
 
+### split
+
+Dual-pane forensic investigation layout: live terminal/shell on the left and target component/impact on the right.
+
+```json
+{
+  "type": "split",
+  "narration": "Sending the crafted payload immediately triggers an unhandled null pointer dereference in the authentication worker.",
+  "eyebrow": "EXPLOIT AUTOPSY",
+  "headline": "Zero-Day Trigger in the Auth Worker",
+  "subline": "Payload injection causes immediate crash of the session daemon.",
+  "meta": {
+    "tag": "FORENSIC RECONSTRUCTION",
+    "left": {
+      "title": "EXPLOIT PAYLOAD",
+      "badge": "CURL / BASH",
+      "lines": [
+        { "t": "curl -X POST https://api.internal/v1/auth \\", "k": "cmd" },
+        { "t": "  -H 'X-Token: 0xDEADBEEF_OVERFLOW' \\", "k": "cmd" },
+        { "t": "  -d '{\"user\":\"admin\",\"len\":-1}'", "k": "cmd" },
+        { "t": "HTTP/1.1 502 Bad Gateway (Connection Reset)", "k": "err" }
+      ]
+    },
+    "right": {
+      "title": "DAEMON STATUS",
+      "status": "CRASHED // SIGSEGV",
+      "pts": [
+        "Memory address 0x00000000 dereferenced",
+        "Worker process 1842 terminated abnormally",
+        "Downstream request queue dropped 1,024 packets"
+      ]
+    }
+  }
+}
+```
+
+| Meta field | Type | Notes |
+|---|---|---|
+| `left` | object | Required. `{ "title": "...", "badge": "...", "lines": [ { "t": "...", "k": "cmd" } ] }` |
+| `right` | object | Required. `{ "title": "...", "status": "COMPROMISED", "pts": ["..."] }` |
+| `tag` | string | Header tag badge. Defaults to `INCIDENT INVESTIGATION`. |
+
 ## Universal Mascot Overlay
 
 > [!TIP]
@@ -816,5 +860,27 @@ You can add the iDevak mascot as an expressive reaction overlay to **ANY** scene
 |---|---|---|
 | `expression` | string | `neutral`, `talking`, `thinking`, `shocked`, `cool`, `happy`, `angry`, `sad`, `facepalm`, `pointing`, `panic`, `skeptical`. |
 | `bubble` | string | Optional speech bubble text that pops up with the mascot. |
+| `hud` | string | Optional holographic telemetry badge projecting from Devak's cyber visor (e.g. `CVE-2026-3841`, `SEV-1 ALERT`, `MEMORY CORRUPTION`). |
 | `position` | string | `bottom-right` (default) or `bottom-left`. |
+| `timeline` | object[] | Optional mid-scene expression and bubble changes: `[{ "at": 1.4, "expression": "shocked", "bubble": "Wait, what?!" }]`. Enables dynamic emotional arcs during narration. |
+
+### Dynamic Mid-Scene Emotion Flips (Mascot Timeline)
+
+You can animate Devak changing expressions and updating his commentary as the scene progresses:
+
+```json
+{
+  "type": "code",
+  "headline": "The Hardcoded Root Password",
+  "narration": "Looking closely at line 42, the developers literally left the password as admin123.",
+  "mascot": {
+    "expression": "thinking",
+    "position": "bottom-right",
+    "timeline": [
+      { "at": 1.4, "expression": "shocked", "bubble": "Wait, did they really hardcode this?!" },
+      { "at": 3.0, "expression": "facepalm" }
+    ]
+  }
+}
+```
 

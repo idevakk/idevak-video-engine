@@ -325,7 +325,8 @@
     // Keep the shared backdrop continuous. Scene choreography supplies the
     // motion; flashes and sweeping rails obscure evidence at the cut.
     if (s.act && previousS && s.act !== previousS.act) {
-      queueSFX("whoosh", at, { vol: 0.28 });
+      queueSFX("whoosh", at, { vol: 0.32 });
+      tl.to(":root", { "--ac": s.accent || "#38bdf8", duration: 0.7, ease: "power2.inOut" }, at);
     }
   }
   function amb(el, dur, at) {
@@ -467,19 +468,20 @@
       amb(ghost, dur, at);
       if (at === 0) {
         /* frame 0 must already read as a title card */
-        tl.fromTo(ghost, { opacity: 0.45, scale: 1.05, x: 30 }, { opacity: 1, scale: 1, x: 0, duration: 2.6, ease: E.expo }, 0);
+        tl.fromTo(ghost, { opacity: 0.45, scale: 1.08, x: 40, rotateX: 4 }, { opacity: 1, scale: 1, x: 0, rotateX: 0, duration: 2.2, ease: E.expo, transformPerspective: 1200 }, 0);
         tl.fromTo(rule, { scaleX: 0.18 }, { scaleX: 1, duration: 1.5, ease: E.expo }, 0.05);
         gsap.set(q(title, ".wi"), { opacity: 1 });
+        tl.fromTo(title, { y: 12, opacity: 0.9 }, { y: 0, opacity: 1, duration: 0.9, ease: E.expo }, 0);
         if (sub) tl.fromTo(sub, { opacity: 0, y: 22 }, { opacity: 1, y: 0, duration: 0.9, ease: E.soft }, 0.85);
-        tl.fromTo(chips, { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.6, stagger: 0.08, ease: E.springSubtle }, 1.15);
+        tl.fromTo(chips, { opacity: 0, y: 18, scale: 0.94 }, { opacity: 1, y: 0, scale: 1, duration: 0.6, stagger: 0.08, ease: E.springSubtle }, 1.15);
         return;
       }
-      tl.fromTo(ghost, { scale: 1.1, opacity: 0, x: 60 }, { scale: 1, opacity: 1, x: 0, duration: 2.4, ease: E.expo }, at);
+      tl.fromTo(ghost, { scale: 1.12, opacity: 0, x: 70, rotateX: 6 }, { scale: 1, opacity: 1, x: 0, rotateX: 0, duration: 2.2, ease: E.expo, transformPerspective: 1200 }, at);
       tl.fromTo(rule, { scaleX: 0 }, { scaleX: 1, duration: 0.7, ease: E.expo }, at + 0.15);
       fade(eyebrow, at + 0.2, { y: 14, dur: 0.6 });
-      words(title, at + 0.35, { stagger: 0.055, dur: 0.95 }, s);
+      words(title, at + 0.35, { stagger: 0.048, dur: 0.9 }, s);
       fade(sub, at + 0.8, { dur: 0.8 });
-      tl.fromTo(chips, { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, stagger: 0.08, ease: E.springSubtle }, at + 1.05);
+      tl.fromTo(chips, { y: 18, opacity: 0, scale: 0.94 }, { y: 0, opacity: 1, scale: 1, duration: 0.6, stagger: 0.08, ease: E.springSubtle }, at + 1.05);
     },
 
     hero: function (el, s, at, dur) {
@@ -547,6 +549,10 @@
         tl.fromTo(el.querySelector(".code-scan"), { y: 0 }, { y: Math.max(120, lines.length * 52), duration: 1.0, ease: "power1.inOut" }, at + 1.1);
         tl.to(el.querySelector(".code-scan"), { opacity: 0, duration: 0.35 }, at + 2.1);
         tl.to(key, { backgroundColor: "rgba(56,189,248,0.06)", duration: 1.6, ease: "sine.inOut", yoyo: true, repeat: rep(dur - 2.1, 3.2) }, at + 2.2);
+        var otherLines = lines.filter(function (l) { return l !== key; });
+        if (otherLines.length) {
+          tl.to(otherLines, { opacity: 0.45, duration: 0.45, ease: "power2.out" }, at + 1.3);
+        }
       }
       var call = el.querySelector(".code-callout");
       if (call) tl.fromTo(call, { clipPath: "inset(0 100% 0 0)", opacity: 1 }, { clipPath: "inset(0 0% 0 0)", duration: 0.9, ease: "steps(28)" }, at + 0.5);
@@ -670,11 +676,22 @@
         at
       );
       var lines = q(el, ".tm-line");
+      var curTime = at + 0.25;
       lines.forEach(function (l, i) {
-        var t = at + 0.25 + i * 0.42;
-        tl.fromTo(l, { opacity: 0 }, { opacity: 1, duration: 0.2 }, t);
-        tl.fromTo(l.querySelector(".tm-t"), { clipPath: "inset(0 100% 0 0)" }, { clipPath: "inset(0 0% 0 0)", duration: 0.34, ease: "steps(18)" }, t);
-        queueSFX("click", t, { vol: 0.9 });
+        var isCmd = l.classList.contains("tm-cmd");
+        var textNode = l.querySelector(".tm-t");
+        var textLen = (textNode && textNode.textContent ? textNode.textContent.length : 12);
+        var typeDur = isCmd ? Math.max(0.24, Math.min(0.65, textLen * 0.024)) : 0.12;
+        var stepsCount = isCmd ? Math.max(6, Math.min(28, textLen)) : 1;
+
+        tl.fromTo(l, { opacity: 0 }, { opacity: 1, duration: 0.1 }, curTime);
+        tl.fromTo(textNode,
+          { clipPath: "inset(0 100% 0 0)" },
+          { clipPath: "inset(0 0% 0 0)", duration: typeDur, ease: isCmd ? "steps(" + stepsCount + ")" : "none" },
+          curTime
+        );
+        queueSFX("click", curTime, { vol: 0.85 });
+        curTime += typeDur + (isCmd ? 0.2 : 0.14);
       });
       var cur = el.querySelector(".tm-cursor");
       if (cur) {
@@ -750,6 +767,11 @@
       if (cursor) {
         tl.fromTo(cursor, { opacity: 0, x: 120, y: 80 }, { opacity: 1, x: 0, y: 0, duration: 1.1, ease: "power2.out" }, at + 0.35);
         tl.to(cursor, { scale: 0.82, duration: 0.16, ease: "power2.inOut", yoyo: true, repeat: 1 }, at + 1.2);
+        queueSFX("click", at + 1.2, { vol: 0.75 });
+        var targetDoc = el.querySelector(".web-p.has-hl, .web-callout");
+        if (targetDoc) {
+          tl.to(targetDoc, { borderColor: ac(s), backgroundColor: "rgba(56,189,248,0.07)", duration: 0.35, ease: "power2.out" }, at + 1.28);
+        }
       }
       words(el.querySelector(".web-foot-title"), at + 0.2, { stagger: 0.04, dur: 0.8 }, s);
       if (el.querySelector(".web-foot-sub")) fade(el.querySelector(".web-foot-sub"), at + 0.6, { dur: 0.65 });
@@ -915,6 +937,50 @@
       if (mRing) {
         tl.to(mRing, { opacity: 0.85, scale: 1.12, duration: 0.8, ease: "sine.inOut", yoyo: true, repeat: rep(dur, 1.6) }, at + 0.2);
       }
+
+      /* Directional Pointing Angle */
+      if (expr === "pointing") {
+        var isLeft = mOv.classList.contains("pos-bl");
+        tl.to(mOv, { rotate: isLeft ? 3.5 : -3.5, duration: 0.6, ease: E.soft }, at + 0.35);
+      }
+
+      /* Audio-Synced Visor Telemetry Pulse on Spoken Words */
+      if (s.wordTimings && s.wordTimings.length && mRing) {
+        s.wordTimings.forEach(function (wt, wIdx) {
+          if (wIdx % 2 === 0 && wt.t < dur - 0.25) {
+            var wordAt = at + Math.max(0.1, wt.t);
+            tl.to(mRing, { opacity: 0.95, scale: 1.16, duration: 0.12, ease: "power1.out", yoyo: true, repeat: 1 }, wordAt);
+          }
+        });
+      }
+
+      /* Multi-State Mascot Timeline Flips */
+      if (s.mascotTimeline && Array.isArray(s.mascotTimeline)) {
+        s.mascotTimeline.forEach(function (step, sIdx) {
+          var stepAt = at + Math.min(Math.max(0.2, step.at || 1.0), dur - 0.2);
+          var stepImg = mOv.querySelector('.m-ov-avatar-step[data-step-idx="' + sIdx + '"]');
+          var stepExpr = step.expression || "neutral";
+          var isStepShock = stepExpr === "shocked" || stepExpr === "panic";
+
+          if (stepImg) {
+            tl.to(stepImg, { opacity: 1, duration: 0.2, ease: "power2.out" }, stepAt);
+          }
+
+          if (isStepShock || stepExpr === "facepalm") {
+            tl.fromTo(mOv, { scale: 0.95, y: 6 }, { scale: 1.0, y: 0, duration: 0.35, ease: E.spring }, stepAt);
+            queueSFX(isStepShock ? "thud" : "chime", stepAt, { vol: 0.85 });
+          }
+
+          if (step.bubble) {
+            var bText = mOv.querySelector(".m-ov-btext");
+            var bBox = mOv.querySelector(".m-ov-bubble");
+            if (bBox && bText) {
+              tl.set(bText, { textContent: step.bubble }, stepAt);
+              tl.fromTo(bBox, { display: "block", scale: 0.85, opacity: 0, y: 8 }, { display: "block", scale: 1, opacity: 1, y: 0, duration: 0.4, ease: E.spring }, stepAt);
+            }
+          }
+        });
+      }
     }
 
     /* Contextual Scene Transition */
@@ -936,7 +1002,52 @@
 
     /* Forensic Redactions & Live Highlighting */
     forensicAnimations(el, at, dur, s);
+
+    /* Smooth Scene Exit: dissolve outgoing contents slightly before the incoming scene cut */
+    if (i < SCENES.length - 1 && dur > 1.2 && scIn) {
+      tl.to(scIn, { opacity: 0.1, duration: 0.12, ease: "power1.in" }, at + dur - 0.12);
+    }
   });
+
+  /* Retention Subtitle Rail synchronization */
+  var subRail = document.getElementById("retention-subtitles");
+  if (subRail) {
+    var subTrack = subRail.querySelector(".retention-sub-track");
+    SCENES.forEach(function (s) {
+      if (!s.wordTimings || !s.wordTimings.length) return;
+      var at = s.start;
+      var dur = s.end - s.start;
+      var chunk = document.createElement("div");
+      chunk.className = "retention-sub-chunk";
+      s.wordTimings.forEach(function (wt) {
+        var span = document.createElement("span");
+        span.className = "sub-w";
+        span.textContent = wt.w + " ";
+        chunk.appendChild(span);
+      });
+      subTrack.appendChild(chunk);
+      gsap.set(chunk, { display: "none", opacity: 0 });
+      tl.set(chunk, { display: "flex", opacity: 1 }, at);
+      tl.set(chunk, { display: "none", opacity: 0 }, at + dur);
+
+      var wordsSpans = chunk.querySelectorAll(".sub-w");
+      s.wordTimings.forEach(function (wt, wIdx) {
+        var wSpan = wordsSpans[wIdx];
+        if (!wSpan) return;
+        var wTime = at + wt.t;
+        var wDur = Math.max(0.12, wt.d || 0.25);
+        tl.fromTo(wSpan,
+          { color: "rgba(255,255,255,0.45)", textShadow: "none" },
+          { color: ac(s), textShadow: "0 0 10px " + ac(s), duration: 0.08, ease: "none" },
+          wTime
+        );
+        tl.to(wSpan,
+          { color: "rgba(255,255,255,0.9)", textShadow: "none", duration: 0.15, ease: "none" },
+          wTime + wDur
+        );
+      });
+    });
+  }
 
   /* final fade at the very end */
   tl.to("#bg-vignette", { opacity: 1, duration: 0.6 }, Math.max(0, TOTAL - 0.8));

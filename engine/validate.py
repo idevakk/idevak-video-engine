@@ -197,6 +197,19 @@ def validate_scene(
             pos = m.get("position")
             if pos is not None and pos not in {"bottom-right", "bottom-left"}:
                 warnings.append(f"{where}.mascot.position: unknown {pos!r} (expected bottom-right or bottom-left)")
+            tl = m.get("timeline")
+            if tl is not None:
+                if not isinstance(tl, list):
+                    errors.append(f"{where}.mascot.timeline: must be a list of steps")
+                else:
+                    for idx, step in enumerate(tl):
+                        if not isinstance(step, dict):
+                            errors.append(f"{where}.mascot.timeline[{idx}]: must be an object")
+                        else:
+                            st_expr = step.get("expression")
+                            if st_expr is not None and st_expr not in MASCOT_EXPRESSIONS:
+                                warnings.append(f"{where}.mascot.timeline[{idx}].expression: unknown {st_expr!r}")
+                            sfield(step, "bubble", f"{where}.mascot.timeline[{idx}]", errors, max_len=180)
 
     if headline:
         soft = 120 if scene_type in {"quote", "webref"} else 64

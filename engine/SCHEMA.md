@@ -45,6 +45,7 @@ rather than copying arbitrary transcription segment pairs.
 | `aspectRatio` | string | no | Alias for `aspect` (e.g. `"9:16"`). |
 | `composition` | object | no | `{ "width": 1920, "height": 1080, "fps": 30 }` (or `{ "width": 1080, "height": 1920, "fps": 30 }` for 9:16). Automatically defaulted by `aspect`. |
 | `acts` | array | no | Act objects. Used for eyebrow fallback and accent fallback. |
+| `subtitles` | boolean | no | `false` by default. When `true` (or `\"karaoke\": true`), renders a bottom speech-synced karaoke caption rail bound to wordTimings for mobile & retention. |
 | `scenes` | array | yes | Non-empty. Each item is one visual scene. |
 
 ## Aspect Ratios & Formats (16:9 Landscape vs 9:16 Portrait)
@@ -817,4 +818,25 @@ You can add the iDevak mascot as an expressive reaction overlay to **ANY** scene
 | `expression` | string | `neutral`, `talking`, `thinking`, `shocked`, `cool`, `happy`, `angry`, `sad`, `facepalm`, `pointing`, `panic`, `skeptical`. |
 | `bubble` | string | Optional speech bubble text that pops up with the mascot. |
 | `position` | string | `bottom-right` (default) or `bottom-left`. |
+| `timeline` | object[] | Optional mid-scene expression and bubble changes: `[{ "at": 1.4, "expression": "shocked", "bubble": "Wait, what?!" }]`. Enables dynamic emotional arcs during narration. |
+
+### Dynamic Mid-Scene Emotion Flips (Mascot Timeline)
+
+You can animate Devak changing expressions and updating his commentary as the scene progresses:
+
+```json
+{
+  "type": "code",
+  "headline": "The Hardcoded Root Password",
+  "narration": "Looking closely at line 42, the developers literally left the password as admin123.",
+  "mascot": {
+    "expression": "thinking",
+    "position": "bottom-right",
+    "timeline": [
+      { "at": 1.4, "expression": "shocked", "bubble": "Wait, did they really hardcode this?!" },
+      { "at": 3.0, "expression": "facepalm" }
+    ]
+  }
+}
+```
 

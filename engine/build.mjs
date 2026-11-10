@@ -35,6 +35,62 @@ const gsapJS = await fs.readFile(require.resolve("gsap/dist/gsap.min.js"), "utf8
 
 const tok = (s) => esc(s).replace(/\n/g, "<br>");
 
+// ---------------------------------------------------------------- syntax highlighting
+const CODE_KW = new Set([
+  "const", "let", "var", "function", "return", "if", "else", "for", "while",
+  "class", "import", "export", "from", "async", "await", "new", "try", "catch",
+  "throw", "typedef", "struct", "int", "void", "char", "bool", "float", "double",
+  "unsigned", "size_t", "nullptr", "NULL", "true", "false", "static", "public", "private", "auto"
+]);
+
+function colorizeText(raw) {
+  const tokenRegex = /(\/\/.*$|\/\*[\s\S]*?\*\/|"(?:\\.|[^"\\\n])*"|'(?:\\.|[^'\\\n])*'|`(?:\\.|[^`\\])*`|\b(?:0x[0-9a-fA-F]+|\d+(?:\.\d+)?)\b|[a-zA-Z_$][a-zA-Z0-9_$]*|[^\s\w]+|\s+)/g;
+  let result = "";
+  let match;
+  while ((match = tokenRegex.exec(raw)) !== null) {
+    const m = match[0];
+    if (m.startsWith("//") || m.startsWith("/*")) {
+      result += `<span class="tok-com">${esc(m)}</span>`;
+    } else if ((m.startsWith('"') && m.endsWith('"')) || (m.startsWith("'") && m.endsWith("'")) || (m.startsWith("`") && m.endsWith("`"))) {
+      result += `<span class="tok-str">${esc(m)}</span>`;
+    } else if (/^(?:0x[0-9a-fA-F]+|\d+(?:\.\d+)?)$/.test(m)) {
+      result += `<span class="tok-num">${esc(m)}</span>`;
+    } else if (CODE_KW.has(m)) {
+      result += `<span class="tok-kw">${esc(m)}</span>`;
+    } else if (/^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(m)) {
+      const rest = raw.slice(tokenRegex.lastIndex);
+      if (/^\s*\(/.test(rest)) {
+        result += `<span class="tok-fn">${esc(m)}</span>`;
+      } else {
+        result += esc(m);
+      }
+    } else {
+      result += esc(m).replace(/\n/g, "<br>");
+    }
+  }
+  return result;
+}
+
+function colorizeCode(raw) {
+  if (!raw) return "";
+  const str = String(raw);
+  if (!str.includes("==") && !str.includes("~~")) {
+    return colorizeText(str);
+  }
+  const parts = str.split(/(==.*?==|~~.*?~~)/g);
+  return parts.map(part => {
+    if (part.startsWith("==") && part.endsWith("==") && part.length > 4) {
+      const inner = part.slice(2, -2);
+      return `<span class="hl-marker is-live-hl" data-hl="${esc(inner)}"><span class="hl-ink"></span><span class="hl-text">${colorizeText(inner)}</span></span>`;
+    }
+    if (part.startsWith("~~") && part.endsWith("~~") && part.length > 4) {
+      const inner = part.slice(2, -2);
+      return `<span class="forensic-redact is-live-redact" data-redact="${esc(inner)}"><span class="redact-tape"><span class="redact-laser"></span></span><span class="redact-text">${colorizeText(inner)}</span></span>`;
+    }
+    return colorizeText(part);
+  }).join("");
+}
+
 // ---------------------------------------------------------------- mascot assets
 const MASCOT_IMAGES = {};
 const MASCOT_EXPRS = [
@@ -61,7 +117,16 @@ function renderMascotOverlay(mascot) {
   const expr = rawExpr === "solved" ? "happy" : rawExpr;
   const pos = mascot.position === "bottom-left" ? "pos-bl" : "pos-br";
   const imgSrc = MASCOT_IMAGES[expr] || MASCOT_IMAGES["neutral"] || "";
-  const bubble = mascot.bubble ? `<div class="m-ov-bubble"><div class="m-ov-btext">${esc(mascot.bubble)}</div></div>` : "";
+  const bubble = mascot.bubble ? `<div class="m-ov-bubble"><div class="m-ov-btext">${esc(mascot.bubble)}</div></div>` : (Array.isArray(mascot.timeline) && mascot.timeline.some(t => t.bubble) ? `<div class="m-ov-bubble" style="display:none"><div class="m-ov-btext"></div></div>` : "");
+
+  const timeline = Array.isArray(mascot.timeline) ? mascot.timeline : [];
+  const extraImgs = timeline.map((step, idx) => {
+    const rawStepExpr = step.expression || "neutral";
+    const stepExpr = rawStepExpr === "solved" ? "happy" : rawStepExpr;
+    const stepSrc = MASCOT_IMAGES[stepExpr] || MASCOT_IMAGES["neutral"] || "";
+    return `<img class="m-ov-avatar m-ov-avatar-step" data-step-idx="${idx}" data-expr="${esc(stepExpr)}" src="${stepSrc}" alt="${esc(stepExpr)}" style="opacity:0;position:absolute;inset:6px;z-index:2;" />`;
+  }).join("");
+
   return `
   <div class="m-ov ${pos} m-expr-${expr}" data-expr="${esc(expr)}">
     ${bubble}
@@ -69,6 +134,7 @@ function renderMascotOverlay(mascot) {
       <div class="m-ov-ring"></div>
       <div class="m-ov-glare"></div>
       <img class="m-ov-avatar" src="${imgSrc}" alt="${esc(expr)}" />
+      ${extraImgs}
     </div>
   </div>`;
 }
@@ -242,17 +308,14 @@ const RENDER = {
       const l = typeof rawL === "string" ? { t: rawL } : (rawL || {});
       const kind = l.cls || l.k || (l.hot ? "hot" : "");
       const cls = ["cl", l.key ? "is-key" : "", kind ? `cl-${kind}` : ""].filter(Boolean).join(" ");
-      let content = tok(l.c ?? l.t ?? l.text ?? "");
-      if (l.redact || content.includes("~~")) {
-        if (l.redact && !content.includes("~~")) {
-          content = `<span class="forensic-redact is-live-redact" data-redact="${esc(l.c)}"><span class="redact-tape"><span class="redact-laser"></span></span><span class="redact-text">${content}</span></span>`;
-        } else {
-          content = content.replace(/~~(.*?)~~/g, (_, inner) => `<span class="forensic-redact is-live-redact" data-redact="${esc(inner)}"><span class="redact-tape"><span class="redact-laser"></span></span><span class="redact-text">${inner}</span></span>`);
-        }
+      let rawText = l.c ?? l.t ?? l.text ?? "";
+      if (l.redact && !rawText.includes("~~")) {
+        rawText = `~~${rawText}~~`;
       }
-      if (l.hl || content.includes("==")) {
-        content = content.replace(/==(.*?)==/g, (_, inner) => `<span class="hl-marker is-live-hl" data-hl="${esc(inner)}"><span class="hl-ink"></span><span class="hl-text">${inner}</span></span>`);
+      if (l.hl && !rawText.includes("==")) {
+        rawText = `==${rawText}==`;
       }
+      const content = colorizeCode(rawText);
       return `<div class="${cls}" data-k="${k}"><span class="cl-n">${l.n ?? k + 1}</span><span class="cl-c">${content}</span></div>`;
     });
     const callout = s.meta?.announce || s.headline || s.subline || "";
@@ -266,7 +329,10 @@ const RENDER = {
     ${eyebrow(s)}
     <div class="code-shell">
       <div class="code-bar">
-        <span class="code-file">${esc(file)}</span>
+        <div style="display:flex;align-items:center;gap:14px">
+          <div class="mac-dots"><span></span><span></span><span></span></div>
+          <span class="code-file">${esc(file)}</span>
+        </div>
         ${tag ? `<span class="code-tag">${esc(tag)}</span>` : ""}
       </div>
       <div class="code-body">${lines.join("")}</div>
@@ -286,7 +352,7 @@ const RENDER = {
       const kind = l.k || l.kind || (l.add ? "add" : l.del ? "del" : "ctx");
       const sig = kind === "add" ? "+" : kind === "del" ? "-" : " ";
       let text = l.t ?? l.text ?? l.c ?? "";
-      return `<div class="df-line df-${kind}" data-k="${k}"><span class="df-sig">${sig}</span><span class="df-t">${tok(text)}</span></div>`;
+      return `<div class="df-line df-${kind}" data-k="${k}"><span class="df-sig">${sig}</span><span class="df-t">${colorizeCode(text)}</span></div>`;
     });
     const file = s.meta?.file || "source";
     const ver = s.meta?.ver || "";
@@ -298,7 +364,13 @@ const RENDER = {
     return `
     ${eyebrow(s)}
     <div class="diff-shell">
-      <div class="diff-head"><span class="df-file">${esc(file)}</span>${ver ? `<span class="df-ver">${esc(ver)}</span>` : ""}</div>
+      <div class="diff-head">
+        <div style="display:flex;align-items:center;gap:14px">
+          <div class="mac-dots"><span></span><span></span><span></span></div>
+          <span class="df-file">${esc(file)}</span>
+        </div>
+        ${ver ? `<span class="df-ver">${esc(ver)}</span>` : ""}
+      </div>
       <div class="diff-body">${lines.join("")}</div>
     </div>
     ${foot}`;
@@ -436,7 +508,10 @@ const RENDER = {
     ${eyebrow(s)}
     <div class="tm-shell">
       <div class="tm-bar">
-        <span>${esc(s.meta?.host || "terminal@idevak")}</span>
+        <div style="display:flex;align-items:center;gap:14px">
+          <div class="mac-dots"><span></span><span></span><span></span></div>
+          <span>${esc(s.meta?.host || "terminal@idevak")}</span>
+        </div>
         <span class="tm-led"></span>
       </div>
       <div class="tm-body">
@@ -696,6 +771,8 @@ const evidenceVideos = scenes.map((s, i) => s.type === "hero" && s.meta?.video
   ? `<video id="evidence-video-${i + 1}" class="clip evidence-video" src="${esc(s.meta.video)}" poster="${esc(s.meta.image || s.meta.poster || "")}" data-start="${s.start.toFixed(3)}" data-duration="${(s.end - s.start).toFixed(3)}" data-media-start="${Number(s.meta.mediaStart || 0)}" data-track-index="4" muted playsinline preload="metadata"></video>`
   : "").join("\n");
 
+const hasSubtitles = Boolean(project.subtitles || project.karaoke);
+
 const html = `<!doctype html>
 <html lang="en">
 <head>
@@ -737,6 +814,7 @@ body {
   <div id="cut-rail"></div>
   ${body}
   ${evidenceVideos}
+  ${hasSubtitles ? `<div id="retention-subtitles" class="retention-subtitles"><div class="retention-sub-track"></div></div>` : ""}
   <audio id="vo" src="${esc(audio)}" data-start="0" data-duration="${total.toFixed(3)}" data-track-index="1" data-volume="1"></audio>
   <audio id="sfx" src="build/sfx_track.wav" data-start="0" data-duration="${total.toFixed(3)}" data-track-index="3" data-volume="1"></audio>
 </div>
@@ -754,6 +832,7 @@ window.__SCENES__ = ${JSON.stringify(scenes.map((s) => ({
   hasEvidence: Boolean(s.meta?.image || s.meta?.video || s.meta?.logos),
   revealTime: s.revealTime ?? null,
   mascotExpr: s.mascot?.expression || (s.type === "mascot" ? (s.meta?.expression || "neutral") : null),
+  mascotTimeline: s.mascot?.timeline || null,
   wordTimings: s.wordTimings || []
 })))};
 window.__TOTAL__ = ${total.toFixed(3)};

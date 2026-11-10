@@ -791,6 +791,48 @@ A dedicated spotlight scene featuring Devak (the iDevak mascot) delivering a tec
 | `badge` | string | HUD badge tag (e.g. `iDevak // ANALYSIS`). |
 | `stats` | object[] | Up to 4 telemetry chips with `label` and `val`, plus optional `hot: true`. |
 
+### split
+
+Dual-pane forensic investigation layout: live terminal/shell on the left and target component/impact on the right.
+
+```json
+{
+  "type": "split",
+  "narration": "Sending the crafted payload immediately triggers an unhandled null pointer dereference in the authentication worker.",
+  "eyebrow": "EXPLOIT AUTOPSY",
+  "headline": "Zero-Day Trigger in the Auth Worker",
+  "subline": "Payload injection causes immediate crash of the session daemon.",
+  "meta": {
+    "tag": "FORENSIC RECONSTRUCTION",
+    "left": {
+      "title": "EXPLOIT PAYLOAD",
+      "badge": "CURL / BASH",
+      "lines": [
+        { "t": "curl -X POST https://api.internal/v1/auth \\", "k": "cmd" },
+        { "t": "  -H 'X-Token: 0xDEADBEEF_OVERFLOW' \\", "k": "cmd" },
+        { "t": "  -d '{\"user\":\"admin\",\"len\":-1}'", "k": "cmd" },
+        { "t": "HTTP/1.1 502 Bad Gateway (Connection Reset)", "k": "err" }
+      ]
+    },
+    "right": {
+      "title": "DAEMON STATUS",
+      "status": "CRASHED // SIGSEGV",
+      "pts": [
+        "Memory address 0x00000000 dereferenced",
+        "Worker process 1842 terminated abnormally",
+        "Downstream request queue dropped 1,024 packets"
+      ]
+    }
+  }
+}
+```
+
+| Meta field | Type | Notes |
+|---|---|---|
+| `left` | object | Required. `{ "title": "...", "badge": "...", "lines": [ { "t": "...", "k": "cmd" } ] }` |
+| `right` | object | Required. `{ "title": "...", "status": "COMPROMISED", "pts": ["..."] }` |
+| `tag` | string | Header tag badge. Defaults to `INCIDENT INVESTIGATION`. |
+
 ## Universal Mascot Overlay
 
 > [!TIP]

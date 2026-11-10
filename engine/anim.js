@@ -865,6 +865,40 @@
       }
     },
 
+    split: function (el, s, at, dur) {
+      fade(el.querySelector(".eyebrow"), at, { y: 12, dur: 0.55 });
+      fade(el.querySelector(".split-header"), at + 0.05, { y: 10, dur: 0.5 });
+      var leftPane = el.querySelector(".split-left");
+      var rightPane = el.querySelector(".split-right");
+      if (leftPane) {
+        tl.fromTo(leftPane, { x: -40, opacity: 0, scale: 0.96 }, { x: 0, opacity: 1, scale: 1, duration: 0.8, ease: E.expo }, at + 0.1);
+        var lines = q(leftPane, ".sp-line");
+        var curT = at + 0.25;
+        lines.forEach(function (l) {
+          tl.fromTo(l, { opacity: 0, x: -10 }, { opacity: 1, x: 0, duration: 0.25, ease: E.soft }, curT);
+          queueSFX("click", curT, { vol: 0.75 });
+          curT += 0.22;
+        });
+      }
+      if (rightPane) {
+        tl.fromTo(rightPane, { x: 40, opacity: 0, scale: 0.96 }, { x: 0, opacity: 1, scale: 1, duration: 0.8, ease: E.expo }, at + 0.25);
+        var isBad = rightPane.classList.contains("is-bad");
+        if (isBad) {
+          var impactT = at + Math.min(dur * 0.45, 1.8);
+          queueSFX("thud", impactT, { vol: 1.1 });
+          tl.fromTo(rightPane,
+            { boxShadow: "0 0 0px rgba(0,0,0,0)" },
+            { boxShadow: "0 0 36px -4px rgba(255,59,92,0.65)", duration: 0.4, yoyo: true, repeat: 3 },
+            impactT
+          );
+        }
+        var pts = q(rightPane, ".sp-pt");
+        tl.fromTo(pts, { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.45, stagger: 0.1, ease: E.soft }, at + 0.6);
+      }
+      words(el.querySelector(".split-title"), at + 0.35, { stagger: 0.04, dur: 0.8 }, s);
+      if (el.querySelector(".split-sub")) fade(el.querySelector(".split-sub"), at + 0.7, { dur: 0.65 });
+    },
+
     outro: function (el, s, at, dur) {
       tl.fromTo(el.querySelector(".out-ghost"), { opacity: 0, scale: 1.08, x: 40 }, { opacity: 1, scale: 1, x: 0, duration: 2.2, ease: E.expo }, at);
       fade(el.querySelector(".eyebrow"), at, { y: 12, dur: 0.55 });
@@ -1075,6 +1109,20 @@
           wTime + wDur
         );
       });
+    });
+  }
+
+  /* Background music bed with automated sidechain ducking */
+  var bgmEl = document.getElementById("bgm");
+  if (bgmEl) {
+    tl.set(bgmEl, { volume: 0.22 }, 0);
+    SCENES.forEach(function (s) {
+      var speechStart = s.speechStart != null ? s.speechStart : s.start;
+      var speechEnd = s.speechEnd != null ? s.speechEnd : s.end;
+      if (speechEnd > speechStart) {
+        tl.to(bgmEl, { volume: 0.06, duration: 0.15, ease: "power1.out" }, speechStart);
+        tl.to(bgmEl, { volume: 0.22, duration: 0.35, ease: "power1.inOut" }, speechEnd);
+      }
     });
   }
 

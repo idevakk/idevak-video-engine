@@ -761,6 +761,66 @@ const RENDER = {
       <div class="out-ch">${esc(channel)}</div>
     </div>`;
   },
+
+  split(s) {
+    const left = s.meta?.left || {};
+    const right = s.meta?.right || {};
+    const tag = s.meta?.tag || "INCIDENT INVESTIGATION";
+    const leftTitle = left.title || "ATTACK VECTOR";
+    const leftBadge = left.badge || "SHELL";
+    const leftLines = (left.lines || []).map((rawL, k) => {
+      const l = typeof rawL === "string" ? { t: rawL } : (rawL || {});
+      const kind = l.k || (l.cmd ? "cmd" : l.err ? "err" : "out");
+      const pfx = kind === "cmd" ? "$" : ">";
+      return `<div class="sp-line sp-${kind}" data-k="${k}"><span class="sp-pfx">${pfx}</span><span class="sp-t">${colorizeCode(l.t || l.cmd || "")}</span></div>`;
+    });
+
+    const rightTitle = right.title || "TARGET IMPACT";
+    const rightStatus = right.status || "COMPROMISED";
+    const isBad = !right.ok && (right.bad || /compromised|breached|corrupted|vulnerable|fail/i.test(rightStatus));
+    const rightPts = (right.pts || []).map((p, k) => `
+      <div class="sp-pt" data-k="${k}">
+        <span class="sp-pt-dot ${isBad ? "is-bad" : "is-ok"}"></span>
+        <span>${esc(p)}</span>
+      </div>
+    `).join("");
+
+    return `
+    <div class="split-stage">
+      ${eyebrow(s)}
+      <div class="split-header">
+        <span class="split-tag">${esc(tag)}</span>
+        <span class="split-label">DUAL-PANE FORENSIC INVESTIGATION</span>
+      </div>
+      <div class="split-grid">
+        <div class="split-pane split-left">
+          <div class="split-pane-bar">
+            <div style="display:flex;align-items:center;gap:12px">
+              <div class="mac-dots"><span></span><span></span><span></span></div>
+              <span class="split-pane-title">${esc(leftTitle)}</span>
+            </div>
+            <span class="split-pane-badge">${esc(leftBadge)}</span>
+          </div>
+          <div class="split-pane-body split-term-body">
+            ${leftLines.join("")}
+          </div>
+        </div>
+        <div class="split-pane split-right ${isBad ? "is-bad" : "is-ok"}">
+          <div class="split-pane-bar">
+            <span class="split-pane-title">${esc(rightTitle)}</span>
+            <span class="split-status-badge ${isBad ? "is-bad" : "is-ok"}">${esc(rightStatus)}</span>
+          </div>
+          <div class="split-pane-body split-diag-body">
+            ${rightPts}
+          </div>
+        </div>
+      </div>
+      <div class="split-foot">
+        ${s.headline ? `<h2 class="split-title">${splitWords(s.headline, s)}</h2>` : ""}
+        ${s.subline ? `<p class="split-sub">${esc(s.subline)}</p>` : ""}
+      </div>
+    </div>`;
+  },
 };
 
 // ---------------------------------------------------------------- document
@@ -772,6 +832,7 @@ const evidenceVideos = scenes.map((s, i) => s.type === "hero" && s.meta?.video
   : "").join("\n");
 
 const hasSubtitles = Boolean(project.subtitles || project.karaoke);
+const bgm = project.bgm || project.music || null;
 
 const html = `<!doctype html>
 <html lang="en">
@@ -815,6 +876,7 @@ body {
   ${body}
   ${evidenceVideos}
   ${hasSubtitles ? `<div id="retention-subtitles" class="retention-subtitles"><div class="retention-sub-track"></div></div>` : ""}
+  ${bgm ? `<audio id="bgm" src="${esc(bgm)}" data-start="0" data-duration="${total.toFixed(3)}" data-track-index="5" data-volume="0.18"></audio>` : ""}
   <audio id="vo" src="${esc(audio)}" data-start="0" data-duration="${total.toFixed(3)}" data-track-index="1" data-volume="1"></audio>
   <audio id="sfx" src="build/sfx_track.wav" data-start="0" data-duration="${total.toFixed(3)}" data-track-index="3" data-volume="1"></audio>
 </div>

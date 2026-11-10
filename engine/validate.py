@@ -40,6 +40,7 @@ TYPES = {
     "meme",
     "cloud",
     "mascot",
+    "split",
 }
 CODE_KINDS = {"code", "hot", "dim", "str", "com", "fn", "kw", "key", "err", "out"}
 DIFF_KINDS = {"ctx", "add", "del"}
@@ -461,6 +462,21 @@ def validate_scene(
             for k, item in enumerate(items):
                 if "hot" in item and not isinstance(item["hot"], (bool, str)):
                     errors.append(f"{where}.meta.stats[{k}].hot: must be boolean or string")
+
+    elif scene_type == "split":
+        left = objectfield(meta, "left", where, errors, required=True)
+        right = objectfield(meta, "right", where, errors, required=True)
+        sfield(meta, "tag", where, errors)
+        if left:
+            sfield(left, "title", f"{where}.meta.left", errors)
+            sfield(left, "badge", f"{where}.meta.left", errors)
+            lines = listfield(left, "lines", f"{where}.meta.left", errors, lo=1, hi=8)
+            check_items(lines, f"{where}.meta.left.lines", errors, ("t",), ("k", "cmd"))
+        if right:
+            sfield(right, "title", f"{where}.meta.right", errors)
+            sfield(right, "status", f"{where}.meta.right", errors)
+            pts = listfield(right, "pts", f"{where}.meta.right", errors, hi=4)
+            check_str_array(pts, f"{where}.meta.right.pts", errors)
 
 
 def main() -> None:

@@ -109,7 +109,7 @@ const ALLOWLIST = new Map();
 
 // The contracts must cover the same scene types. A new type has to land in the
 // renderer, the validator, and this count together.
-const SCENE_TYPES = 21;
+const SCENE_TYPES = 22;
 
 test("scene meta contracts stay in parity across builder, validator, and aligner", () => {
   const { perType, shared } = splitRenderers(lines("engine/build.mjs"));

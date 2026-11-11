@@ -481,10 +481,14 @@ body{width:var(--composition-width,1920px);height:var(--composition-height,1080p
 .m-ov-bubble{max-width:460px;background:linear-gradient(165deg,rgba(16,24,46,.94),rgba(8,12,24,.96));
   border:1px solid rgba(255,255,255,.16);border-radius:14px;padding:18px 26px;backdrop-filter:blur(16px);
   box-shadow:0 16px 45px -5px rgba(0,0,0,.75),inset 0 1px 0 rgba(255,255,255,.2);position:relative;margin-bottom:20px}
-.m-ov-bubble::after{content:"";position:absolute;bottom:-8px;width:14px;height:14px;
+/* Speech tail: points sideways, from the bubble edge facing the mascot, so the
+   bubble reads as coming out of Devak rather than dropping from above. */
+.m-ov-bubble::after{content:"";position:absolute;bottom:26px;width:14px;height:14px;
   background:rgba(12,18,34,.96);border-right:1px solid rgba(255,255,255,.16);border-bottom:1px solid rgba(255,255,255,.16)}
-.pos-br .m-ov-bubble::after{right:36px;transform:rotate(45deg)}
-.pos-bl .m-ov-bubble::after{left:36px;transform:rotate(45deg)}
+/* pos-br: bubble sits left of the avatar, so the tail leaves the right edge. */
+.pos-br .m-ov-bubble::after{right:-8px;transform:rotate(-45deg)}
+/* pos-bl: bubble sits right of the avatar, so the tail leaves the left edge. */
+.pos-bl .m-ov-bubble::after{left:-8px;transform:rotate(135deg)}
 .m-ov-btext{font-size:20px;line-height:1.35;font-weight:600;color:var(--ink);text-shadow:0 2px 8px rgba(0,0,0,.6)}
 
 /* Emotion-specific cyber-visor chromatic pulses */
@@ -894,22 +898,34 @@ body{width:var(--composition-width,1920px);height:var(--composition-height,1080p
   }
 
   /* Terminal Scene */
-  .term-bar {
+  .tm-bar {
     padding: 12px 18px;
+    font-size: 12px;
   }
-  .tl-cmd {
+  .tm-body {
+    padding: 22px 18px 26px;
+  }
+  .tm-line {
     font-size: 20px;
+    gap: 12px;
   }
-  .tl-out {
-    font-size: 18px;
+  .tm-cursor {
+    height: 22px;
+    width: 11px;
   }
-  .term-foot {
-    grid-template-columns: 1fr;
-    gap: 16px;
+  .tm-foot {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
     margin-top: 24px;
   }
-  .term-title {
-    font-size: 28px;
+  .tm-title {
+    font-size: 34px;
+  }
+  .tm-sub {
+    font-size: 14px;
+    text-align: left;
+    max-width: 100%;
   }
   .term-sub {
     text-align: left;
@@ -1002,11 +1018,28 @@ body{width:var(--composition-width,1920px);height:var(--composition-height,1080p
     margin-top: 24px;
   }
 
-  /* Matrix Scene */
-  .mx-stage {
+  /* Matrix Scene: the 16-column grid is too narrow on a phone, so drop to 8. */
+  .mx-grid {
     grid-template-columns: 1fr;
-    gap: 24px;
+    gap: 36px;
     height: auto;
+    align-items: flex-start;
+  }
+  .mx-title {
+    font-size: 44px;
+    max-width: 100%;
+  }
+  .mx-sub {
+    font-size: 20px;
+    max-width: 100%;
+  }
+  .mx-cells {
+    grid-template-columns: repeat(8, 1fr);
+    gap: 7px;
+  }
+  .mx-count {
+    position: static;
+    margin-top: 18px;
   }
   .mx-title {
     font-size: 44px;
@@ -1077,17 +1110,145 @@ body{width:var(--composition-width,1920px);height:var(--composition-height,1080p
     margin-top: 0;
   }
 
-  /* Flow Scene (Vertical Flow) */
-  .fl-nodes {
+  /* Flow scene: stack the row and turn the connectors into down-arrows. */
+  .flow-row {
     flex-direction: column;
-    gap: 12px;
+    align-items: stretch;
+    gap: 0;
   }
-  .fl-node {
+  .flow-node {
     width: 100%;
+    padding: 24px 26px;
   }
-  .fl-edge {
+  .fn-t {
+    font-size: 28px;
+  }
+  .fn-s {
+    font-size: 18px;
+  }
+  /* Rotate only the glyph so the arrow reads downward without a wide element
+     spinning out of the frame. */
+  .flow-link {
+    width: 100%;
+    height: 54px;
+    padding: 0;
+    justify-content: center;
+  }
+  .flow-link svg {
+    width: 54px;
+    height: 24px;
     transform: rotate(90deg);
-    height: 18px;
+  }
+  .flow-cap {
+    margin-top: 32px;
+    font-size: 32px;
+  }
+  .flow-sub {
+    font-size: 20px;
+  }
+
+  /* Ledger Scene: fixed two-column grid pushed the headline off the frame. */
+  .lg-grid {
+    grid-template-columns: 1fr;
+    gap: 32px;
+    height: auto;
+    align-items: flex-start;
+  }
+  .lg-card {
+    width: 100%;
+    padding: 22px 24px 26px;
+  }
+  .lg-head {
+    font-size: 11px;
+    letter-spacing: .16em;
+  }
+  .lg-row {
+    padding: 14px 2px;
+  }
+  .lg-k {
+    font-size: 13px;
+  }
+  .lg-v {
+    font-size: 24px;
+  }
+  .lg-stamp {
+    position: static;
+    display: inline-block;
+    margin-top: 16px;
+    font-size: 20px;
+    padding: 7px 12px;
+  }
+  .lg-title {
+    font-size: 46px;
+    max-width: 100%;
+  }
+  .lg-sub {
+    font-size: 20px;
+    margin-top: 18px;
+    max-width: 100%;
+  }
+  .lg-pt {
+    font-size: 19px;
+    margin-top: 16px;
+  }
+
+  /* Memory Scene: the shell is absolutely positioned at a landscape offset. */
+  .mem-shell,
+  .mem-side {
+    position: static;
+    width: 100%;
+    left: auto;
+    right: auto;
+    top: auto;
+  }
+  .mem-shell {
+    margin-bottom: 32px;
+  }
+  .mem-name {
+    font-size: 24px;
+  }
+  .mem-count {
+    font-size: 12px;
+  }
+  .mem-count b {
+    font-size: 19px;
+  }
+  .mem-cells {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 9px;
+    margin-top: 18px;
+  }
+  .mc {
+    height: 96px;
+  }
+  .mc-i {
+    font-size: 13px;
+    top: 6px;
+    left: 8px;
+  }
+  .mem-ptr {
+    margin-top: 6px;
+    height: 48px;
+    gap: 14px;
+  }
+  .mem-ptr svg {
+    width: 170px;
+    height: 44px;
+  }
+  .mem-ptr span {
+    font-size: 14px;
+  }
+  .mem-legend {
+    font-size: 11px;
+    gap: 20px;
+  }
+  .mem-title {
+    font-size: 42px;
+    max-width: 100%;
+  }
+  .mem-sub {
+    font-size: 20px;
+    margin-top: 16px;
   }
 
   /* Mascot Spotlight Scene */

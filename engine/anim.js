@@ -20,7 +20,13 @@
   };
 
   function q(el, sel) { return el ? Array.prototype.slice.call(el.querySelectorAll(sel)) : []; }
-  function rep(dur, cycle) { return Math.max(0, Math.floor(dur / cycle) - 1); }
+  // Repeats needed to fill a window. GSAP counts repeat against the tween's own
+  // duration, so a yoyo caller must pass its full round trip and get twice as
+  // many legs. Floor also dropped the partial cycle, which froze decorative
+  // loops (ring, bob, glare, packets) for the tail of their scene.
+  function rep(dur, cycle) { return Math.max(0, Math.ceil(dur / cycle) - 1); }
+  // Same, for yoyo tweens whose repeat counts duration legs, not round trips.
+  function repYoyo(dur, roundTrip) { return rep(dur, roundTrip) * 2 + 1; }
   function ac(s) { return s.accent || "#38bdf8"; }
 
   /* ---------------------------------------------------------- backdrop */
@@ -334,7 +340,9 @@
     // Begin after the longest entrance, with no repeating reset or competing tween.
     var delay = 2.6;
     if (dur <= delay) return;
-    tl.to(el, { scale: 1.025, x: 12, duration: dur - delay, ease: "sine.inOut" }, at + delay);
+    // Force a composited layer. A plain sub-pixel translate re-rasterizes the
+    // outlined ghost glyphs every frame, which reads as shimmer on large text.
+    tl.to(el, { x: 12, duration: dur - delay, ease: "sine.inOut", force3D: true }, at + delay);
   }
   function pulse(el, at, dur, times, o) {
     o = o || {};
@@ -555,7 +563,7 @@
         tl.fromTo(el.querySelector(".code-scan"), { opacity: 0 }, { opacity: 0.5, duration: 0.25 }, at + 1.1);
         tl.fromTo(el.querySelector(".code-scan"), { y: 0 }, { y: Math.max(120, lines.length * 52), duration: 1.0, ease: "power1.inOut" }, at + 1.1);
         tl.to(el.querySelector(".code-scan"), { opacity: 0, duration: 0.35 }, at + 2.1);
-        tl.to(key, { backgroundColor: "rgba(56,189,248,0.06)", duration: 1.6, ease: "sine.inOut", yoyo: true, repeat: rep(dur - 2.1, 3.2) }, at + 2.2);
+        tl.to(key, { backgroundColor: "rgba(56,189,248,0.06)", duration: 1.6, ease: "sine.inOut", yoyo: true, repeat: repYoyo(dur - 2.1, 3.2) }, at + 2.2);
         var otherLines = lines.filter(function (l) { return l !== key; });
         if (otherLines.length) {
           tl.to(otherLines, { opacity: 0.45, duration: 0.45, ease: "power2.out" }, at + 1.3);
@@ -616,6 +624,8 @@
       edgePackets.forEach(function (pkt, idx) {
         var cycle = Math.max(1.0, Math.min(2.0, dur * 0.28));
         tl.fromTo(pkt, { cx: 4, opacity: 0 }, { opacity: 1, duration: 0.15 }, at + 0.8 + idx * 0.16);
+        // Snap back to the start with opacity off, so the wrap is invisible.
+        tl.to(pkt, { opacity: 0, duration: 0.001 }, at + 0.85 + idx * 0.16 + cycle);
         tl.to(pkt, {
           cx: 104,
           duration: cycle,
@@ -751,7 +761,7 @@
       var cur = el.querySelector(".tm-cursor");
       if (cur) {
         var start = at + 0.3;
-        tl.fromTo(cur, { opacity: 0 }, { opacity: 1, duration: 0.16, repeat: rep(Math.max(1.2, dur - 0.4), 0.5), yoyo: true }, start);
+        tl.fromTo(cur, { opacity: 0 }, { opacity: 1, duration: 0.16, repeat: repYoyo(Math.max(1.2, dur - 0.4), 0.5), yoyo: true }, start);
       }
       if (el.querySelector(".tm-title")) fade(el.querySelector(".tm-title"), at + 0.55, { dur: 0.7 });
       if (el.querySelector(".tm-sub")) fade(el.querySelector(".tm-sub"), at + 0.7, { dur: 0.7 });
@@ -925,15 +935,15 @@
       var hud = el.querySelector(".mascot-hud-frame");
       if (hud) {
         tl.fromTo(hud, { x: -40, opacity: 0, scale: 0.92 }, { x: 0, opacity: 1, scale: 1, duration: 0.85, ease: E.expo }, at + 0.05);
-        tl.to(hud, { y: -8, duration: 2.2, ease: "sine.inOut", yoyo: true, repeat: rep(dur, 4.4) }, at + 0.8);
+        tl.to(hud, { y: -8, duration: 2.2, ease: "sine.inOut", yoyo: true, repeat: repYoyo(dur, 4.4), force3D: true }, at + 0.8);
         var img = hud.querySelector(".mascot-img");
         if (img) {
           tl.fromTo(img, { scale: 1.05 }, { scale: 1.0, duration: 1.2, ease: E.smooth }, at + 0.1);
-          tl.to(img, { y: -5, duration: 2.4, ease: "sine.inOut", yoyo: true, repeat: rep(dur, 2.4) }, at + 0.8);
+          tl.to(img, { y: -5, duration: 2.4, ease: "sine.inOut", yoyo: true, repeat: repYoyo(dur, 4.8), force3D: true }, at + 0.8);
         }
         var glare = hud.querySelector(".mascot-hud-glare");
         if (glare) {
-          tl.fromTo(glare, { opacity: 0.3 }, { opacity: 0.7, duration: 1.8, ease: "sine.inOut", yoyo: true, repeat: rep(dur, 3.6) }, at + 0.2);
+          tl.fromTo(glare, { opacity: 0.3 }, { opacity: 0.7, duration: 1.8, ease: "sine.inOut", yoyo: true, repeat: repYoyo(dur, 3.6) }, at + 0.2);
         }
 
       }
@@ -1031,14 +1041,15 @@
     /* accent for shared bloom & dynamic CSS variable */
     tl.to(":root", { "--ac": s.accent || "#38bdf8", duration: 1.0, ease: "sine.inOut" }, at);
 
-    /* One owner per transform. Data stays still; headline scenes get a small push. */
+    /* One owner per transform. Data stays still; punch cuts get a short push. */
+    // Headline scenes used to creep to scale 1.012 across the whole scene. That
+    // resamples every glyph each frame, so large text visibly shimmers while it
+    // holds. The push now finishes early and lands exactly on 1.
     var isPunch = Boolean(s.punch || s.type === "meme");
-    var isHeadline = !s.hasEvidence && ["cold", "hero", "statement", "quote", "outro"].indexOf(s.type) !== -1;
     if (scIn) {
       tl.fromTo(scIn,
         { scale: isPunch ? 1.025 : 1, x: 0, y: 0, rotate: 0 },
-        { scale: isPunch ? 1 : (isHeadline ? 1.012 : 1),
-          duration: isPunch ? Math.min(0.6, dur) : dur, ease: isPunch ? E.soft : "none" }, at);
+        { scale: 1, duration: isPunch ? Math.min(0.6, dur) : 0.001, ease: E.soft }, at);
     }
     tl.to("#bg-bloom", {
       opacity: s.type === "stat" ? 0.16 : 0.13,
@@ -1075,14 +1086,14 @@
           duration: 2.4,
           ease: "sine.inOut",
           yoyo: true,
-          repeat: rep(dur, 2.4)
+          repeat: repYoyo(dur, 4.8)
         }, at + 0.7);
       }
 
       /* Visor Glare Pulse & Telemetry Glow */
       var mGlare = mOv.querySelector(".m-ov-glare");
       if (mGlare) {
-        tl.fromTo(mGlare, { opacity: 0.2 }, { opacity: 0.65, duration: 1.5, ease: "sine.inOut", yoyo: true, repeat: rep(dur, 3.0) }, at + 0.3);
+        tl.fromTo(mGlare, { opacity: 0.2 }, { opacity: 0.65, duration: 1.5, ease: "sine.inOut", yoyo: true, repeat: repYoyo(dur, 3.0) }, at + 0.3);
       }
 
 
@@ -1094,11 +1105,11 @@
       if (mHud) {
         tl.fromTo(mHud, { scale: 0.72, opacity: 0, y: 12 }, { scale: 1, opacity: 1, y: 0, duration: 0.45, ease: E.springSubtle }, at + 0.28);
         queueSFX("unmask", at + 0.28, { vol: 0.65 });
-        tl.to(mHud, { y: -3, duration: 2.0, ease: "sine.inOut", yoyo: true, repeat: rep(dur, 4.0) }, at + 0.75);
+        tl.to(mHud, { y: -3, duration: 2.0, ease: "sine.inOut", yoyo: true, repeat: repYoyo(dur, 4.0), force3D: true }, at + 0.75);
       }
       var mRing = mOv.querySelector(".m-ov-ring");
       if (mRing) {
-        tl.to(mRing, { opacity: 0.85, scale: 1.12, duration: 0.8, ease: "sine.inOut", yoyo: true, repeat: rep(dur, 1.6) }, at + 0.2);
+        tl.to(mRing, { opacity: 0.85, scale: 1.12, duration: 0.8, ease: "sine.inOut", yoyo: true, repeat: repYoyo(dur, 1.6) }, at + 0.2);
       }
 
       /* Directional Pointing Angle */

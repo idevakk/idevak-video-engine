@@ -71,6 +71,16 @@ if missing using the exact commands in `docs/DAYTONA.md`. This policy is repo-lo
     checks at affected timestamps. Preview-server launch and video rendering
     still require permission; keep any unperformed playback/export QA pending.
 
+## Multi-Agent Delegation Architecture
+
+Production can be orchestrated by a multi-agent team coordinated by the **Master Orchestrator** (`prompts/master-orchestrator.md`) delegating to 6 specialized subagents:
+- **`video-director`** (`prompts/subagents/video-director.md`): Pacing, act structure, retention hooks, and mascot emotional arcs.
+- **`video-writer`** (`prompts/subagents/video-writer.md`): Spoken voiceover dialogue and decoupled display headlines/sublines.
+- **`scene-designer`** (`prompts/subagents/scene-designer.md`): Authoritative `content/video.json` using the 22 scene archetypes.
+- **`animator-choreographer`** (`prompts/subagents/animator-choreographer.md`): Deterministic GSAP timelines in `engine/anim.js`, zero-jitter standards.
+- **`audio-master`** (`prompts/subagents/audio-master.md`): Procedural SFX synthesis in `engine/sfx_mixer.py`, ducking, and headroom.
+- **`qa-tester`** (`prompts/subagents/qa-tester.md`): Frame-by-frame visual audit (`qa:frames`, `qa:sheets`) running strictly in Phase 4 after initial compilation.
+
 ## Workflow
 
 Agents own dependency setup and steps 1-6, plus lint, tests, headless checks, and

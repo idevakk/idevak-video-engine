@@ -73,7 +73,8 @@ if missing using the exact commands in `docs/DAYTONA.md`. This policy is repo-lo
 
 ## Multi-Agent Delegation Architecture
 
-Production can be orchestrated by a multi-agent team coordinated by the **Master Orchestrator** (`prompts/master-orchestrator.md`) delegating to 6 specialized subagents:
+Production can be orchestrated by a multi-agent team coordinated by the **Master Orchestrator** (`prompts/master-orchestrator.md`) delegating across a 5-phase lifecycle to 7 specialized subagents:
+- **`researcher-tts-writer`** (`prompts/subagents/researcher-tts-writer.md`): Pre-production research, G2P phonetic TTS script generation, and draft storyboard compilation.
 - **`video-director`** (`prompts/subagents/video-director.md`): Pacing, act structure, retention hooks, and mascot emotional arcs.
 - **`video-writer`** (`prompts/subagents/video-writer.md`): Spoken voiceover dialogue and decoupled display headlines/sublines.
 - **`scene-designer`** (`prompts/subagents/scene-designer.md`): Authoritative `content/video.json` using the 22 scene archetypes.

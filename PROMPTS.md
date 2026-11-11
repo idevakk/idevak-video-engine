@@ -425,7 +425,7 @@ What is this beat about?
 > [!NOTE]
 > For multi-agent orchestration architectures, see the modular system prompts in `prompts/`:
 > - Master Orchestrator: `prompts/master-orchestrator.md`
-> - Specialized Subagents: `prompts/subagents/` (`video-director`, `video-writer`, `scene-designer`, `animator-choreographer`, `audio-master`, `qa-tester`).
+> - Specialized Subagents: `prompts/subagents/` (`researcher-tts-writer`, `video-director`, `video-writer`, `scene-designer`, `animator-choreographer`, `audio-master`, `qa-tester`).
 
 Copy and paste this monolithic prompt when instructing a single LLM to generate a complete script:
 

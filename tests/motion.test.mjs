@@ -156,7 +156,90 @@ test('camera and decorative drift have no frame-boundary snapbacks', async()=>{
  });
  assert.ok(result.maxGhostJump<0.2,JSON.stringify(result));
  assert.equal(result.maxCameraJump,0);
- assert.ok(result.minScale>=1 && result.maxScale<=1.025);
+ // The camera must never creep. A sub-pixel scale on the scene wrapper
+ // resamples every glyph each frame, which reads as text shimmer on a hold.
+ assert.ok(result.minScale>=1 && result.maxScale<=1.025,JSON.stringify(result));
+ const settled=await page.evaluate(()=>{
+  const tl=window.__timelines['motion-test'];
+  const out=[];
+  for(const n of document.querySelectorAll('.sc-in')){
+   const t=Number(n.parentElement.dataset.start)+Number(n.parentElement.dataset.duration)*0.85;
+   tl.seek(t,false);
+   out.push([n.parentElement.id,gsap.getProperty(n,'scaleX'),gsap.getProperty(n,'scaleY')]);
+  }
+  return out;
+ });
+ for(const [id,sx,sy] of settled) assert.ok(sx===1&&sy===1,id+' settled at '+sx+'x'+sy);
+ await page.close();
+});
+
+// Decorative loops must keep moving for as long as their scene is on screen.
+// `rep` used to under-count, so the mascot ring, glares and bobs settled early
+// and froze for the rest of the scene.
+test('mascot loops keep running to the end of their scene', async()=>{
+ const page=await open();
+ const stalled=await page.evaluate(()=>{
+  const tl=window.__timelines['motion-test'];
+  const sels=['.m-ov-ring','.m-ov-glare','.m-ov-avatar','.m-ov-hud'];
+  const out=[];
+  for(const sec of document.querySelectorAll('section.clip')){
+   if(!sec.querySelector('.m-ov'))continue;
+   const end=Number(sec.dataset.start)+Number(sec.dataset.duration);
+   for(const sel of sels){
+    const n=sec.querySelector(sel);if(!n)continue;
+    const seen=new Set();
+    for(let k=0;k<5;k++){
+     tl.seek(end-1.2+k*0.3,false);
+     const cs=getComputedStyle(n);
+     seen.add(cs.transform+'|'+cs.opacity);
+    }
+    if(seen.size<2)out.push(sec.id+' '+sel);
+   }
+  }
+  return out;
+ });
+ assert.deepEqual(stalled,[],'loops stopped before the scene ended');
+ await page.close();
+});
+
+// Text jitter regression. Once a scene's entrance has finished, its frame must
+// be byte-identical between adjacent timeline positions. Any sub-pixel scale,
+// half-pixel translate or re-rasterized glyph changes the encoded PNG.
+test('settled frames are pixel-stable frame to frame', async()=>{
+ const page=await open();
+ // Freeze layers that legitimately move forever (grain, scanlines, packets).
+ await page.addStyleTag({content:`
+  #bg-noise,#bg-grain,#bg-grid,#bg-bloom,#bg-flare,#cut-rail,.amb,
+  .meme-glitch-bar,.mascot-scanline,.meme-scanlines,.code-scan,.m-ov-ring,.m-ov-glare,
+  .mascot-hud-glare,.tm-cursor,.hl-ink,.redact-laser,
+  .fl-packet,.flow-packet,.cloud-packet,.cld-packet,.sp-conn-pkt,.tl-play,.tl-line-fill,.mx-c{display:none!important}
+  /* Outlined ghost words and the mascot avatar move on purpose. Neither is copy,
+     and both would otherwise mask a real regression in the text around them. */
+  .cold-ghost,.hero-mark,.st-ghost,.stat-ghost,.out-ghost,.meme-ghost,.q-mark,
+  .mascot-hud-frame,.m-ov-avatar,.m-ov-avatar-wrap,.mascot-img{display:none!important}
+ `});
+ const seek=t=>page.evaluate(({t,id})=>{
+  window.__timelines[id].seek(t,false);
+  for(const s of document.querySelectorAll('section.clip')){
+   const a=Number(s.dataset.start),b=a+Number(s.dataset.duration);
+   s.style.visibility=t>=a-1e-4&&t<b-1e-4?'visible':'hidden';
+  }
+ },{t,id:'motion-test'});
+ const unstable=[];
+ for(const sec of await page.$$('section.clip')){
+  const start=Number(await sec.getAttribute('data-start'));
+  const dur=Number(await sec.getAttribute('data-duration'));
+  const from=start+dur*0.85;
+  if(start+dur-0.4-from<0.15)continue;
+  await seek(from);
+  const base=await page.screenshot();
+  for(let k=1;k<=3;k++){
+   await seek(from+k/30);
+   const next=await page.screenshot();
+   if(!base.equals(next)){unstable.push(await sec.getAttribute('id'));break;}
+  }
+ }
+ assert.deepEqual(unstable,[],'frames changed during a settled text hold');
  await page.close();
 });
 

@@ -422,7 +422,12 @@ What is this beat about?
 
 ## 5. Master LLM Generation Prompt
 
-Copy and paste this prompt when instructing an LLM to generate a complete script:
+> [!NOTE]
+> For multi-agent orchestration architectures, see the modular system prompts in `prompts/`:
+> - Master Orchestrator: `prompts/master-orchestrator.md`
+> - Specialized Subagents: `prompts/subagents/` (`video-director`, `video-writer`, `scene-designer`, `animator-choreographer`, `audio-master`, `qa-tester`).
+
+Copy and paste this monolithic prompt when instructing a single LLM to generate a complete script:
 
 ```markdown
 You are the Lead Technical Director and Scriptwriter for the YouTube channel iDevak (Cloud Engineering, AI Automation, DevOps, and Software Architecture). Your task is to write a fast-paced, Fireship-style technical explainer video in the iDevak video engine JSON format (`content/video.json`).

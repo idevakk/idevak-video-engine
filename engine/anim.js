@@ -1168,37 +1168,75 @@
     },
 
     terminal: function (el, s, at, dur) {
+      var ghost = el.querySelector(".tm-ghost");
+      if (ghost) {
+        fade(ghost, at, { dur: 0.8, y: 10 });
+        amb(ghost, dur, at);
+      }
       fade(el.querySelector(".eyebrow"), at, { y: 12, dur: 0.55 });
+      if (el.querySelector(".tm-head-title")) {
+        words(el.querySelector(".tm-head-title"), at + 0.05, { dur: 0.65, stagger: 0.035, y: 16 });
+      }
+      queueSFX("whoosh", at + 0.05, { vol: 0.4 });
       tl.fromTo(el.querySelector(".tm-shell"),
-        { y: 26, opacity: 0, scale: 0.985, rotateX: 2.5 },
-        { y: 0, opacity: 1, scale: 1, rotateX: 0, duration: 0.75, ease: E.expo, transformPerspective: 1200 },
-        at
+        { y: 34, opacity: 0, scale: 0.985, rotateX: 2.5 },
+        { y: 0, opacity: 1, scale: 1, rotateX: 0, duration: 0.85, ease: E.expo, transformPerspective: 1200 },
+        at + 0.08
       );
       var lines = q(el, ".tm-line");
-      var curTime = at + 0.25;
+      var curTime = at + 0.28;
       lines.forEach(function (l, i) {
         var isCmd = l.classList.contains("tm-cmd");
+        var isErr = l.classList.contains("tm-err") || l.classList.contains("tm-bad");
         var textNode = l.querySelector(".tm-t");
-        var textLen = (textNode && textNode.textContent ? textNode.textContent.length : 12);
-        var typeDur = isCmd ? Math.max(0.24, Math.min(0.65, textLen * 0.024)) : 0.12;
-        var stepsCount = isCmd ? Math.max(6, Math.min(28, textLen)) : 1;
+        var textLen = (textNode && textNode.textContent ? textNode.textContent.length : 16);
+        var typeDur = isCmd ? Math.max(0.28, Math.min(0.65, textLen * 0.022)) : 0.12;
+        var stepsCount = isCmd ? Math.max(6, Math.min(30, textLen)) : 1;
 
-        tl.fromTo(l, { opacity: 0 }, { opacity: 1, duration: 0.1 }, curTime);
+        tl.fromTo(l, { opacity: 0, x: -10 }, { opacity: 1, x: 0, duration: 0.12, ease: "power2.out" }, curTime);
         tl.fromTo(textNode,
           { clipPath: "inset(0 100% 0 0)" },
           { clipPath: "inset(0 0% 0 0)", duration: typeDur, ease: isCmd ? "steps(" + stepsCount + ")" : "none" },
           curTime
         );
-        queueSFX("click", curTime, { vol: 0.85 });
-        curTime += typeDur + (isCmd ? 0.2 : 0.14);
+
+        if (isCmd) {
+          queueSFX("click", curTime, { vol: 0.85 });
+          queueSFX("tick", curTime + typeDur * 0.5, { vol: 0.4 });
+        } else if (isErr) {
+          queueSFX("thud", curTime, { vol: 0.9 });
+          queueSFX("glitch", curTime + 0.04, { vol: 0.6 });
+        } else {
+          queueSFX("click", curTime, { vol: 0.5 });
+        }
+
+        curTime += typeDur + (isCmd ? 0.22 : 0.14);
       });
+
+      // Terminal blinking block cursor
       var cur = el.querySelector(".tm-cursor");
       if (cur) {
         var start = at + 0.3;
         tl.fromTo(cur, { opacity: 0 }, { opacity: 1, duration: 0.16, repeat: repYoyo(Math.max(1.2, dur - 0.4), 0.5), yoyo: true }, start);
       }
-      if (el.querySelector(".tm-title")) fade(el.querySelector(".tm-title"), at + 0.55, { dur: 0.7 });
-      if (el.querySelector(".tm-sub")) fade(el.querySelector(".tm-sub"), at + 0.7, { dur: 0.7 });
+
+      // Blinking / pulsing LED
+      var led = el.querySelector(".tm-led");
+      if (led) {
+        tl.to(led, { opacity: 0.3, duration: 0.4, yoyo: true, repeat: repYoyo(dur, 0.8), ease: "steps(2)" }, at + 0.1);
+      }
+
+      var call = el.querySelector(".tm-callout");
+      if (call) {
+        tl.fromTo(call,
+          { clipPath: "inset(0 100% 0 0)", opacity: 1 },
+          { clipPath: "inset(0 0% 0 0)", duration: 0.9, ease: "steps(28)" },
+          at + 0.6
+        );
+        [0.6, 0.7, 0.8, 0.9].forEach(function (dt) {
+          queueSFX("tick", at + dt, { vol: 0.35 });
+        });
+      }
     },
 
     compare: function (el, s, at, dur) {

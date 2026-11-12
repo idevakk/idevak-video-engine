@@ -280,12 +280,16 @@
       "id": "s010",
       "type": "terminal",
       "act": "core",
+      "accent": "#ff3b5c",
       "narration": "When the connection pool exhausted, every container node began throwing cascading connection timeouts.",
       "eyebrow": "THE FAILURE",
-      "headline": "Cascading Pool Exhaustion",
+      "headline": "Cascading ==Pool Exhaustion==",
       "subline": "Max connections reached. Health checks failed.",
       "meta": {
-        "host": "prod-cluster / us-east-1",
+        "ghost": "CRASH",
+        "host": "prod-cluster // us-east-1a",
+        "tag": "FATAL CRASH LOOP",
+        "announce": "All worker nodes deadlocked in CrashLoopBackOff.",
         "lines": [
           {
             "t": "kubectl get pods -n production",
@@ -300,8 +304,8 @@
             "k": "err"
           },
           {
-            "t": "[CRITICAL] Connection pool limit 500 exceeded",
-            "k": "out"
+            "t": "[CRITICAL] Connection pool limit 500 exceeded: DEADLOCK",
+            "k": "err"
           }
         ]
       },

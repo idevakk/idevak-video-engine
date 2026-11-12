@@ -617,11 +617,12 @@ const RENDER = {
   },
 
   terminal(s) {
+    const ghost = s.ghost || s.meta?.ghost || "";
     const rawLines = s.meta?.lines || [];
     const lines = rawLines.map((l, k) => {
-      const kind = l.kind || (l.cmd ? "cmd" : l.err ? "err" : l.ok ? "ok" : "out");
+      const kind = l.kind || l.k || (l.cmd ? "cmd" : l.err ? "err" : l.bad ? "bad" : l.ok ? "ok" : "out");
       let text = l.t ?? l.cmd ?? l.text ?? "";
-      const pfx = kind === "cmd" ? "$" : ">";
+      const pfx = kind === "cmd" ? "$" : (kind === "err" || kind === "bad") ? "!" : ">";
       let renderedText = tok(text);
       if (l.redact || renderedText.includes("~~")) {
         renderedText = renderedText.replace(/~~(.*?)~~/g, (_, inner) => `<span class="forensic-redact is-live-redact" data-redact="${esc(inner)}"><span class="redact-tape"><span class="redact-laser"></span></span><span class="redact-text">${inner}</span></span>`);
@@ -629,26 +630,36 @@ const RENDER = {
       if (l.hl || renderedText.includes("==")) {
         renderedText = renderedText.replace(/==(.*?)==/g, (_, inner) => `<span class="hl-marker is-live-hl" data-hl="${esc(inner)}"><span class="hl-ink"></span><span class="hl-text">${inner}</span></span>`);
       }
-      return `<div class="tm-line tm-${kind}" data-k="${k}"><span class="tm-p">${pfx}</span><span class="tm-t">${renderedText}</span></div>`;
+      const tag = (kind === "err" || kind === "bad") ? `<span class="tm-line-tag">FAILED</span>` : "";
+      return `<div class="tm-line tm-${kind}" data-k="${k}"><span class="tm-p">${pfx}</span><span class="tm-t">${renderedText}${tag}</span></div>`;
     });
-    const title = s.headline || s.meta?.title || "";
-    const sub = s.subline || s.meta?.sub || "";
+    const host = s.meta?.host || "terminal@idevak";
+    const tag = s.meta?.tag || "";
+    const callout = s.meta?.announce || s.subline || "";
+    const foot = callout
+      ? `<div class="tm-foot"><div class="tm-callout">${splitWords(callout, s)}</div></div>`
+      : "";
     return `
+    ${ghost ? `<div class="tm-ghost" data-layout-allow-overflow>${esc(ghost)}</div>` : ""}
     ${eyebrow(s)}
+    ${s.headline ? `<h2 class="tm-head-title">${splitWords(s.headline, s)}</h2>` : ""}
     <div class="tm-shell">
       <div class="tm-bar">
         <div style="display:flex;align-items:center;gap:14px">
           <div class="mac-dots"><span></span><span></span><span></span></div>
-          <span>${esc(s.meta?.host || "terminal@idevak")}</span>
+          <span class="tm-host">${esc(host)}</span>
         </div>
-        <span class="tm-led"></span>
+        <div style="display:flex;align-items:center;gap:12px">
+          ${tag ? `<span class="tm-tag">${esc(tag)}</span>` : ""}
+          <span class="tm-led"></span>
+        </div>
       </div>
       <div class="tm-body">
         ${lines.join("")}
         <span class="tm-cursor"></span>
       </div>
     </div>
-    ${title || sub ? `<div class="tm-foot">${title ? `<div class="tm-title">${splitWords(title, s)}</div>` : ""}${sub ? `<div class="tm-sub">${esc(sub)}</div>` : ""}</div>` : ""}`;
+    ${foot}`;
   },
 
   compare(s) {

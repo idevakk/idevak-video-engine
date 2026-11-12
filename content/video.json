@@ -111,6 +111,8 @@
       "meta": {
         "value": "99.9",
         "suffix": "%",
+        "delta": "-100% COLLAPSE",
+        "deltaDir": "down",
         "stat": {
           "to": 0.0,
           "dec": 1

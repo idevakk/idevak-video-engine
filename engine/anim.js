@@ -546,21 +546,68 @@
     },
 
     stat: function (el, s, at, dur) {
+      var stage = el.querySelector(".stat-stage");
+      if (stage) {
+        tl.fromTo(stage, { scale: 0.985 }, { scale: 1.015, duration: dur, ease: "none" }, at);
+      }
+
       fade(el.querySelector(".eyebrow"), at, { y: 12, dur: 0.55 });
       var num = el.querySelector(".stat-number");
+      var suffix = el.querySelector(".stat-suffix");
+      var rulerFill = el.querySelector(".stat-ruler-fill");
       var cued = typeof s.revealTime === "number";
       var revealAt = at + (cued ? s.revealTime : 0.05);
       var countAt = cued ? revealAt : at + 0.25;
       var countDur = cued ? Math.max(0.1, Math.min(0.65, dur - s.revealTime - 0.05)) : Math.min(2.1, Math.max(1.1, dur * 0.3));
+
       tl.fromTo(el.querySelector(".stat-main"), { y: 46, opacity: 0 }, { y: 0, opacity: 1, duration: cued ? 0.35 : 1, ease: E.expo }, revealAt);
-      countUp(num, countAt, { duration: countDur });
-      queueSFX("thud", countAt, { vol: 1.3 });
-      tl.fromTo(el.querySelector(".stat-label"), { y: 24, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7, ease: E.soft }, at + 0.5);
+      
+      var fromVal = s.meta?.from != null ? s.meta.from : parseFloat(s.meta?.value || "99.9");
+      countUp(num, countAt, { duration: countDur, from: fromVal });
+      queueSFX("thud", countAt, { vol: 1.1 });
+
+      /* Intense mechanical odometer click burst during count */
+      var tickBursts = 14;
+      for (var tIdx = 0; tIdx < tickBursts; tIdx++) {
+        var tickTime = countAt + (tIdx / tickBursts) * countDur;
+        queueSFX("tick", tickTime, { vol: 0.85 });
+      }
+
+      /* Alert transition at count completion */
+      var alertAt = countAt + countDur * 0.8;
+      tl.call(function () {
+        if (num) num.classList.add("is-alert");
+        if (suffix) suffix.classList.add("is-alert");
+        if (rulerFill) rulerFill.classList.add("is-alert");
+      }, null, alertAt);
+      queueSFX("glitch", alertAt, { vol: 0.65 });
+
+      /* Delta badge spring stamp */
+      var deltaBadge = el.querySelector(".stat-delta");
+      if (deltaBadge) {
+        tl.fromTo(deltaBadge, { scale: 0, opacity: 0, rotation: -12 }, { scale: 1, opacity: 1, rotation: 0, duration: 0.5, ease: E.springSubtle }, alertAt + 0.1);
+      }
+
+      /* Headline words */
+      words(el.querySelector(".stat-label"), at + 0.45, { stagger: 0.04, dur: 0.75 }, s);
       if (el.querySelector(".stat-sub")) fade(el.querySelector(".stat-sub"), at + 0.65, { dur: 0.7 });
+
+      /* Ruler and laser traveling bead */
       tl.fromTo(el.querySelector(".stat-ruler"), { opacity: 0 }, { opacity: 1, duration: 0.5 }, at + 0.4);
-      tl.fromTo(el.querySelector(".stat-ruler-fill"), { scaleX: 0 }, { scaleX: 1, duration: 1.4, ease: "power2.inOut" }, at + 0.5);
-      if (el.querySelector(".stat-ghost")) tl.fromTo(el.querySelector(".stat-ghost"), { opacity: 0, x: 60 }, { opacity: 1, x: 0, duration: 2, ease: E.expo }, cued ? revealAt : at);
-      amb(el.querySelector(".stat-ghost"), dur, at);
+      if (rulerFill) {
+        tl.fromTo(rulerFill, { scaleX: 0 }, { scaleX: 1, duration: 1.4, ease: "power2.inOut" }, at + 0.5);
+      }
+      var bead = el.querySelector(".stat-ruler-bead");
+      if (bead) {
+        tl.fromTo(bead, { left: "0%", opacity: 0 }, { left: "100%", opacity: 1, duration: 1.4, ease: "power2.inOut" }, at + 0.5);
+        tl.to(bead, { scale: 1.5, opacity: 0.4, yoyo: true, repeat: -1, duration: 0.6, ease: "sine.inOut" }, at + 1.9);
+      }
+
+      var ghost = el.querySelector(".stat-ghost");
+      if (ghost) {
+        tl.fromTo(ghost, { opacity: 0, x: 60 }, { opacity: 0.8, x: 0, duration: 2, ease: E.expo }, cued ? revealAt : at);
+        amb(ghost, dur, at);
+      }
     },
 
     dateline: function (el, s, at, dur) {

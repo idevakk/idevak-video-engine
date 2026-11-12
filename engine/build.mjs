@@ -278,6 +278,10 @@ const RENDER = {
     const value = s.meta?.display || String(s.meta?.value ?? s.headline);
     const suffix = s.meta?.suffix || "";
     const prefix = s.meta?.prefix || "";
+    const delta = s.meta?.delta || "-100% COLLAPSE";
+    const deltaDir = (s.meta?.deltaDir || "down") === "up" ? "delta-up" : "delta-down";
+    const deltaArrow = deltaDir === "delta-up" ? "▲" : "▼";
+
     return `
     <div class="stat-stage">
       <div class="stat-ghost">${esc(value)}</div>
@@ -286,12 +290,14 @@ const RENDER = {
         ${prefix ? `<span class="stat-prefix">${esc(prefix)}</span>` : ""}
         <span class="stat-number" data-to="${esc(String(st.to ?? 0))}" data-dec="${st.dec || 0}" data-sep="${st.sep ? 1 : 0}" data-nocount="${st.nocount ? 1 : 0}"><span class="stat-reserve" aria-hidden="true">${esc(value)}</span><span class="stat-value">${esc(value)}</span></span>
         ${suffix ? `<span class="stat-suffix">${esc(suffix)}</span>` : ""}
+        ${delta ? `<div class="stat-delta ${deltaDir}"><span class="stat-delta-arrow">${deltaArrow}</span><span>${esc(delta)}</span></div>` : ""}
       </div>
-      <div class="stat-label">${esc(s.headline)}</div>
+      <div class="stat-label">${splitWords(s.headline, s)}</div>
       ${s.subline ? `<div class="stat-sub">${esc(s.subline)}</div>` : ""}
       <div class="stat-ruler">
         <i></i><i></i><i></i><i></i><i></i>
         <div class="stat-ruler-fill"></div>
+        <div class="stat-ruler-bead"></div>
       </div>
     </div>`;
   },

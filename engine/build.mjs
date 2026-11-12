@@ -644,6 +644,8 @@ const RENDER = {
     ${eyebrow(s)}
     ${s.headline ? `<h2 class="tm-head-title">${splitWords(s.headline, s)}</h2>` : ""}
     <div class="tm-shell">
+      <div class="tm-scanlines"></div>
+      <div class="tm-glare"></div>
       <div class="tm-bar">
         <div style="display:flex;align-items:center;gap:14px">
           <div class="mac-dots"><span></span><span></span><span></span></div>

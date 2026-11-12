@@ -1183,6 +1183,12 @@
         { y: 0, opacity: 1, scale: 1, rotateX: 0, duration: 0.85, ease: E.expo, transformPerspective: 1200 },
         at + 0.08
       );
+      var shell = el.querySelector(".tm-shell");
+      var scanlines = el.querySelector(".tm-scanlines");
+      if (scanlines) {
+        tl.fromTo(scanlines, { opacity: 0 }, { opacity: 0.55, duration: 0.5 }, at + 0.1);
+      }
+
       var lines = q(el, ".tm-line");
       var curTime = at + 0.28;
       lines.forEach(function (l, i) {
@@ -1190,6 +1196,7 @@
         var isErr = l.classList.contains("tm-err") || l.classList.contains("tm-bad");
         var textNode = l.querySelector(".tm-t");
         var textLen = (textNode && textNode.textContent ? textNode.textContent.length : 16);
+        var isDeadlock = textNode && textNode.textContent && textNode.textContent.indexOf("DEADLOCK") !== -1;
         var typeDur = isCmd ? Math.max(0.28, Math.min(0.65, textLen * 0.022)) : 0.12;
         var stepsCount = isCmd ? Math.max(6, Math.min(30, textLen)) : 1;
 
@@ -1203,6 +1210,44 @@
         if (isCmd) {
           queueSFX("click", curTime, { vol: 0.85 });
           queueSFX("tick", curTime + typeDur * 0.5, { vol: 0.4 });
+        } else if (isDeadlock) {
+          // Critical deadlock hit: shell shudder + crimson alarm flare + scanline burst
+          if (shell) {
+            tl.to(shell, {
+              x: 10,
+              duration: 0.035,
+              yoyo: true,
+              repeat: 7,
+              ease: "power2.inOut"
+            }, curTime);
+            tl.fromTo(shell,
+              { borderColor: "rgba(255,59,92,0.95)", boxShadow: "0 0 75px rgba(255,59,92,0.65), inset 0 0 35px rgba(255,59,92,0.3)" },
+              { borderColor: "rgba(255,59,92,0.45)", boxShadow: "0 40px 120px rgba(0,0,0,.65), 0 0 25px rgba(255,59,92,0.2)", duration: 0.8, ease: "power2.out" },
+              curTime
+            );
+          }
+          if (scanlines) {
+            tl.to(scanlines, { opacity: 0.95, duration: 0.05, yoyo: true, repeat: 5 }, curTime);
+          }
+          // Sympathetic panic reaction on mascot & speech bubble
+          var mOv = el.querySelector(".m-ov");
+          if (mOv) {
+            tl.to(mOv, { x: -8, duration: 0.035, yoyo: true, repeat: 5, ease: "power2.inOut" }, curTime + 0.02);
+            var bubble = mOv.querySelector(".m-ov-bubble");
+            if (bubble) {
+              tl.to(bubble, {
+                scale: 1.08,
+                borderColor: "#ff3b5c",
+                boxShadow: "0 16px 45px rgba(255,59,92,0.4)",
+                duration: 0.12,
+                yoyo: true,
+                repeat: 1,
+                ease: E.springSubtle
+              }, curTime + 0.04);
+            }
+          }
+          queueSFX("thud", curTime, { vol: 1.25 });
+          queueSFX("glitch", curTime + 0.04, { vol: 0.85 });
         } else if (isErr) {
           queueSFX("thud", curTime, { vol: 0.9 });
           queueSFX("glitch", curTime + 0.04, { vol: 0.6 });

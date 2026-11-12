@@ -411,6 +411,58 @@
     },
     {
       "id": "s013",
+      "type": "split",
+      "act": "core",
+      "accent": "#ff5a6e",
+      "narration": "When fifty thousand client instances hammered the gateway without backoff, the primary database shard suffered instantaneous deadlock.",
+      "eyebrow": "INCIDENT FORENSICS",
+      "headline": "Dual-Pane Correlation: ==The Stampede Mechanism==",
+      "subline": "Left: unjittered client retry dispatch. Right: instant database pool exhaustion.",
+      "meta": {
+        "ghost": "AUTOPSY",
+        "tag": "LIVE CORRELATION TRACE",
+        "left": {
+          "title": "CLIENT RETRY STORM",
+          "badge": "REPLAY / 50K",
+          "lines": [
+            {
+              "k": "cmd",
+              "t": "curl -X POST https://api.idevak.internal/v1/checkout"
+            },
+            {
+              "k": "out",
+              "t": "HTTP/1.1 504 Gateway Timeout [elapsed: 5000ms]"
+            },
+            {
+              "k": "cmd",
+              "t": "storm-client --concurrency=50000 --backoff=none"
+            },
+            {
+              "k": "err",
+              "t": "[DISPATCH] 50,000 parallel retries fired simultaneously"
+            }
+          ]
+        },
+        "right": {
+          "title": "AURORA SHARD 01 IMPACT",
+          "status": "DEADLOCKED",
+          "bad": true,
+          "pts": [
+            "Max connection pool limit 500/500 exhausted",
+            "PostgreSQL active thread spinlock reached 100%",
+            "Cascading connection timeouts across Europe-West",
+            "Secondary read replicas starved of health check pings"
+          ]
+        }
+      },
+      "mascot": {
+        "expression": "shocked",
+        "position": "bottom-right",
+        "bubble": "Fifty thousand clients hit the DB with zero backoff!"
+      }
+    },
+    {
+      "id": "s014",
       "type": "compare",
       "act": "solution",
       "narration": "Instead of blind retries that stampede your database, modern systems implement exponential backoff with jitter and circuit breaking.",
@@ -445,7 +497,7 @@
       }
     },
     {
-      "id": "s014",
+      "id": "s015",
       "type": "outro",
       "act": "solution",
       "narration": "If you build, solve, and deploy modern cloud software, subscribe for more real-world production autopsies.",

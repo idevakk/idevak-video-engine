@@ -1631,44 +1631,92 @@
 
     split: function (el, s, at, dur) {
       fade(el.querySelector(".eyebrow"), at, { y: 12, dur: 0.55 });
-      fade(el.querySelector(".split-header"), at + 0.05, { y: 10, dur: 0.5 });
+      var ghost = el.querySelector(".split-ghost");
+      if (ghost) {
+        fade(ghost, at, { dur: 0.8, y: 10 });
+        amb(ghost, dur, at);
+      }
+      if (el.querySelector(".split-head-title")) {
+        words(el.querySelector(".split-head-title"), at + 0.05, { dur: 0.65, stagger: 0.035, y: 16 });
+      } else if (el.querySelector(".split-title")) {
+        words(el.querySelector(".split-title"), at + 0.35, { stagger: 0.04, dur: 0.8 }, s);
+      }
+      fade(el.querySelector(".split-header"), at + 0.08, { y: 10, dur: 0.5 });
       var leftPane = el.querySelector(".split-left");
       var rightPane = el.querySelector(".split-right");
-      var curT = at + 0.25;
+      var curT = at + 0.22;
       if (leftPane) {
-        tl.fromTo(leftPane, { x: -40, opacity: 0, scale: 0.96 }, { x: 0, opacity: 1, scale: 1, duration: 0.8, ease: E.expo }, at + 0.1);
+        tl.fromTo(leftPane, { x: -40, opacity: 0, scale: 0.96 }, { x: 0, opacity: 1, scale: 1, duration: 0.75, ease: E.expo }, at + 0.1);
         var lines = q(leftPane, ".sp-line");
         lines.forEach(function (l) {
           tl.fromTo(l, { opacity: 0, x: -10 }, { opacity: 1, x: 0, duration: 0.25, ease: E.soft }, curT);
           queueSFX("click", curT, { vol: 0.75 });
-          curT += 0.22;
+          curT += 0.2;
         });
       }
       var pkt = el.querySelector(".sp-conn-pkt");
-      var shootAt = Math.max(at + 0.45, curT - 0.15);
+      var head = el.querySelector(".sp-conn-head");
+      var chip = el.querySelector(".split-conn-chip");
+      var shootAt = Math.max(at + 0.45, curT - 0.1);
+
+      if (chip) {
+        tl.fromTo(chip, { scale: 0.75, opacity: 0, y: -6 }, { scale: 1, opacity: 1, y: 0, duration: 0.45, ease: E.springSubtle }, shootAt);
+      }
+
+      var cycle = 0.65;
+      var transitRepeats = rep(dur - (shootAt - at), cycle + 0.15);
+
       if (pkt) {
-        tl.fromTo(pkt, { cx: 6, opacity: 0 }, { opacity: 1, duration: 0.15 }, shootAt);
-        tl.to(pkt, { cx: 40, duration: 0.35, ease: "power2.in" }, shootAt + 0.05);
-        queueSFX("unmask", shootAt + 0.05, { vol: 0.7 });
+        tl.to(pkt, {
+          keyframes: [
+            { cx: 2, opacity: 0, duration: 0 },
+            { cx: 14, opacity: 1, duration: cycle * 0.15, ease: "power1.out" },
+            { cx: 78, opacity: 1, duration: cycle * 0.7, ease: "none" },
+            { cx: 90, opacity: 0, duration: cycle * 0.15, ease: "power1.in" }
+          ],
+          repeat: transitRepeats,
+          duration: cycle,
+          repeatDelay: 0.15,
+          ease: "none"
+        }, shootAt + 0.05);
+        queueSFX("unmask", shootAt + 0.05, { vol: 0.75 });
+      }
+
+      if (head) {
+        tl.fromTo(head,
+          { opacity: 0.75, scale: 0.95 },
+          { opacity: 1, scale: 1.15, duration: 0.25, yoyo: true, repeat: repYoyo(dur - (shootAt - at), 0.5), ease: "sine.inOut" },
+          shootAt + 0.2
+        );
       }
       if (rightPane) {
-        tl.fromTo(rightPane, { x: 40, opacity: 0, scale: 0.96 }, { x: 0, opacity: 1, scale: 1, duration: 0.8, ease: E.expo }, at + 0.2);
+        tl.fromTo(rightPane, { x: 40, opacity: 0, scale: 0.96 }, { x: 0, opacity: 1, scale: 1, duration: 0.75, ease: E.expo }, at + 0.18);
         var isBad = rightPane.classList.contains("is-bad");
-        var impactT = shootAt + 0.4;
+        var impactT = shootAt + 0.38;
         if (isBad) {
           queueSFX("thud", impactT, { vol: 1.15 });
           tl.fromTo(rightPane,
             { boxShadow: "0 0 0px rgba(0,0,0,0)" },
-            { boxShadow: "0 0 38px -4px rgba(255,59,92,0.75)", duration: 0.4, yoyo: true, repeat: 3 },
+            { boxShadow: "0 0 38px -4px rgba(255,90,110,0.85)", duration: 0.4, yoyo: true, repeat: 3 },
             impactT
           );
-          tl.fromTo(rightPane, { x: 8 }, { x: 0, duration: 0.25, ease: "power2.out" }, impactT);
+          tl.fromTo(rightPane, { x: 8 }, { x: 0, duration: 0.22, ease: "power2.out" }, impactT);
+          var mOv = el.querySelector(".m-ov");
+          if (mOv) {
+            var avatar = mOv.querySelector(".m-ov-avatar");
+            if (avatar) {
+              tl.to(avatar, { rotate: 5, scale: 1.05, duration: 0.22, yoyo: true, repeat: 1, ease: E.springSubtle }, impactT);
+            }
+          }
         }
         var pts = q(rightPane, ".sp-pt");
-        tl.fromTo(pts, { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.45, stagger: 0.1, ease: E.soft }, impactT + 0.15);
+        tl.fromTo(pts, { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.45, stagger: 0.1, ease: E.soft }, impactT + 0.12);
       }
-      words(el.querySelector(".split-title"), at + 0.35, { stagger: 0.04, dur: 0.8 }, s);
-      if (el.querySelector(".split-sub")) fade(el.querySelector(".split-sub"), at + 0.7, { dur: 0.65 });
+      if (el.querySelector(".split-foot-sub")) {
+        fade(el.querySelector(".split-foot-sub"), at + 0.65, { dur: 0.65 });
+      } else if (el.querySelector(".split-sub")) {
+        fade(el.querySelector(".split-sub"), at + 0.65, { dur: 0.65 });
+      }
     },
 
     outro: function (el, s, at, dur) {

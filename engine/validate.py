@@ -475,6 +475,7 @@ def validate_scene(
         left = objectfield(meta, "left", where, errors, required=True)
         right = objectfield(meta, "right", where, errors, required=True)
         sfield(meta, "tag", where, errors)
+        sfield(meta, "ghost", where, errors)
         if left:
             sfield(left, "title", f"{where}.meta.left", errors)
             sfield(left, "badge", f"{where}.meta.left", errors)

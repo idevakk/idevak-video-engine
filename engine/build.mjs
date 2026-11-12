@@ -977,6 +977,7 @@ const RENDER = {
   },
 
   split(s) {
+    const ghost = s.ghost || s.meta?.ghost || "";
     const left = s.meta?.left || {};
     const right = s.meta?.right || {};
     const tag = s.meta?.tag || "INCIDENT INVESTIGATION";
@@ -991,7 +992,7 @@ const RENDER = {
 
     const rightTitle = right.title || "TARGET IMPACT";
     const rightStatus = right.status || "COMPROMISED";
-    const isBad = !right.ok && (right.bad || /compromised|breached|corrupted|vulnerable|fail/i.test(rightStatus));
+    const isBad = !right.ok && (right.bad || /compromised|breached|corrupted|vulnerable|fail|deadlock/i.test(rightStatus));
     const rightPts = (right.pts || []).map((p, k) => `
       <div class="sp-pt" data-k="${k}">
         <span class="sp-pt-dot ${isBad ? "is-bad" : "is-ok"}"></span>
@@ -1001,7 +1002,9 @@ const RENDER = {
 
     return `
     <div class="split-stage">
+      ${ghost ? `<div class="split-ghost" data-layout-allow-overflow>${esc(ghost)}</div>` : ""}
       ${eyebrow(s)}
+      ${s.headline ? `<h2 class="split-head-title">${splitWords(s.headline, s)}</h2>` : ""}
       <div class="split-header">
         <span class="split-tag">${esc(tag)}</span>
         <span class="split-label">DUAL-PANE FORENSIC INVESTIGATION</span>
@@ -1020,10 +1023,14 @@ const RENDER = {
           </div>
         </div>
         <div class="split-connector">
-          <svg viewBox="0 0 48 48" class="split-conn-svg">
-            <path class="sp-conn-p" d="M 6 24 L 40 24"/>
-            <path class="sp-conn-a" d="M 30 16 L 40 24 L 30 32"/>
-            <circle class="sp-conn-pkt" cx="6" cy="24" r="4.5" fill="var(--ac)"/>
+          <div class="split-conn-chip">
+            <span class="scc-icon">⚡</span>
+            <span>RETRY BURST</span>
+          </div>
+          <svg viewBox="0 0 100 24" class="split-conn-svg">
+            <line x1="2" y1="12" x2="86" y2="12" class="sp-conn-line"/>
+            <polygon points="84 7, 96 12, 84 17" class="sp-conn-head"/>
+            <circle class="sp-conn-pkt" cx="2" cy="12" r="3.5"/>
           </svg>
         </div>
         <div class="split-pane split-right ${isBad ? "is-bad" : "is-ok"}">
@@ -1036,10 +1043,7 @@ const RENDER = {
           </div>
         </div>
       </div>
-      <div class="split-foot">
-        ${s.headline ? `<h2 class="split-title">${splitWords(s.headline, s)}</h2>` : ""}
-        ${s.subline ? `<p class="split-sub">${esc(s.subline)}</p>` : ""}
-      </div>
+      ${s.subline ? `<div class="split-foot-sub">${esc(s.subline)}</div>` : ""}
     </div>`;
   },
 };

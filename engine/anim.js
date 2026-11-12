@@ -908,6 +908,11 @@
     },
 
     timeline: function (el, s, at, dur) {
+      var stage = el.querySelector(".tl-stage");
+      if (stage) {
+        tl.fromTo(stage, { scale: 0.985 }, { scale: 1.015, duration: dur, ease: "none" }, at);
+      }
+
       fade(el.querySelector(".eyebrow"), at, { y: 12, dur: 0.55 });
       words(el.querySelector(".tl-head"), at + 0.05, { stagger: 0.04, dur: 0.8 }, s);
       if (el.querySelector(".tl-sub")) fade(el.querySelector(".tl-sub"), at + 0.35, { dur: 0.65 });
@@ -925,19 +930,19 @@
 
       var fill = el.querySelector(".tl-line-fill");
       var play = el.querySelector(".tl-play");
-      var sweepDur = Math.max(2.4, dur * 0.55);
+      var sweepDur = Math.min(2.6, Math.max(1.8, dur * 0.4));
 
       if (fill) {
-        tl.fromTo(fill, { scaleX: 0 }, { scaleX: 1, duration: sweepDur, ease: "power2.inOut" }, at + 0.5);
+        tl.fromTo(fill, { scaleX: 0 }, { scaleX: 1, duration: sweepDur, ease: "power2.inOut" }, at + 0.4);
       }
       if (play) {
-        tl.fromTo(play, { x: 0 }, { x: 1648, duration: sweepDur, ease: "power2.inOut" }, at + 0.5);
+        tl.fromTo(play, { left: "0%" }, { left: "100%", duration: sweepDur, ease: "power2.inOut" }, at + 0.4);
       }
 
       var evs = q(el, ".tl-ev");
       evs.forEach(function (e, i) {
         var isHot = e.classList.contains("is-hot");
-        var t = at + 0.65 + (i / Math.max(1, evs.length - 1)) * (sweepDur * 0.85);
+        var t = at + 0.4 + (i / Math.max(1, evs.length - 1)) * sweepDur;
 
         var dot = e.querySelector(".tl-dot");
         if (dot) {
@@ -948,6 +953,26 @@
           );
           if (isHot) {
             tl.to(dot, { scale: 1.6, opacity: 0.7, yoyo: true, repeat: -1, duration: 0.5, ease: "sine.inOut" }, t + 0.4);
+          }
+        }
+
+        // Radar ripple shockwaves for hot critical node
+        if (isHot) {
+          var r1 = e.querySelector(".tl-hot-ripple");
+          var r2 = e.querySelector(".tl-hot-ripple-2");
+          if (r1) {
+            tl.fromTo(r1,
+              { scale: 1, opacity: 0.95 },
+              { scale: 5.5, opacity: 0, duration: 1.2, ease: "power2.out", repeat: -1, repeatDelay: 0.3 },
+              t
+            );
+          }
+          if (r2) {
+            tl.fromTo(r2,
+              { scale: 1, opacity: 0.85 },
+              { scale: 4.2, opacity: 0, duration: 1.2, ease: "power2.out", repeat: -1, repeatDelay: 0.3 },
+              t + 0.35
+            );
           }
         }
 
@@ -966,11 +991,43 @@
           );
         }
 
+        // Dynamic rail glow pulse
+        if (fill) {
+          if (isHot) {
+            tl.to(fill, { filter: "drop-shadow(0 0 16px #ff3b5c) brightness(1.7)", duration: 0.3 }, t);
+          } else {
+            tl.fromTo(fill,
+              { filter: "drop-shadow(0 0 12px var(--ac)) brightness(1.6)" },
+              { filter: "drop-shadow(0 0 4px var(--ac)) brightness(1)", duration: 0.35, ease: "power2.out" },
+              t
+            );
+          }
+        }
+
         if (isHot) {
-          queueSFX("thud", t, { vol: 0.9 });
-          queueSFX("glitch", t + 0.08, { vol: 0.7 });
+          queueSFX("thud", t, { vol: 0.95 });
+          queueSFX("glitch", t + 0.08, { vol: 0.75 });
         } else {
           queueSFX("tick", t, { vol: 0.75 });
+        }
+      });
+
+      // Delta badges pop in as playhead passes each segment
+      var deltas = q(el, ".tl-delta");
+      deltas.forEach(function (d, i) {
+        var segT = at + 0.4 + ((i + 0.5) / Math.max(1, evs.length - 1)) * sweepDur;
+        var pill = d.querySelector(".tl-delta-pill");
+        if (pill) {
+          tl.fromTo(pill,
+            { scale: 0, opacity: 0 },
+            { scale: 1, opacity: 1, duration: 0.32, ease: E.springSubtle },
+            segT
+          );
+          tl.fromTo(pill,
+            { backgroundColor: "var(--ac)", color: "#000", borderColor: "#fff" },
+            { backgroundColor: "rgba(10,14,26,.92)", color: "rgba(244,247,251,.7)", borderColor: "rgba(255,255,255,.16)", duration: 0.6, ease: "power2.out" },
+            segT
+          );
         }
       });
     },

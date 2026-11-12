@@ -530,7 +530,55 @@ const RENDER = {
 
   timeline(s) {
     const events = s.meta?.events || [];
-    const ghost = s.meta?.ghost || "TIMELINE";
+    const ghost = s.meta?.ghost || "CASCADE";
+    const N = events.length;
+
+    function parseTimeSec(tStr) {
+      const m = String(tStr).match(/(\d{1,2}):(\d{2})(?::(\d{2}))?/);
+      if (!m) return null;
+      const h = parseInt(m[1], 10);
+      const min = parseInt(m[2], 10);
+      const sec = m[3] != null ? parseInt(m[3], 10) : 0;
+      return h * 3600 + min * 60 + sec;
+    }
+
+    const deltas = [];
+    for (let k = 0; k < N - 1; k++) {
+      const t0 = parseTimeSec(events[k].t);
+      const t1 = parseTimeSec(events[k + 1].t);
+      let diffStr = "";
+      if (t0 != null && t1 != null && t1 >= t0) {
+        const diff = t1 - t0;
+        diffStr = `+${diff}s`;
+      }
+      deltas.push(diffStr);
+    }
+
+    const deltasHtml = deltas.map((d, k) => {
+      if (!d) return "";
+      const pct = ((k + 0.5) / Math.max(1, N - 1)) * 100;
+      return `<div class="tl-delta" data-seg="${k}" style="left:${pct.toFixed(2)}%"><span class="tl-delta-pill">${esc(d)}</span></div>`;
+    }).join("");
+
+    const eventsHtml = events.map((e, k) => {
+      const pct = (k / Math.max(1, N - 1)) * 100;
+      const isFirst = k === 0;
+      const isLast = k === N - 1;
+      const alignCls = isFirst ? " is-first" : (isLast ? " is-last" : " is-mid");
+      return `
+      <div class="tl-ev ${e.hot ? "is-hot" : ""}${alignCls}" data-k="${k}" style="left:${pct.toFixed(2)}%">
+        <div class="tl-stem"></div>
+        <div class="tl-dot-wrap">
+          ${e.hot ? '<div class="tl-hot-ripple"></div><div class="tl-hot-ripple-2"></div>' : ""}
+          <div class="tl-dot"></div>
+        </div>
+        <div class="tl-card">
+          <div class="tl-t"><span class="tl-t-text">${esc(e.t)}</span>${e.hot ? `<span class="tl-hot-badge">CRITICAL</span>` : ""}</div>
+          <div class="tl-s">${esc(e.s || "")}</div>
+        </div>
+      </div>`;
+    }).join("");
+
     return `
     <div class="tl-ghost">${esc(ghost)}</div>
     ${eyebrow(s)}
@@ -538,21 +586,9 @@ const RENDER = {
     ${s.subline ? `<div class="tl-sub">${esc(s.subline)}</div>` : ""}
     <div class="tl-stage">
       <div class="tl-line"><div class="tl-line-fill"></div></div>
+      <div class="tl-deltas">${deltasHtml}</div>
       <div class="tl-play"></div>
-      <div class="tl-events">
-        ${events
-          .map(
-            (e, k) => `<div class="tl-ev ${e.hot ? "is-hot" : ""}" data-k="${k}">
-            <div class="tl-stem"></div>
-            <div class="tl-dot"></div>
-            <div class="tl-card">
-              <div class="tl-t"><span class="tl-t-text">${esc(e.t)}</span>${e.hot ? `<span class="tl-hot-badge">CRITICAL</span>` : ""}</div>
-              <div class="tl-s">${esc(e.s || "")}</div>
-            </div>
-          </div>`,
-          )
-          .join("")}
-      </div>
+      <div class="tl-events">${eventsHtml}</div>
     </div>`;
   },
 

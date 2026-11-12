@@ -800,34 +800,43 @@ body{width:var(--composition-width,1920px);height:var(--composition-height,1080p
 .meme-sub{font-size:28px;color:var(--dim);margin-top:20px;max-width:880px;line-height:1.4}
 
 /* ============================================================ cloud */
-.cloud-stage{width:100%;max-width:1600px;display:flex;flex-direction:column;justify-content:center}
-.cloud-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;border-bottom:1px solid var(--line);padding-bottom:12px}
+.cloud-ghost{position:absolute;right:80px;top:40px;font-family:var(--sans);font-size:220px;font-weight:900;
+  letter-spacing:-.06em;line-height:.8;text-transform:uppercase;
+  background:linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,.01));
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  z-index:-1;pointer-events:none;user-select:none}
+.cloud-head-title{font-size:60px;line-height:1.06;font-weight:800;letter-spacing:-.04em;margin:0 0 16px;max-width:1300px}
+.cloud-head-title .hl-marker{isolation:isolate;display:inline-block;position:relative}
+.cloud-head-title .hl-text{color:var(--ac);text-shadow:0 0 35px color-mix(in srgb,var(--ac) 85%,transparent)}
+.cloud-head-title .hl-ink{position:absolute;inset:4% -10px 4% -10px;border-radius:10px;background:color-mix(in srgb,var(--ac) 15%,transparent);border:1px solid color-mix(in srgb,var(--ac) 45%,transparent);box-shadow:0 0 26px color-mix(in srgb,var(--ac) 30%,transparent);z-index:-1}
+
+.cloud-stage{width:100%;max-width:1520px;display:flex;flex-direction:column;justify-content:center}
+.cloud-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;border-bottom:1px solid var(--line);padding-bottom:12px}
 .cloud-tag{font-family:var(--mono);font-size:13px;letter-spacing:.24em;text-transform:uppercase;color:var(--ac);font-weight:700}
 .cloud-flow-label{font-family:var(--mono);font-size:12px;letter-spacing:.16em;color:var(--faint)}
-.cloud-flow{font-family:var(--mono);font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);margin:-8px 0 20px}
-.cloud-canvas{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:48px 36px 40px;box-shadow:0 24px 60px rgba(0,0,0,.6)}
-.cloud-nodes{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.cloud-flow{font-family:var(--mono);font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);margin:-4px 0 20px}
+.cloud-canvas{position:relative;background:linear-gradient(165deg,rgba(10,14,26,.95),rgba(6,9,18,.98));border:1px solid var(--line);border-radius:12px;padding:36px 36px 30px;box-shadow:0 30px 90px rgba(0,0,0,.65)}
+.cloud-nodes{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .cloud-edge{flex:1;height:24px;display:flex;align-items:center}
 .cloud-edge svg{width:100%;height:24px;display:block}
-.cld-path{stroke:var(--line);stroke-width:2;stroke-dasharray:4 4;fill:none}
+.cld-path{stroke:rgba(255,255,255,.18);stroke-width:2;stroke-dasharray:4 4;fill:none}
 .cld-arrow{fill:var(--ac)}
-.cloud-node{width:220px;background:rgba(12,18,34,.75);border:1px solid var(--line);border-radius:8px;padding:20px 18px;display:flex;flex-direction:column;align-items:center;text-align:center;position:relative}
-.cloud-node.is-hot{border-color:var(--ac);box-shadow:0 0 20px -2px var(--ac)}
-.cloud-node.is-bad{border-color:#ff3b5c;box-shadow:0 0 20px -2px #ff3b5c}
-.cld-badge{font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--faint);margin-bottom:10px}
-.cld-icon-box{width:46px;height:46px;border-radius:8px;background:rgba(255,255,255,.04);display:flex;align-items:center;justify-content:center;margin-bottom:12px;border:1px solid var(--line-soft)}
+.cloud-node{width:250px;background:linear-gradient(165deg,rgba(14,20,38,.85),rgba(7,10,20,.94));border:1px solid var(--line);border-radius:10px;padding:22px 18px;display:flex;flex-direction:column;align-items:center;text-align:center;position:relative}
+.cloud-node.is-hot{border-color:var(--ac);box-shadow:0 0 28px -2px var(--ac)}
+.cloud-node.is-bad{border-color:#ff3b5c;box-shadow:0 0 28px -2px #ff3b5c}
+.cld-badge{font-family:var(--mono);font-size:11px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--faint);margin-bottom:10px}
+.cld-icon-box{width:48px;height:48px;border-radius:8px;background:rgba(255,255,255,.05);display:flex;align-items:center;justify-content:center;margin-bottom:12px;border:1px solid var(--line-soft)}
 .cld-icon{font-size:22px}
-.cld-title{font-size:18px;font-weight:700;letter-spacing:-.02em;color:var(--ink);line-height:1.25;margin-bottom:10px}
-.cld-status{font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:.1em;padding:3px 8px;border-radius:3px;display:flex;align-items:center;gap:6px}
-.cld-status.is-ok{color:#4ade80;background:rgba(74,222,128,.1)}
-.cld-status.is-bad{color:#ff3b5c;background:rgba(255,59,92,.12)}
-.cld-dot{width:5px;height:5px;border-radius:50%;background:currentColor;display:block}
-.cld-sub{font-family:var(--mono);font-size:13px;color:var(--faint);margin-top:6px}
-.cloud-bus-rail{position:relative;height:3px;background:var(--line-soft);margin-top:36px;border-radius:2px;overflow:hidden}
+.cld-title{font-size:19px;font-weight:750;letter-spacing:-.02em;color:var(--ink);line-height:1.25;margin-bottom:10px}
+.cld-status{font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:.1em;padding:4px 10px;border-radius:4px;display:flex;align-items:center;gap:6px}
+.cld-status.is-ok{color:#4ade80;background:rgba(74,222,128,.12);border:1px solid rgba(74,222,128,.3)}
+.cld-status.is-bad{color:#ff3b5c;background:rgba(255,59,92,.14);border:1px solid rgba(255,59,92,.35)}
+.cld-dot{width:6px;height:6px;border-radius:50%;background:currentColor;display:block}
+.cld-sub{font-family:var(--mono);font-size:12px;color:var(--faint);margin-top:8px}
+.cloud-bus-rail{position:relative;height:3px;background:rgba(255,255,255,.08);margin-top:32px;border-radius:2px;overflow:hidden}
 .cloud-packet{position:absolute;left:-40px;top:0;width:50px;height:100%;background:var(--ac);box-shadow:0 0 12px 2px var(--ac)}
-.cloud-foot{margin-top:34px}
-.cloud-title{font-size:46px;font-weight:800;letter-spacing:-.03em;margin:0}
-.cloud-sub{font-size:22px;color:var(--dim);margin-top:10px;line-height:1.4}
+.cloud-foot-sub{font-size:24px;color:var(--dim);margin-top:14px;line-height:1.4}
+.cloud-foot-sub::before{content:"■ ";color:var(--ac);margin-right:8px}
 
 /* ============================================================ mascot scene */
 .mascot-stage{display:grid;grid-template-columns:640px 1fr;gap:64px;height:100%;align-items:center}

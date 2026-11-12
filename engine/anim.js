@@ -1496,11 +1496,32 @@
 
     cloud: function (el, s, at, dur) {
       fade(el.querySelector(".eyebrow"), at, { y: 12, dur: 0.55 });
-      fade(el.querySelector(".cloud-header"), at + 0.05, { y: 10, dur: 0.5 });
+      var ghost = el.querySelector(".cloud-ghost");
+      if (ghost) {
+        fade(ghost, at, { dur: 0.8, y: 10 });
+        amb(ghost, dur, at);
+      }
+      if (el.querySelector(".cloud-head-title")) {
+        words(el.querySelector(".cloud-head-title"), at + 0.05, { dur: 0.65, stagger: 0.035, y: 16 });
+      }
+      var canvas = el.querySelector(".cloud-canvas");
+      if (canvas) {
+        tl.fromTo(canvas,
+          { y: 35, opacity: 0, scale: 0.97, rotateX: 2.0 },
+          { y: 0, opacity: 1, scale: 1, rotateX: 0, duration: 0.85, ease: E.expo, transformPerspective: 1200 },
+          at + 0.08
+        );
+      }
+      fade(el.querySelector(".cloud-header"), at + 0.12, { y: 10, dur: 0.5 });
       var nodes = q(el, ".cloud-node");
-      tl.fromTo(nodes, { y: 30, opacity: 0, scale: 0.92 }, { y: 0, opacity: 1, scale: 1, duration: 0.6, stagger: 0.12, ease: E.springSubtle }, at + 0.15);
+      tl.fromTo(nodes, { y: 30, opacity: 0, scale: 0.92 }, { y: 0, opacity: 1, scale: 1, duration: 0.6, stagger: 0.12, ease: E.springSubtle }, at + 0.18);
+      nodes.forEach(function (n, idx) {
+        queueSFX("tick", at + 0.2 + idx * 0.12, { vol: 0.45 });
+      });
+
       var paths = q(el, ".cld-path");
-      draw(paths, at + 0.35, { stagger: 0.15, dur: 0.6 });
+      draw(paths, at + 0.38, { stagger: 0.15, dur: 0.6 });
+
       var edgePackets = q(el, ".cld-packet");
       edgePackets.forEach(function (pkt, idx) {
         var cycle = Math.max(0.8, Math.min(1.8, dur * 0.22));
@@ -1512,6 +1533,16 @@
           repeat: rep(dur - 0.7, cycle)
         }, at + 0.65 + idx * 0.16);
       });
+
+      var hotNodes = q(el, ".cloud-node.is-hot");
+      hotNodes.forEach(function (hn) {
+        tl.fromTo(hn,
+          { boxShadow: "0 0 10px rgba(74,222,128,0.2)" },
+          { boxShadow: "0 0 35px var(--ac), inset 0 0 15px rgba(74,222,128,0.15)", duration: 0.8, yoyo: true, repeat: -1, ease: "sine.inOut" },
+          at + 0.5
+        );
+      });
+
       var badCloudNodes = q(el, ".cloud-node.is-bad");
       badCloudNodes.forEach(function (bn) {
         var badAt = at + Math.min(dur * 0.45, 2.5);
@@ -1519,13 +1550,17 @@
         tl.fromTo(bn, { x: 4 }, { x: 0, duration: 0.2, ease: "power2.out" }, badAt);
         queueSFX("thud", badAt, { vol: 1.0 });
       });
+
       var packet = el.querySelector(".cloud-packet");
       if (packet) {
         tl.fromTo(packet, { x: 0, opacity: 0 }, { opacity: 1, duration: 0.2 }, at + 0.35);
         tl.to(packet, { x: 1540, duration: 1.8, ease: "none", repeat: rep(dur, 1.8) }, at + 0.4);
       }
-      words(el.querySelector(".cloud-title"), at + 0.2, { stagger: 0.038, dur: 0.8 }, s);
+      if (el.querySelector(".cloud-title")) {
+        words(el.querySelector(".cloud-title"), at + 0.2, { stagger: 0.038, dur: 0.8 }, s);
+      }
       if (el.querySelector(".cloud-sub")) fade(el.querySelector(".cloud-sub"), at + 0.6, { dur: 0.65 });
+      if (el.querySelector(".cloud-foot-sub")) fade(el.querySelector(".cloud-foot-sub"), at + 0.75, { dur: 0.65 });
     },
 
     mascot: function (el, s, at, dur) {

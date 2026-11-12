@@ -846,12 +846,15 @@ const RENDER = {
   },
 
   cloud(s) {
+    const ghost = s.ghost || s.meta?.ghost || "";
     const rawNodes = s.meta?.nodes || [];
     const nodes = rawNodes.map(n => typeof n === "string" ? { t: n } : (n || {}));
     const tag = s.meta?.tag || "CLOUD ARCHITECTURE";
     return `
     <div class="cloud-stage">
+      ${ghost ? `<div class="cloud-ghost" data-layout-allow-overflow>${esc(ghost)}</div>` : ""}
       ${eyebrow(s)}
+      ${s.headline ? `<h2 class="cloud-head-title">${splitWords(s.headline, s)}</h2>` : ""}
       <div class="cloud-canvas">
         <div class="cloud-header">
           <span class="cloud-tag">${esc(tag)}</span>
@@ -865,17 +868,14 @@ const RENDER = {
               <span class="cld-badge">${esc(n.kind || n.k || "NODE")}</span>
               <div class="cld-icon-box"><span class="cld-icon">${esc(n.icon || "☁")}</span></div>
               <div class="cld-title">${esc(n.name || n.title || n.t || "")}</div>
-              <div class="cld-status ${n.bad ? "is-bad" : "is-ok"}"><span class="cld-dot"></span>${esc(n.status || n.s || "HEALTHY")}</div>
-              ${n.meta || n.sub ? `<div class="cld-sub">${esc(n.meta || n.sub)}</div>` : ""}
+              <div class="cld-status ${n.bad ? "is-bad" : "is-ok"}"><span class="cld-dot"></span>${esc(n.status || "HEALTHY")}</div>
+              ${n.sub || n.s ? `<div class="cld-sub">${esc(n.sub || n.s)}</div>` : ""}
             </div>
           `).join("")}
         </div>
         <div class="cloud-bus-rail"><div class="cloud-packet"></div></div>
       </div>
-      <div class="cloud-foot">
-        ${s.headline ? `<h2 class="cloud-title">${splitWords(s.headline, s)}</h2>` : ""}
-        ${s.subline ? `<p class="cloud-sub">${esc(s.subline)}</p>` : ""}
-      </div>
+      ${s.subline ? `<div class="cloud-foot-sub">${esc(s.subline)}</div>` : ""}
     </div>`;
   },
 

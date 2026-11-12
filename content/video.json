@@ -347,6 +347,57 @@
     },
     {
       "id": "s012",
+      "type": "cloud",
+      "act": "solution",
+      "accent": "#4ade80",
+      "narration": "By decoupling edge ingress, applying fast-fail circuit breakers at the proxy, and isolating connection pools, our cloud topology remains completely resilient.",
+      "eyebrow": "RECOVERED TOPOLOGY",
+      "headline": "Resilient Multi-Tier ==Cloud Mesh==",
+      "subline": "Decoupled ingress, proxy circuit breaking, and isolated connection pools.",
+      "meta": {
+        "ghost": "TOPOLOGY",
+        "tag": "CLOUD MESH TOPOLOGY",
+        "flow": "CloudFront L7 -> Envoy Circuit Breaker -> Worker Pool -> Sharded Aurora",
+        "nodes": [
+          {
+            "t": "CloudFront Edge",
+            "k": "INGRESS",
+            "icon": "🌐",
+            "status": "HEALTHY",
+            "s": "L7 Edge Shield · 0ms"
+          },
+          {
+            "t": "Envoy Mesh",
+            "k": "CIRCUIT PROXY",
+            "icon": "⚡",
+            "status": "CIRCUIT OPEN",
+            "hot": true,
+            "s": "Fast-Fail · 0.2ms"
+          },
+          {
+            "t": "Worker Cluster",
+            "k": "COMPUTE",
+            "icon": "⚙️",
+            "status": "HEALTHY",
+            "s": "Full Jitter Backoff"
+          },
+          {
+            "t": "Aurora Cluster",
+            "k": "STORAGE",
+            "icon": "🗄️",
+            "status": "OPTIMAL",
+            "s": "Pool Usage: 18%"
+          }
+        ]
+      },
+      "mascot": {
+        "expression": "cool",
+        "position": "bottom-right",
+        "bubble": "Zero cascading timeouts across the entire mesh!"
+      }
+    },
+    {
+      "id": "s013",
       "type": "compare",
       "act": "solution",
       "narration": "Instead of blind retries that stampede your database, modern systems implement exponential backoff with jitter and circuit breaking.",
@@ -381,7 +432,7 @@
       }
     },
     {
-      "id": "s013",
+      "id": "s014",
       "type": "outro",
       "act": "solution",
       "narration": "If you build, solve, and deploy modern cloud software, subscribe for more real-world production autopsies.",

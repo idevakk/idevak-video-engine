@@ -126,6 +126,25 @@
     },
     {
       "id": "s006",
+      "type": "dateline",
+      "act": "core",
+      "narration": "On October fourteenth, at exactly three fourteen UTC, the automated health checker triggered the fatal failover cascade.",
+      "eyebrow": "INCIDENT TIMELINE",
+      "headline": "The Automated ==Failover Trigger==",
+      "subline": "Primary us-east database health checks fail after automated rolling restart.",
+      "meta": {
+        "day": "14",
+        "mon": "OCTOBER",
+        "yr": "2025 // 03:14:02 UTC"
+      },
+      "mascot": {
+        "expression": "pointing",
+        "position": "bottom-right",
+        "bubble": "03:14 AM — the exact moment the cascade began."
+      }
+    },
+    {
+      "id": "s007",
       "type": "terminal",
       "act": "core",
       "narration": "When the connection pool exhausted, every container node began throwing cascading connection timeouts.",
@@ -160,7 +179,7 @@
       }
     },
     {
-      "id": "s007",
+      "id": "s008",
       "type": "compare",
       "act": "solution",
       "narration": "Instead of blind retries that stampede your database, modern systems implement exponential backoff with jitter and circuit breaking.",
@@ -195,7 +214,7 @@
       }
     },
     {
-      "id": "s008",
+      "id": "s009",
       "type": "outro",
       "act": "solution",
       "narration": "If you build, solve, and deploy modern cloud software, subscribe for more real-world production autopsies.",

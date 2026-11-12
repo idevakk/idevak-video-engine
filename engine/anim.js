@@ -1519,6 +1519,21 @@
         queueSFX("tick", at + 0.2 + idx * 0.12, { vol: 0.45 });
       });
 
+      var edgeChips = q(el, ".cloud-edge-chip");
+      if (edgeChips.length) {
+        tl.fromTo(edgeChips, { scale: 0.75, opacity: 0, y: -8 }, { scale: 1, opacity: 1, y: 0, duration: 0.5, stagger: 0.1, ease: E.springSubtle }, at + 0.32);
+      }
+
+      var telems = q(el, ".cld-telem");
+      if (telems.length) {
+        tl.fromTo(telems, { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.45, stagger: 0.08, ease: E.soft }, at + 0.38);
+      }
+
+      var breaker = el.querySelector(".cld-breaker-beacon");
+      if (breaker) {
+        tl.fromTo(breaker, { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.4, ease: E.springSubtle }, at + 0.45);
+      }
+
       var paths = q(el, ".cld-path");
       draw(paths, at + 0.38, { stagger: 0.15, dur: 0.6 });
 
@@ -1541,7 +1556,29 @@
           { boxShadow: "0 0 35px var(--ac), inset 0 0 15px rgba(74,222,128,0.15)", duration: 0.8, yoyo: true, repeat: -1, ease: "sine.inOut" },
           at + 0.5
         );
+        // Simulated fast-fail circuit shed event at 1.2s
+        tl.to(hn, {
+          boxShadow: "0 0 45px #fbbf24, inset 0 0 20px rgba(251,191,36,0.3)",
+          duration: 0.35,
+          yoyo: true,
+          repeat: 1,
+          ease: "power2.out"
+        }, at + 1.2);
       });
+
+      var shedPkt = el.querySelector(".cld-packet-shed");
+      if (shedPkt) {
+        tl.fromTo(shedPkt, { opacity: 1, cy: 12, r: 3 }, { opacity: 0, cy: 22, r: 0.5, duration: 0.5, ease: "power2.in" }, at + 1.2);
+        queueSFX("click", at + 1.2, { vol: 0.65 });
+      }
+
+      var mOv = el.querySelector(".m-ov");
+      if (mOv) {
+        var avatar = mOv.querySelector(".m-ov-avatar");
+        if (avatar) {
+          tl.to(avatar, { rotate: -4, duration: 0.22, yoyo: true, repeat: 1, ease: E.springSubtle }, at + 1.35);
+        }
+      }
 
       var badCloudNodes = q(el, ".cloud-node.is-bad");
       badCloudNodes.forEach(function (bn) {

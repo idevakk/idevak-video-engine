@@ -849,6 +849,7 @@ const RENDER = {
     const ghost = s.ghost || s.meta?.ghost || "";
     const rawNodes = s.meta?.nodes || [];
     const nodes = rawNodes.map(n => typeof n === "string" ? { t: n } : (n || {}));
+    const edges = s.meta?.edges || [];
     const tag = s.meta?.tag || "CLOUD ARCHITECTURE";
     return `
     <div class="cloud-stage">
@@ -862,16 +863,41 @@ const RENDER = {
         </div>
         ${s.meta?.flow ? `<div class="cloud-flow">${esc(s.meta.flow)}</div>` : ""}
         <div class="cloud-nodes">
-          ${nodes.map((n, k) => `
-            ${k > 0 ? `<div class="cloud-edge"><svg viewBox="0 0 100 24"><path d="M0 12 H90" class="cld-path"/><polygon points="90 8, 98 12, 90 16" class="cld-arrow"/><circle class="cld-packet" cx="0" cy="12" r="3.5" fill="var(--ac)"/></svg></div>` : ""}
+          ${nodes.map((n, k) => {
+            const edge = edges[k - 1] || {};
+            const isHotProxy = Boolean(n.hot);
+            return `
+            ${k > 0 ? `
+              <div class="cloud-edge" data-edge="${k}">
+                <div class="cloud-edge-chip">
+                  <span class="cec-proto">${esc(edge.proto || "mTLS")}</span>
+                  <span class="cec-lat">${esc(edge.lat || "0.5ms")}</span>
+                </div>
+                <svg viewBox="0 0 100 24" class="cld-edge-svg">
+                  <path d="M0 12 H90" class="cld-path"/>
+                  <polygon points="90 8, 98 12, 90 16" class="cld-arrow"/>
+                  <circle class="cld-packet" cx="0" cy="12" r="3.5" fill="var(--ac)"/>
+                </svg>
+                ${k === 2 ? `<div class="cld-shed-stream"><circle class="cld-packet-shed" cx="50" cy="12" r="3" fill="#fbbf24"/></div>` : ""}
+              </div>` : ""}
             <div class="cloud-node ${n.hot ? "is-hot" : ""} ${n.bad ? "is-bad" : ""}">
               <span class="cld-badge">${esc(n.kind || n.k || "NODE")}</span>
-              <div class="cld-icon-box"><span class="cld-icon">${esc(n.icon || "☁")}</span></div>
+              <div class="cld-icon-box">
+                <span class="cld-icon">${esc(n.icon || "☁")}</span>
+                ${isHotProxy ? `<div class="cld-shield-ring"></div>` : ""}
+              </div>
               <div class="cld-title">${esc(n.name || n.title || n.t || "")}</div>
               <div class="cld-status ${n.bad ? "is-bad" : "is-ok"}"><span class="cld-dot"></span>${esc(n.status || "HEALTHY")}</div>
+              ${isHotProxy ? `<div class="cld-breaker-beacon"><span class="cbb-icon">⚡</span><span>FAST-FAIL SHED</span></div>` : ""}
+              ${n.latency || n.rate ? `
+                <div class="cld-telem">
+                  ${n.latency ? `<span class="cld-telem-pill cld-lat"><span class="cld-ping-dot"></span>${esc(n.latency)}</span>` : ""}
+                  ${n.rate ? `<span class="cld-telem-pill cld-rate">${esc(n.rate)}</span>` : ""}
+                </div>` : ""}
               ${n.sub || n.s ? `<div class="cld-sub">${esc(n.sub || n.s)}</div>` : ""}
             </div>
-          `).join("")}
+          `;
+          }).join("")}
         </div>
         <div class="cloud-bus-rail"><div class="cloud-packet"></div></div>
       </div>

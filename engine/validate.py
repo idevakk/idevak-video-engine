@@ -448,11 +448,13 @@ def validate_scene(
 
     elif scene_type == "cloud":
         nodes = listfield(meta, "nodes", where, errors, required=True, lo=2, hi=6)
-        items = check_items(nodes, f"{where}.meta.nodes", errors, ("t",), ("k", "s", "status", "icon"))
+        items = check_items(nodes, f"{where}.meta.nodes", errors, ("t",), ("k", "s", "status", "icon", "latency", "rate", "drop"))
         for k, item in enumerate(items):
             for bkey in ("hot", "bad"):
                 if bkey in item and not isinstance(item[bkey], bool):
                     errors.append(f"{where}.meta.nodes[{k}].{bkey}: must be a boolean")
+        if "edges" in meta:
+            listfield(meta, "edges", where, errors, hi=6)
         sfield(meta, "flow", where, errors)
 
     elif scene_type == "mascot":

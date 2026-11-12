@@ -358,12 +358,19 @@
         "ghost": "TOPOLOGY",
         "tag": "CLOUD MESH TOPOLOGY",
         "flow": "CloudFront L7 -> Envoy Circuit Breaker -> Worker Pool -> Sharded Aurora",
+        "edges": [
+          { "proto": "TLS 1.3", "lat": "0.8ms", "tag": "VERIFIED" },
+          { "proto": "mTLS / gRPC", "lat": "0.2ms", "tag": "SHED 14%" },
+          { "proto": "TCP POOL", "lat": "1.1ms", "tag": "ISOLATED" }
+        ],
         "nodes": [
           {
             "t": "CloudFront Edge",
             "k": "INGRESS",
             "icon": "🌐",
             "status": "HEALTHY",
+            "latency": "p99 1.4ms",
+            "rate": "42.8k req/s",
             "s": "L7 Edge Shield · 0ms"
           },
           {
@@ -371,6 +378,8 @@
             "k": "CIRCUIT PROXY",
             "icon": "⚡",
             "status": "CIRCUIT OPEN",
+            "latency": "p99 0.2ms",
+            "rate": "Fast-Fail Shed 14%",
             "hot": true,
             "s": "Fast-Fail · 0.2ms"
           },
@@ -379,6 +388,8 @@
             "k": "COMPUTE",
             "icon": "⚙️",
             "status": "HEALTHY",
+            "latency": "p99 4.8ms",
+            "rate": "Jitter Decorr 100%",
             "s": "Full Jitter Backoff"
           },
           {
@@ -386,6 +397,8 @@
             "k": "STORAGE",
             "icon": "🗄️",
             "status": "OPTIMAL",
+            "latency": "p99 8.1ms",
+            "rate": "Pool Cap 88/500",
             "s": "Pool Usage: 18%"
           }
         ]

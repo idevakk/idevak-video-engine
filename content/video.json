@@ -36,12 +36,12 @@
       "act": "hook",
       "narration": "What if one small configuration bug brought down an entire cloud infrastructure in seconds?",
       "eyebrow": "COLD OPEN",
-      "headline": "The Silent Outage",
+      "headline": "The Silent ==Outage==",
       "subline": "A single line of configuration. Millions of requests dropped.",
       "meta": {
         "chips": [
-          "AWS CLOUD",
-          "KUBERNETES",
+          "● SEV-1 CRITICAL",
+          "AWS US-EAST-1",
           "POSTMORTEM"
         ],
         "ghost": "ZERO"

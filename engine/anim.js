@@ -473,26 +473,40 @@
       var title = el.querySelector(".cold-title");
       var sub = el.querySelector(".cold-sub");
       var chips = q(el, ".chip");
+      var wrap = el.querySelector(".cold-wrap");
       amb(ghost, dur, at);
+
       if (at === 0) {
         /* frame 0 must already read as a title card */
-        tl.fromTo(ghost, { opacity: 0.45, scale: 1.08, x: 40, rotateX: 4 }, { opacity: 1, scale: 1, x: 0, rotateX: 0, duration: 2.2, ease: E.expo, transformPerspective: 1200 }, 0);
-        tl.fromTo(rule, { scaleX: 0.18 }, { scaleX: 1, duration: 1.5, ease: E.expo }, 0.05);
+        /* Micro camera recoil punch: 1.042x -> 1.0x */
+        if (wrap) tl.fromTo(wrap, { scale: 1.042 }, { scale: 1, duration: 0.42, ease: E.expo }, 0);
+        queueSFX("thud", 0, { vol: 0.85 });
+
+        /* Ghost chromatic aberration trace on drop */
+        tl.fromTo(ghost, { opacity: 0.5, scale: 1.1, x: 45, rotateX: 4, filter: "drop-shadow(-8px 0 0 rgba(56,189,248,0.4)) drop-shadow(8px 0 0 rgba(255,59,92,0.4))" }, { opacity: 1, scale: 1, x: 0, rotateX: 0, filter: "drop-shadow(0 0 0 transparent)", duration: 1.8, ease: E.expo, transformPerspective: 1200 }, 0);
+        
+        /* Snappier stagger: rule & whoosh at 0.08s, subline at 0.22s, chips at 0.45s */
+        tl.fromTo(rule, { scaleX: 0.18 }, { scaleX: 1, duration: 0.9, ease: E.expo }, 0.06);
+        queueSFX("whoosh", 0.08, { vol: 0.45 });
         gsap.set(q(title, ".wi"), { opacity: 1 });
-        tl.fromTo(title, { y: 12, opacity: 0.9 }, { y: 0, opacity: 1, duration: 0.9, ease: E.expo }, 0);
-        if (sub) tl.fromTo(sub, { opacity: 0, y: 22 }, { opacity: 1, y: 0, duration: 0.9, ease: E.soft }, 0.85);
-        tl.fromTo(chips, { opacity: 0, y: 18, scale: 0.94 }, { opacity: 1, y: 0, scale: 1, duration: 0.6, stagger: 0.08, ease: E.springSubtle }, 1.15);
-        if (chips.length) queueSFX("click", 1.15, { vol: 0.65 });
+        tl.fromTo(title, { y: 14, opacity: 0.9 }, { y: 0, opacity: 1, duration: 0.7, ease: E.expo }, 0);
+        if (sub) tl.fromTo(sub, { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.6, ease: E.soft }, 0.22);
+        tl.fromTo(chips, { opacity: 0, y: 16, scale: 0.92 }, { opacity: 1, y: 0, scale: 1, duration: 0.45, stagger: 0.06, ease: E.springSubtle }, 0.45);
+        if (chips.length) queueSFX("click", 0.45, { vol: 0.7 });
         return;
       }
-      tl.fromTo(ghost, { scale: 1.12, opacity: 0, x: 70, rotateX: 6 }, { scale: 1, opacity: 1, x: 0, rotateX: 0, duration: 2.2, ease: E.expo, transformPerspective: 1200 }, at);
-      tl.fromTo(rule, { scaleX: 0 }, { scaleX: 1, duration: 0.7, ease: E.expo }, at + 0.15);
-      queueSFX("whoosh", at + 0.15, { vol: 0.45 });
-      fade(eyebrow, at + 0.2, { y: 14, dur: 0.6 });
-      words(title, at + 0.35, { stagger: 0.048, dur: 0.9 }, s);
-      fade(sub, at + 0.8, { dur: 0.8 });
-      tl.fromTo(chips, { y: 18, opacity: 0, scale: 0.94 }, { y: 0, opacity: 1, scale: 1, duration: 0.6, stagger: 0.08, ease: E.springSubtle }, at + 1.05);
-      if (chips.length) queueSFX("click", at + 1.05, { vol: 0.65 });
+
+      /* At non-zero cuts */
+      if (wrap) tl.fromTo(wrap, { scale: 1.04 }, { scale: 1, duration: 0.4, ease: E.expo }, at);
+      queueSFX("thud", at, { vol: 0.75 });
+      tl.fromTo(ghost, { scale: 1.12, opacity: 0, x: 60, rotateX: 6, filter: "drop-shadow(-8px 0 0 rgba(56,189,248,0.4)) drop-shadow(8px 0 0 rgba(255,59,92,0.4))" }, { scale: 1, opacity: 1, x: 0, rotateX: 0, filter: "drop-shadow(0 0 0 transparent)", duration: 1.8, ease: E.expo, transformPerspective: 1200 }, at);
+      tl.fromTo(rule, { scaleX: 0 }, { scaleX: 1, duration: 0.6, ease: E.expo }, at + 0.08);
+      queueSFX("whoosh", at + 0.08, { vol: 0.45 });
+      fade(eyebrow, at + 0.12, { y: 12, dur: 0.5 });
+      words(title, at + 0.2, { stagger: 0.04, dur: 0.7 }, s);
+      fade(sub, at + 0.38, { dur: 0.6 });
+      tl.fromTo(chips, { y: 16, opacity: 0, scale: 0.92 }, { y: 0, opacity: 1, scale: 1, duration: 0.45, stagger: 0.06, ease: E.springSubtle }, at + 0.5);
+      if (chips.length) queueSFX("click", at + 0.5, { vol: 0.7 });
     },
 
     hero: function (el, s, at, dur) {

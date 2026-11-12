@@ -226,7 +226,15 @@ const RENDER = {
       <h1 class="cold-title">${splitWords(s.headline, s)}</h1>
       <div class="cold-sub">${esc(s.subline || "")}</div>
       <div class="cold-meta">
-        ${(s.meta?.chips || []).map((c, k) => `<span class="chip" data-k="${k}">${esc(c)}</span>`).join("")}
+        ${(s.meta?.chips || []).map((c, k) => {
+          const text = typeof c === "object" ? c.t || c.text || "" : String(c);
+          const isBad = (typeof c === "object" && (c.bad || c.hot || c.status === "bad")) || /SEV|CRITICAL|FAIL|OUTAGE|0%/.test(text);
+          const hasDot = text.startsWith("●") || isBad;
+          const cleanText = text.replace(/^●\s*/, "");
+          const dotHtml = hasDot ? `<span class="chip-dot ${isBad ? "chip-dot-bad" : "chip-dot-live"}"></span>` : "";
+          const chipCls = `chip${isBad ? " chip-bad" : ""}`;
+          return `<span class="${chipCls}" data-k="${k}">${dotHtml}<span>${esc(cleanText)}</span></span>`;
+        }).join("")}
       </div>
     </div>`;
   },

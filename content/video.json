@@ -317,6 +317,34 @@
     },
     {
       "id": "s011",
+      "type": "webref",
+      "act": "solution",
+      "accent": "#38bdf8",
+      "narration": "The AWS Architecture Center specifies exponential backoff with full jitter to permanently prevent cascading retry storms.",
+      "eyebrow": "ARCHITECTURAL STANDARD",
+      "headline": "AWS Architecture Center: ==Backoff & Jitter==",
+      "subline": "The industry standard pattern for thundering herd mitigation.",
+      "meta": {
+        "ghost": "SPEC",
+        "url": "https://aws.amazon.com/builders-library/timeouts-retries-and-backoff-with-jitter/",
+        "badge": "AWS BUILDERS LIBRARY",
+        "title": "Timeouts, Retries, and Backoff with Jitter",
+        "snippet": [
+          "When clients retry immediately upon failure, downstream systems face a catastrophic thundering herd collapse.",
+          "Adding full random jitter decorator ensures retries disperse uniformly across time, completely preventing backend deadlock."
+        ],
+        "highlight": "thundering herd collapse",
+        "callout": "Always decorate exponential backoff with full jitter to decorrelate client retry bursts.",
+        "calloutType": "MANDATORY SPEC"
+      },
+      "mascot": {
+        "expression": "pointing",
+        "position": "bottom-right",
+        "bubble": "Full jitter decorrelates retry bursts completely!"
+      }
+    },
+    {
+      "id": "s012",
       "type": "compare",
       "act": "solution",
       "narration": "Instead of blind retries that stampede your database, modern systems implement exponential backoff with jitter and circuit breaking.",
@@ -351,7 +379,7 @@
       }
     },
     {
-      "id": "s012",
+      "id": "s013",
       "type": "outro",
       "act": "solution",
       "narration": "If you build, solve, and deploy modern cloud software, subscribe for more real-world production autopsies.",

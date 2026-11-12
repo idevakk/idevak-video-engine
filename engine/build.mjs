@@ -758,6 +758,7 @@ const RENDER = {
   },
 
   webref(s) {
+    const ghost = s.ghost || s.meta?.ghost || "";
     const url = s.meta?.url || "https://docs.aws.amazon.com/";
     const badge = s.meta?.badge || "OFFICIAL DOCUMENTATION";
     const docTitle = s.meta?.title || s.headline;
@@ -766,10 +767,13 @@ const RENDER = {
     const highlight = s.meta?.highlight || "";
     const callout = s.meta?.callout || "";
     const calloutType = s.meta?.calloutType || "IMPORTANT";
+    const crumb = s.meta?.crumb || "DOCS / REFERENCE / SPEC";
     const customImg = s.meta?.image;
 
     return `
+    ${ghost ? `<div class="web-ghost" data-layout-allow-overflow>${esc(ghost)}</div>` : ""}
     ${eyebrow(s)}
+    ${s.headline ? `<h2 class="web-head-title">${splitWords(s.headline, s)}</h2>` : ""}
     <div class="web-shell">
       <div class="web-bar">
         <div class="web-dots"><span></span><span></span><span></span></div>
@@ -782,13 +786,13 @@ const RENDER = {
       <div class="web-body">
         ${customImg ? `<div class="web-screenshot-wrap"><img class="web-screenshot" src="${esc(customImg)}" alt="${esc(s.meta?.alt || docTitle)}" style="object-position:${esc(s.meta?.position || "top center")}" /></div>` : `
         <div class="web-doc-header">
-          <div class="web-doc-crumb">DOCS / REFERENCE / SPEC</div>
+          <div class="web-doc-crumb">${esc(crumb)}</div>
           <div class="web-doc-title">${esc(docTitle)}</div>
         </div>
         <div class="web-doc-content">
           ${snippet.map(sn => `<p class="web-p ${highlight && sn.includes(highlight) ? "has-hl" : ""}">${splitWords(sn, s)}</p>`).join("")}
           ${callout ? `
-          <div class="web-callout callout-${calloutType.toLowerCase()}">
+          <div class="web-callout callout-${calloutType.toLowerCase().replace(/[^a-z0-9_-]/g, "")}">
             <div class="web-callout-tag">${esc(calloutType)}</div>
             <div class="web-callout-text">${splitWords(callout, s)}</div>
           </div>` : ""}
@@ -796,7 +800,6 @@ const RENDER = {
         <svg class="web-cursor" viewBox="0 0 24 24"><path fill="var(--ac)" d="M3 3l7 18 3-7 7-3L3 3z"/></svg>
       </div>
     </div>
-    ${s.headline && s.headline !== docTitle ? `<div class="web-foot-title">${splitWords(s.headline, s)}</div>` : ""}
     ${s.subline ? `<div class="web-foot-sub">${esc(s.subline)}</div>` : ""}`;
   },
 

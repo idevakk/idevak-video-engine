@@ -1389,41 +1389,63 @@
 
     webref: function (el, s, at, dur) {
       fade(el.querySelector(".eyebrow"), at, { y: 12, dur: 0.55 });
+      var ghost = el.querySelector(".web-ghost");
+      if (ghost) {
+        fade(ghost, at, { dur: 0.8, y: 10 });
+        amb(ghost, dur, at);
+      }
+      if (el.querySelector(".web-head-title")) {
+        words(el.querySelector(".web-head-title"), at + 0.05, { dur: 0.65, stagger: 0.035, y: 16 });
+      }
       var shell = el.querySelector(".web-shell");
       if (shell) {
-        tl.fromTo(shell, { y: 35, opacity: 0, scale: 0.96 }, { y: 0, opacity: 1, scale: 1, duration: 0.75, ease: E.expo }, at + 0.05);
+        tl.fromTo(shell,
+          { y: 35, opacity: 0, scale: 0.97, rotateX: 2.2 },
+          { y: 0, opacity: 1, scale: 1, rotateX: 0, duration: 0.85, ease: E.expo, transformPerspective: 1200 },
+          at + 0.08
+        );
       }
       var urlNode = el.querySelector(".web-url");
       if (urlNode) {
         var urlText = urlNode.textContent || "";
-        var typeSteps = Math.max(8, Math.min(28, urlText.length));
+        var typeSteps = Math.max(12, Math.min(40, urlText.length));
         tl.fromTo(urlNode,
           { clipPath: "inset(0 100% 0 0)" },
-          { clipPath: "inset(0 0% 0 0)", duration: 0.55, ease: "steps(" + typeSteps + ")" },
-          at + 0.15
+          { clipPath: "inset(0 0% 0 0)", duration: 0.65, ease: "steps(" + typeSteps + ")" },
+          at + 0.16
         );
-        queueSFX("click", at + 0.15, { vol: 0.65 });
+        queueSFX("click", at + 0.16, { vol: 0.7 });
+        queueSFX("tick", at + 0.42, { vol: 0.4 });
+      }
+      var docHeader = el.querySelector(".web-doc-header");
+      if (docHeader) {
+        tl.fromTo(docHeader, { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.45, ease: E.soft }, at + 0.28);
       }
       var ps = q(el, ".web-p");
       if (ps.length) {
-        tl.fromTo(ps, { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.6, stagger: 0.1, ease: E.soft }, at + 0.25);
+        tl.fromTo(ps, { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.55, stagger: 0.12, ease: E.soft }, at + 0.38);
       }
       var callout = el.querySelector(".web-callout");
       if (callout) {
-        tl.fromTo(callout, { opacity: 0, scale: 0.94, x: -10 }, { opacity: 1, scale: 1, x: 0, duration: 0.65, ease: E.soft }, at + 0.45);
+        tl.fromTo(callout, { opacity: 0, scale: 0.95, x: -12 }, { opacity: 1, scale: 1, x: 0, duration: 0.6, ease: E.soft }, at + 0.58);
+        queueSFX("unmask", at + 0.58, { vol: 0.75 });
       }
       var cursor = el.querySelector(".web-cursor");
       if (cursor) {
-        tl.fromTo(cursor, { opacity: 0, x: 120, y: 80 }, { opacity: 1, x: 0, y: 0, duration: 1.1, ease: "power2.out" }, at + 0.35);
-        tl.to(cursor, { scale: 0.82, duration: 0.16, ease: "power2.inOut", yoyo: true, repeat: 1 }, at + 1.2);
-        queueSFX("click", at + 1.2, { vol: 0.75 });
-        var targetDoc = el.querySelector(".web-p.has-hl, .web-callout");
-        if (targetDoc) {
-          tl.to(targetDoc, { borderColor: ac(s), backgroundColor: "rgba(56,189,248,0.07)", duration: 0.35, ease: "power2.out" }, at + 1.28);
+        tl.fromTo(cursor, { opacity: 0, x: 160, y: 110 }, { opacity: 1, x: 0, y: 0, duration: 0.95, ease: "power2.out" }, at + 0.45);
+        tl.to(cursor, { scale: 0.75, duration: 0.14, ease: "power2.inOut", yoyo: true, repeat: 1 }, at + 1.25);
+        queueSFX("click", at + 1.25, { vol: 0.9 });
+        if (callout) {
+          tl.to(callout, {
+            borderColor: ac(s),
+            boxShadow: "0 0 40px rgba(56,189,248,0.4), inset 0 0 20px rgba(56,189,248,0.15)",
+            duration: 0.45,
+            ease: "power2.out"
+          }, at + 1.3);
+          queueSFX("flare", at + 1.3, { vol: 0.8 });
         }
       }
-      words(el.querySelector(".web-foot-title"), at + 0.2, { stagger: 0.04, dur: 0.8 }, s);
-      if (el.querySelector(".web-foot-sub")) fade(el.querySelector(".web-foot-sub"), at + 0.6, { dur: 0.65 });
+      if (el.querySelector(".web-foot-sub")) fade(el.querySelector(".web-foot-sub"), at + 0.75, { dur: 0.65 });
     },
 
     meme: function (el, s, at, dur) {

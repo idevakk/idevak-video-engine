@@ -966,7 +966,7 @@
         tl.fromTo(bf, { x: 4 }, { x: 0, duration: 0.2, ease: "power2.out" }, badAt);
         queueSFX("thud", badAt, { vol: 1.0 });
       });
-      if (el.querySelector(".flow-cap")) fade(el.querySelector(".flow-cap"), at + 0.55, { dur: 0.7 });
+      if (el.querySelector(".flow-cap")) words(el.querySelector(".flow-cap"), at + 0.55, { stagger: 0.04, dur: 0.7 }, s);
       if (el.querySelector(".flow-sub")) fade(el.querySelector(".flow-sub"), at + 0.7, { dur: 0.6 });
       var railEl = el.querySelector(".flow-rail");
       var packet = el.querySelector(".flow-packet");
@@ -1303,7 +1303,7 @@
       }
 
       tl.fromTo(q(el, ".cmp-p"), { y: 14, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, stagger: 0.09, ease: E.soft }, at + 0.6);
-      if (el.querySelector(".cmp-cap")) fade(el.querySelector(".cmp-cap"), at + 0.7, { dur: 0.65 });
+      if (el.querySelector(".cmp-cap")) words(el.querySelector(".cmp-cap"), at + 0.7, { stagger: 0.04, dur: 0.7 }, s);
       if (el.querySelector(".cmp-sub")) fade(el.querySelector(".cmp-sub"), at + 0.82, { dur: 0.65 });
     },
 

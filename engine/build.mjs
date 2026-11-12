@@ -484,7 +484,7 @@ const RENDER = {
           )
           .join("")}
       </div>
-      ${s.headline ? `<div class="flow-cap">${esc(s.headline)}</div>` : ""}
+      ${s.headline ? `<div class="flow-cap">${splitWords(s.headline, s)}</div>` : ""}
       ${s.subline ? `<div class="flow-sub">${esc(s.subline)}</div>` : ""}
       <div class="flow-rail"><div class="flow-packet"></div></div>
     </div>`;
@@ -686,7 +686,7 @@ const RENDER = {
         ${points(right)}
       </div>
     </div>
-    ${s.headline ? `<div class="cmp-cap">${esc(s.headline)}</div>` : ""}
+    ${s.headline ? `<div class="cmp-cap">${splitWords(s.headline, s)}</div>` : ""}
     ${s.subline ? `<div class="cmp-sub">${esc(s.subline)}</div>` : ""}`;
   },
 

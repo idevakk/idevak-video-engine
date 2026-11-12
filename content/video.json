@@ -463,41 +463,174 @@
     },
     {
       "id": "s014",
+      "type": "flow",
+      "act": "core",
+      "accent": "#f59e0b",
+      "narration": "Traffic enters through the edge gateway, hits the worker pool, and deadlocks on the shared relational store.",
+      "eyebrow": "FAILURE PROPAGATION",
+      "headline": "Request Path: ==Cascading Collapse==",
+      "subline": "Tracing the failure wavefront across the four service tiers.",
+      "meta": {
+        "nodes": [
+          { "t": "Edge CDN", "k": "INGRESS", "s": "420k RPS" },
+          { "t": "API Gateway", "k": "PROXY", "s": "504 Timeouts", "hot": true },
+          { "t": "Worker Pool", "k": "COMPUTE", "s": "OOM Backoff", "bad": true },
+          { "t": "Aurora Shard", "k": "DATABASE", "s": "Deadlocked", "bad": true }
+        ]
+      },
+      "mascot": {
+        "expression": "panic",
+        "position": "bottom-right",
+        "bubble": "The cascade propagated from edge to DB in 2 seconds!"
+      }
+    },
+    {
+      "id": "s015",
+      "type": "stack",
+      "act": "core",
+      "accent": "#ef4444",
+      "narration": "From the client runtime down to kernel socket buffers, each abstraction layer accumulated saturated queue depth.",
+      "eyebrow": "ENGINEERING LAYERS",
+      "headline": "Full-Stack ==Deadlock Cascade==",
+      "subline": "Every abstraction layer amplifies the thundering herd retry surge.",
+      "meta": {
+        "layers": [
+          { "t": "L7 Client SDK: Unjittered Retry Loop", "s": "50,000 parallel retries", "bad": true },
+          { "t": "L5 Envoy Proxy: Connection Backpressure", "s": "Upstream circuit queues blocked", "hot": true },
+          { "t": "L4 Node.js Pool: Threadpool Starvation", "s": "libuv worker thread deadlock", "bad": true },
+          { "t": "L2 PostgreSQL Driver: Spinlock Contention", "s": "Connection slots 500/500 locked", "bad": true }
+        ]
+      },
+      "mascot": {
+        "expression": "shocked",
+        "position": "bottom-right",
+        "bubble": "Every layer from TCP to Postgres completely locked up!"
+      }
+    },
+    {
+      "id": "s016",
+      "type": "ledger",
+      "act": "core",
+      "accent": "#ff3b5c",
+      "narration": "The forensic audit confirmed five hundred active connection slots locked with zero available pool capacity.",
+      "eyebrow": "INCIDENT AUDIT LOG",
+      "headline": "Production Audit: ==Fatal Telemetry==",
+      "subline": "Telemetry metrics confirmed full regional service degradation.",
+      "meta": {
+        "head": "INCIDENT FORENSIC AUDIT",
+        "live": "SEV-1 OUTAGE",
+        "stamp": "POST-MORTEM VERIFIED",
+        "rows": [
+          { "k": "CLUSTER REGION", "v": "eu-west-1 (Ireland)" },
+          { "k": "CONNECTION POOL", "v": "500 / 500 (100%)", "bad": true },
+          { "k": "LOCK LATENCY", "v": "28,450ms p99", "bad": true },
+          { "k": "FLEET STATUS", "v": "0.00% (BLACKOUT)", "bad": true }
+        ],
+        "points": [
+          "Zero backoff turned transient drops into regional blackout",
+          "Connection slots exhausted in 840 milliseconds",
+          "Secondary read replicas disconnected on ping timeout"
+        ]
+      },
+      "mascot": {
+        "expression": "pointing",
+        "position": "bottom-right",
+        "bubble": "100% pool saturation confirmed across all replicas!"
+      }
+    },
+    {
+      "id": "s017",
       "type": "compare",
       "act": "solution",
+      "accent": "#10b981",
       "narration": "Instead of blind retries that stampede your database, modern systems implement exponential backoff with jitter and circuit breaking.",
-      "eyebrow": "THE PATTERN",
-      "headline": "Thundering Herd versus Circuit Breakers",
-      "subline": "Graceful degradation under catastrophic load spikes.",
+      "eyebrow": "ARCHITECTURAL PATTERN",
+      "headline": "Naive Retries vs ==Full Jitter Breaker==",
+      "subline": "Replacing thundering herd stampedes with graceful load shedding.",
       "meta": {
         "left": {
           "k": "NAIVE RETRIES",
-          "t": "Immediate retry on error",
+          "t": "Zero Backoff Stampede",
           "pts": [
-            "amplifies backend load",
-            "thundering herd collapse",
-            "cascading timeouts"
+            "Amplifies backend load 50x",
+            "Thundering herd collapse",
+            "Cascading regional blackout"
           ]
         },
         "right": {
           "k": "CIRCUIT BREAKER",
-          "t": "Exponential backoff and jitter",
+          "t": "Full Jitter & Fast-Fail",
           "pts": [
-            "fast-fail protection",
-            "sheds excess traffic",
-            "instant recovery"
+            "Instant fast-fail protection",
+            "Decorrelates retry bursts",
+            "Sub-millisecond recovery"
           ]
         },
         "vs": "->"
       },
       "mascot": {
         "expression": "cool",
-        "position": "bottom-left",
-        "bubble": "Circuit breakers protect your database."
+        "position": "bottom-right",
+        "bubble": "Circuit breakers protect your database!"
       }
     },
     {
-      "id": "s015",
+      "id": "s018",
+      "type": "memory",
+      "act": "core",
+      "accent": "#a855f7",
+      "narration": "Inside the database connection manager, every memory slot was held hostage by deadlocked worker processes.",
+      "eyebrow": "KERNEL BUFFER STATE",
+      "headline": "Pool Buffer: ==Heap Exhaustion==",
+      "subline": "Visualizing the memory arena when connection pool buffers deadlock.",
+      "meta": {
+        "segment": "CONNECTION BUFFER HEAP",
+        "pointer": "CORRUPT DEADLOCK",
+        "liveCount": 12,
+        "cells": [
+          { "addr": "0x00", "bad": true },
+          { "addr": "0x04", "bad": true },
+          { "addr": "0x08", "bad": true },
+          { "addr": "0x0C", "bad": true },
+          { "addr": "0x10", "bad": true },
+          { "addr": "0x14", "bad": true },
+          { "addr": "0x18", "bad": true },
+          { "addr": "0x1C", "bad": true },
+          { "addr": "0x20", "bad": true },
+          { "addr": "0x24", "bad": true },
+          { "addr": "0x28", "bad": true },
+          { "addr": "0x2C", "bad": true }
+        ]
+      },
+      "mascot": {
+        "expression": "facepalm",
+        "position": "bottom-right",
+        "bubble": "Every single buffer slot in the heap is locked!"
+      }
+    },
+    {
+      "id": "s019",
+      "type": "matrix",
+      "act": "core",
+      "accent": "#ef4444",
+      "narration": "Across the cluster, ninety-four percent of worker instances failed their liveness probes as cascading timeouts spread.",
+      "eyebrow": "FLEET HEALTH MATRIX",
+      "headline": "Cluster Fleet: ==94% Deadlock==",
+      "subline": "64 worker nodes across Europe-West failing health checks simultaneously.",
+      "meta": {
+        "cells": 64,
+        "legendOk": "RECOVERED (6%)",
+        "legendBad": "DEADLOCKED (94%)",
+        "count": "60 / 64 NODES DOWN"
+      },
+      "mascot": {
+        "expression": "panic",
+        "position": "bottom-right",
+        "bubble": "Almost the entire cluster fleet went red!"
+      }
+    },
+    {
+      "id": "s020",
       "type": "outro",
       "act": "solution",
       "narration": "If you build, solve, and deploy modern cloud software, subscribe for more real-world production autopsies.",

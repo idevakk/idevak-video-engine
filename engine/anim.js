@@ -877,6 +877,38 @@
           tl.fromTo(addTags, { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.35, ease: "back.out(1.7)" }, addAt + 0.12);
           tl.to(addTags, { boxShadow: "0 0 24px rgba(52,211,153,0.8)", duration: 0.6, yoyo: true, repeat: repYoyo(dur - (addAt - at) - 0.5, 1.2), ease: "sine.inOut" }, addAt + 0.5);
         }
+
+        // Strikethrough snaps across the deleted line when the fix lands
+        var strikes = q(el, ".df-strike");
+        if (strikes.length) {
+          tl.fromTo(strikes,
+            { scaleX: 0 },
+            { scaleX: 1, duration: 0.35, ease: "power2.out" },
+            addAt
+          );
+          if (del.length) tl.to(del, { opacity: 0.55, duration: 0.35 }, addAt + 0.1);
+          queueSFX("swipe", addAt, { vol: 0.75 });
+        }
+
+        // Merge celebration sparkles burst around PR badge
+        var spks = q(el, ".df-spk");
+        if (spks.length) {
+          tl.fromTo(spks,
+            { scale: 0, opacity: 0, y: 0 },
+            { scale: 1.4, opacity: 1, y: -8, duration: 0.45, stagger: 0.06, ease: "back.out(2)" },
+            addAt + 0.15
+          );
+          tl.to(spks, { opacity: 0, y: -16, duration: 0.35, stagger: 0.05, ease: "power2.in" }, addAt + 0.65);
+          var dfVer = el.querySelector(".df-ver");
+          if (dfVer) {
+            tl.fromTo(dfVer,
+              { boxShadow: "0 0 0 rgba(52,211,153,0)" },
+              { boxShadow: "0 0 25px 4px rgba(52,211,153,0.7)", borderColor: "#34d399", duration: 0.35, yoyo: true, repeat: 1 },
+              addAt + 0.15
+            );
+          }
+        }
+
         queueSFX("chime", addAt, { vol: 0.75 });
         queueSFX("flare", addAt + 0.1, { vol: 0.7 });
       }

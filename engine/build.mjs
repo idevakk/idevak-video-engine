@@ -424,15 +424,27 @@ const RENDER = {
       const kind = l.k || l.kind || (l.add ? "add" : l.del ? "del" : "ctx");
       const sig = kind === "add" ? "+" : kind === "del" ? "-" : " ";
       let text = l.t ?? l.text ?? l.c ?? "";
+      const strike = kind === "del" ? `<span class="df-strike"></span>` : "";
       const tag = kind === "del"
         ? `<span class="df-tag df-tag-del">REMOVED</span>`
         : kind === "add"
           ? `<span class="df-tag df-tag-add">FIX APPLIED</span>`
           : "";
-      return `<div class="df-line df-${kind}" data-k="${k}"><span class="df-sig">${sig}</span><span class="df-t">${colorizeCode(text)}${tag}</span></div>`;
+      return `<div class="df-line df-${kind}" data-k="${k}"><span class="df-sig">${sig}</span><span class="df-t">${colorizeCode(text)}${strike}${tag}</span></div>`;
     });
     const file = s.meta?.file || "source";
     const ver = s.meta?.ver || "";
+    const verBadge = ver
+      ? `<div class="df-ver-wrap">
+          <span class="df-ver">${esc(ver)}</span>
+          <div class="df-ver-sparkles">
+            <span class="df-spk df-spk-1">✦</span>
+            <span class="df-spk df-spk-2">✦</span>
+            <span class="df-spk df-spk-3">✦</span>
+            <span class="df-spk df-spk-4">✦</span>
+          </div>
+        </div>`
+      : "";
     const callout = s.meta?.announce || s.subline || "";
     const foot = callout
       ? `<div class="diff-foot"><div class="diff-callout">${splitWords(callout, s)}</div></div>`
@@ -447,7 +459,7 @@ const RENDER = {
           <div class="mac-dots"><span></span><span></span><span></span></div>
           <span class="df-file">${esc(file)}</span>
         </div>
-        ${ver ? `<span class="df-ver">${esc(ver)}</span>` : ""}
+        ${verBadge}
       </div>
       <div class="diff-body">${lines.join("")}</div>
     </div>

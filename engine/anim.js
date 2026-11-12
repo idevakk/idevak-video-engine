@@ -1430,19 +1430,48 @@
         tl.fromTo(callout, { opacity: 0, scale: 0.95, x: -12 }, { opacity: 1, scale: 1, x: 0, duration: 0.6, ease: E.soft }, at + 0.58);
         queueSFX("unmask", at + 0.58, { vol: 0.75 });
       }
+
+      // Smooth document scroll & scrollbar thumb motion
+      var scrollWrap = el.querySelector(".web-doc-scroll");
+      var thumb = el.querySelector(".web-scroll-thumb");
+      if (scrollWrap) {
+        tl.fromTo(scrollWrap, { y: 0 }, { y: -36, duration: 1.1, ease: "power2.inOut" }, at + 0.85);
+      }
+      if (thumb) {
+        tl.fromTo(thumb, { y: 0 }, { y: 46, duration: 1.1, ease: "power2.inOut" }, at + 0.85);
+      }
+
+      var cursorWrap = el.querySelector(".web-cursor-wrap");
       var cursor = el.querySelector(".web-cursor");
-      if (cursor) {
-        tl.fromTo(cursor, { opacity: 0, x: 160, y: 110 }, { opacity: 1, x: 0, y: 0, duration: 0.95, ease: "power2.out" }, at + 0.45);
-        tl.to(cursor, { scale: 0.75, duration: 0.14, ease: "power2.inOut", yoyo: true, repeat: 1 }, at + 1.25);
+      var ripple = el.querySelector(".web-click-ripple");
+      if (cursorWrap) {
+        tl.fromTo(cursorWrap, { opacity: 0, x: 150, y: 100 }, { opacity: 1, x: 0, y: 0, duration: 0.9, ease: "power2.out" }, at + 0.45);
+        if (cursor) {
+          tl.to(cursor, { scale: 0.75, duration: 0.12, ease: "power2.inOut", yoyo: true, repeat: 1 }, at + 1.25);
+        }
+        if (ripple) {
+          tl.fromTo(ripple,
+            { scale: 0.5, opacity: 0.95 },
+            { scale: 3.2, opacity: 0, duration: 0.45, ease: "power2.out" },
+            at + 1.25
+          );
+        }
         queueSFX("click", at + 1.25, { vol: 0.9 });
         if (callout) {
           tl.to(callout, {
             borderColor: ac(s),
-            boxShadow: "0 0 40px rgba(56,189,248,0.4), inset 0 0 20px rgba(56,189,248,0.15)",
+            boxShadow: "0 0 50px rgba(56,189,248,0.5), inset 0 0 25px rgba(56,189,248,0.2)",
             duration: 0.45,
             ease: "power2.out"
-          }, at + 1.3);
-          queueSFX("flare", at + 1.3, { vol: 0.8 });
+          }, at + 1.28);
+          queueSFX("flare", at + 1.28, { vol: 0.85 });
+        }
+        var mOv = el.querySelector(".m-ov");
+        if (mOv) {
+          var avatar = mOv.querySelector(".m-ov-avatar");
+          if (avatar) {
+            tl.to(avatar, { rotate: 3, duration: 0.2, yoyo: true, repeat: 1, ease: E.springSubtle }, at + 1.3);
+          }
         }
       }
       if (el.querySelector(".web-foot-sub")) fade(el.querySelector(".web-foot-sub"), at + 0.75, { dur: 0.65 });

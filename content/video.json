@@ -328,6 +328,7 @@
         "ghost": "SPEC",
         "url": "https://aws.amazon.com/builders-library/timeouts-retries-and-backoff-with-jitter/",
         "badge": "AWS BUILDERS LIBRARY",
+        "crumb": "AWS ARCHITECTURE / RELIABILITY / RESILIENCY",
         "title": "Timeouts, Retries, and Backoff with Jitter",
         "snippet": [
           "When clients retry immediately upon failure, downstream systems face a catastrophic thundering herd collapse.",
@@ -335,7 +336,8 @@
         ],
         "highlight": "thundering herd collapse",
         "callout": "Always decorate exponential backoff with full jitter to decorrelate client retry bursts.",
-        "calloutType": "MANDATORY SPEC"
+        "calloutType": "MANDATORY SPEC",
+        "formula": "t_sleep = rand(0, min(cap, base * 2 ** attempt))"
       },
       "mascot": {
         "expression": "pointing",

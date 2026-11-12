@@ -768,6 +768,7 @@ const RENDER = {
     const callout = s.meta?.callout || "";
     const calloutType = s.meta?.calloutType || "IMPORTANT";
     const crumb = s.meta?.crumb || "DOCS / REFERENCE / SPEC";
+    const formula = s.meta?.formula || "";
     const customImg = s.meta?.image;
 
     return `
@@ -784,20 +785,36 @@ const RENDER = {
         <div class="web-badge">${esc(badge)}</div>
       </div>
       <div class="web-body">
-        ${customImg ? `<div class="web-screenshot-wrap"><img class="web-screenshot" src="${esc(customImg)}" alt="${esc(s.meta?.alt || docTitle)}" style="object-position:${esc(s.meta?.position || "top center")}" /></div>` : `
-        <div class="web-doc-header">
-          <div class="web-doc-crumb">${esc(crumb)}</div>
-          <div class="web-doc-title">${esc(docTitle)}</div>
+        <div class="web-viewport">
+          <div class="web-doc-scroll">
+            ${customImg ? `<div class="web-screenshot-wrap"><img class="web-screenshot" src="${esc(customImg)}" alt="${esc(s.meta?.alt || docTitle)}" style="object-position:${esc(s.meta?.position || "top center")}" /></div>` : `
+            <div class="web-doc-header">
+              <div class="web-doc-crumb">${esc(crumb)}</div>
+              <div class="web-doc-title">${esc(docTitle)}</div>
+            </div>
+            <div class="web-doc-content">
+              ${snippet.map(sn => `<p class="web-p ${highlight && sn.includes(highlight) ? "has-hl" : ""}">${splitWords(sn, s)}</p>`).join("")}
+              ${callout ? `
+              <div class="web-callout callout-${calloutType.toLowerCase().replace(/[^a-z0-9_-]/g, "")}">
+                <div class="web-callout-top">
+                  <span class="web-callout-tag">${esc(calloutType)}</span>
+                  ${formula ? `<span class="web-callout-algo-badge">FULL JITTER</span>` : ""}
+                </div>
+                <div class="web-callout-text">${splitWords(callout, s)}</div>
+                ${formula ? `
+                <div class="web-formula-chip">
+                  <span class="wfc-label">DECORRELATION FORMULA</span>
+                  <code class="wfc-code">${esc(formula)}</code>
+                </div>` : ""}
+              </div>` : ""}
+            </div>`}
+          </div>
+          <div class="web-scrollbar"><div class="web-scroll-thumb"></div></div>
         </div>
-        <div class="web-doc-content">
-          ${snippet.map(sn => `<p class="web-p ${highlight && sn.includes(highlight) ? "has-hl" : ""}">${splitWords(sn, s)}</p>`).join("")}
-          ${callout ? `
-          <div class="web-callout callout-${calloutType.toLowerCase().replace(/[^a-z0-9_-]/g, "")}">
-            <div class="web-callout-tag">${esc(calloutType)}</div>
-            <div class="web-callout-text">${splitWords(callout, s)}</div>
-          </div>` : ""}
-        </div>`}
-        <svg class="web-cursor" viewBox="0 0 24 24"><path fill="var(--ac)" d="M3 3l7 18 3-7 7-3L3 3z"/></svg>
+        <div class="web-cursor-wrap">
+          <svg class="web-cursor" viewBox="0 0 24 24"><path fill="var(--ac)" d="M3 3l7 18 3-7 7-3L3 3z"/></svg>
+          <div class="web-click-ripple"></div>
+        </div>
       </div>
     </div>
     ${s.subline ? `<div class="web-foot-sub">${esc(s.subline)}</div>` : ""}`;

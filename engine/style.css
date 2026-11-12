@@ -733,18 +733,29 @@ body{width:var(--composition-width,1920px);height:var(--composition-height,1080p
 .web-lock{width:13px;height:13px;color:var(--ac);opacity:.85}
 .web-url{font-family:var(--mono);font-size:14px;color:var(--dim);letter-spacing:.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .web-badge{font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:color-mix(in srgb,var(--ac) 86%,white);background:rgba(56,189,248,.1);padding:4px 10px;border:1px solid var(--ac);border-radius:4px}
-.web-body{padding:30px 42px 34px;position:relative;min-height:260px}
+.web-body{padding:26px 36px 30px;position:relative}
+.web-viewport{position:relative;width:100%;overflow:hidden;height:430px}
+.web-doc-scroll{position:relative;width:100%;padding-right:24px}
+.web-scrollbar{position:absolute;right:0;top:6px;bottom:6px;width:6px;background:rgba(255,255,255,.05);border-radius:3px}
+.web-scroll-thumb{position:absolute;top:0;left:0;right:0;height:95px;background:var(--ac);border-radius:3px;box-shadow:0 0 10px var(--ac);opacity:.75}
 .web-doc-crumb{font-family:var(--mono);font-size:13px;letter-spacing:.2em;color:var(--faint);margin-bottom:8px}
-.web-doc-title{font-size:32px;font-weight:750;letter-spacing:-.03em;color:var(--ink);margin-bottom:18px}
+.web-doc-title{font-size:32px;font-weight:750;letter-spacing:-.03em;color:var(--ink);margin-bottom:16px}
 .web-p{font-size:21px;line-height:1.55;color:var(--dim);margin:0 0 14px;max-width:1200px}
 .web-p.has-hl{color:var(--ink);background:rgba(56,189,248,.07);border-left:3px solid var(--ac);padding-left:14px;border-radius:0 4px 4px 0}
-.web-callout{margin-top:20px;padding:16px 22px;border-radius:8px;border-left:4px solid var(--ac);background:rgba(255,255,255,.025);display:flex;flex-direction:column;gap:6px;max-width:1160px;transition:box-shadow .3s, border-color .3s}
+.web-callout{margin-top:18px;padding:16px 22px;border-radius:8px;border-left:4px solid var(--ac);background:rgba(255,255,255,.025);display:flex;flex-direction:column;gap:8px;max-width:1160px;transition:box-shadow .3s, border-color .3s}
+.web-callout-top{display:flex;align-items:center;justify-content:space-between}
+.web-callout-algo-badge{font-family:var(--mono);font-size:11px;font-weight:800;letter-spacing:.14em;color:#38bdf8;background:rgba(56,189,248,.12);border:1px solid rgba(56,189,248,.35);padding:2px 8px;border-radius:3px}
+.web-formula-chip{margin-top:8px;background:rgba(3,6,14,.88);border:1px solid rgba(56,189,248,.3);border-radius:6px;padding:8px 14px;display:flex;align-items:center;gap:14px;box-shadow:inset 0 1px 0 rgba(255,255,255,.05)}
+.wfc-label{font-family:var(--mono);font-size:11px;font-weight:800;letter-spacing:.14em;color:var(--dim);text-transform:uppercase}
+.wfc-code{font-family:var(--mono);font-size:18px;font-weight:700;color:#38bdf8;text-shadow:0 0 14px rgba(56,189,248,.45)}
 .web-callout.callout-warning{border-color:#f5a524;background:rgba(245,165,36,.06)}
 .web-callout.callout-important,.web-callout.callout-mandatoryspec,.web-callout.callout-critical{border-color:var(--ac);background:rgba(56,189,248,.08);box-shadow:inset 0 0 20px rgba(56,189,248,.1)}
 .web-callout-tag{font-family:var(--mono);font-size:12px;font-weight:800;letter-spacing:.2em;text-transform:uppercase;color:var(--ac)}
 .callout-warning .web-callout-tag{color:#f5a524}
 .web-callout-text{font-size:18px;line-height:1.45;color:var(--ink);font-weight:600}
-.web-cursor{position:absolute;width:24px;height:24px;right:220px;bottom:54px;pointer-events:none;filter:drop-shadow(0 0 10px var(--ac))}
+.web-cursor-wrap{position:absolute;right:220px;bottom:54px;pointer-events:none}
+.web-cursor{width:26px;height:26px;display:block;filter:drop-shadow(0 0 10px var(--ac))}
+.web-click-ripple{position:absolute;top:2px;left:2px;width:24px;height:24px;border-radius:50%;border:2px solid var(--ac);opacity:0;transform:scale(0.5);pointer-events:none}
 .web-foot-title{font-size:42px;font-weight:800;letter-spacing:-.03em;margin:0}
 .web-foot-sub{font-size:24px;color:var(--dim);margin-top:8px;line-height:1.4}
 .web-foot-sub::before{content:"■ ";color:var(--ac);margin-right:8px}

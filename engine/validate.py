@@ -429,6 +429,8 @@ def validate_scene(
         sfield(meta, "highlight", where, errors)
         sfield(meta, "callout", where, errors)
         sfield(meta, "calloutType", where, errors)
+        sfield(meta, "crumb", where, errors)
+        sfield(meta, "formula", where, errors)
         sfield(meta, "image", where, errors)
         if "snippet" in meta and not isinstance(meta["snippet"], (str, list)):
             errors.append(f"{where}.meta.snippet: must be a string or list of strings")

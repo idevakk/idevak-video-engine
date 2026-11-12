@@ -76,6 +76,11 @@
       "variant": 1,
       "meta": {
         "ghost": "STORM"
+      },
+      "mascot": {
+        "expression": "panic",
+        "position": "bottom-right",
+        "bubble": "Every retry multiplies the load!"
       }
     },
     {

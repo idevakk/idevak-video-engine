@@ -522,16 +522,27 @@
     },
 
     statement: function (el, s, at, dur) {
-      if (el.querySelector(".eyebrow")) fade(el.querySelector(".eyebrow"), at, { y: 12, dur: 0.55 });
-      words(el.querySelector(".statement"), at + 0.06, { stagger: 0.042, dur: 0.85, x: s.variant === 2 ? 34 : s.variant === 1 ? -34 : 0 }, s);
-      if (el.querySelector(".st-sub")) fade(el.querySelector(".st-sub"), at + 0.42, { dur: 0.7 });
-      if (el.querySelector(".st-ghost")) tl.fromTo(el.querySelector(".st-ghost"), { opacity: 0, x: 40 }, { opacity: 1, x: 0, duration: 1.8, ease: E.expo }, at);
-      var ticks = q(el, ".st-tickrow span");
-      tl.fromTo(ticks, { scaleX: 0, opacity: 0 }, { scaleX: 1, opacity: 1, duration: 0.5, stagger: 0.07, ease: E.soft }, at + 0.6);
-      if (ticks.length) {
-        queueSFX("click", at + 0.6, { vol: 0.5 });
+      var wrap = el.querySelector(".stat-wrap");
+      if (wrap) tl.fromTo(wrap, { scale: 1.035 }, { scale: 1, duration: 0.38, ease: E.expo }, at);
+      queueSFX("thud", at, { vol: 0.75 });
+
+      if (el.querySelector(".eyebrow")) fade(el.querySelector(".eyebrow"), at, { y: 12, dur: 0.5 });
+      words(el.querySelector(".statement"), at + 0.08, { stagger: 0.042, dur: 0.8, x: s.variant === 2 ? 34 : s.variant === 1 ? -34 : 0 }, s);
+      if (el.querySelector(".st-sub")) fade(el.querySelector(".st-sub"), at + 0.38, { dur: 0.65 });
+      
+      var ghost = el.querySelector(".st-ghost");
+      if (ghost) {
+        tl.fromTo(ghost, 
+          { opacity: 0, x: 50, scale: 1.08, filter: "drop-shadow(-6px 0 0 rgba(245,158,11,0.4)) drop-shadow(6px 0 0 rgba(255,59,92,0.4))" }, 
+          { opacity: 0.9, x: 0, scale: 1, filter: "drop-shadow(0 0 0 transparent)", duration: 1.8, ease: E.expo }, at);
       }
-      amb(el.querySelector(".st-ghost"), dur, at);
+
+      var ticks = q(el, ".st-tickrow span");
+      tl.fromTo(ticks, { scaleX: 0, opacity: 0 }, { scaleX: 1, opacity: 1, duration: 0.45, stagger: 0.08, ease: E.springSubtle }, at + 0.5);
+      if (ticks.length) {
+        queueSFX("click", at + 0.5, { vol: 0.6 });
+      }
+      amb(ghost, dur, at);
     },
 
     stat: function (el, s, at, dur) {

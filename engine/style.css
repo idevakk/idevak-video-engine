@@ -211,17 +211,21 @@ body{width:var(--composition-width,1920px);height:var(--composition-height,1080p
 .hero-baseline-tag{font-family:var(--mono);font-size:11px;letter-spacing:.22em;color:var(--dim);text-transform:uppercase}
 
 /* ============================================================ statement */
-.stat-wrap{position:absolute;inset:0;padding:0 128px;display:flex;flex-direction:column;justify-content:center}
+.stat-wrap{position:absolute;inset:0;padding:0 128px;display:flex;flex-direction:column;justify-content:center;transform-origin:center center}
 .statement{font-size:112px;line-height:1.02;font-weight:800;letter-spacing:-.045em;margin:0;max-width:1560px}
 .statement-sm{font-size:88px}
+.statement .hl-marker{isolation:isolate;display:inline-block;position:relative}
+.statement .hl-text{color:var(--ac);text-shadow:0 0 35px color-mix(in srgb,var(--ac) 85%,transparent),0 0 75px color-mix(in srgb,var(--ac) 45%,transparent)}
+.statement .hl-ink{position:absolute;inset:4% -10px 4% -10px;border-radius:10px;background:color-mix(in srgb,var(--ac) 15%,transparent);border:1px solid color-mix(in srgb,var(--ac) 45%,transparent);box-shadow:0 0 26px color-mix(in srgb,var(--ac) 30%,transparent);z-index:-1}
 .st-sub{margin-top:36px;font-size:32px;font-weight:500;color:var(--dim);max-width:1100px;line-height:1.4}
 .st-ghost{position:absolute;right:110px;bottom:40px;font-size:260px;font-weight:900;letter-spacing:-.06em;
-  color:transparent;-webkit-text-stroke:1px rgba(255,255,255,.06);line-height:1;z-index:-1}
-.st-tickrow{display:flex;gap:10px;margin-top:64px}
-.st-tickrow span{display:block;height:2px;background:var(--ac);opacity:.5}
-.st-tickrow span:nth-child(1){width:64px;opacity:1}
-.st-tickrow span:nth-child(2){width:26px}
-.st-tickrow span:nth-child(3){width:12px;opacity:.26}
+  color:transparent;-webkit-text-stroke:1px rgba(255,255,255,.06);line-height:1;z-index:-1;
+  text-shadow:-2px 0 rgba(245,158,11,0.25), 2px 0 rgba(255,59,92,0.25)}
+.st-tickrow{display:flex;gap:12px;margin-top:64px;align-items:center}
+.st-tickrow span{display:block;height:3px;background:var(--ac);border-radius:2px;box-shadow:0 0 12px var(--ac);opacity:.6}
+.st-tickrow span:nth-child(1){width:72px;opacity:1;box-shadow:0 0 16px var(--ac)}
+.st-tickrow span:nth-child(2){width:32px;opacity:.75}
+.st-tickrow span:nth-child(3){width:16px;opacity:.4}
 
 /* ============================================================ stat */
 .stat-stage{position:absolute;inset:0;padding:0 128px;display:flex;flex-direction:column;justify-content:center}

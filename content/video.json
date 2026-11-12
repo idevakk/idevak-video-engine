@@ -53,7 +53,7 @@
       "act": "hook",
       "narration": "Today we are dissecting how modern distributed systems fail, and how to design them so they never do.",
       "eyebrow": "ARCHITECTURE",
-      "headline": "How Distributed Systems Fail",
+      "headline": "How Distributed Systems ==Fail==",
       "subline": "Resilience is not an afterthought. It is an engineering discipline.",
       "meta": {
         "mark": "CLOUD",

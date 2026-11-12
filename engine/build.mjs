@@ -242,6 +242,7 @@ const RENDER = {
   hero(s) {
     const mark = s.meta?.mark || String(s.headline || "").trim().split(/\s+/)[0].toUpperCase();
     const markSize = Math.min(128, Math.floor(400 / Math.max(1, [...mark].length * 0.8)));
+    const actLabel = (s.act || "SYS").toUpperCase();
     return `
     <div class="hero-grid">
       <div class="hero-left">
@@ -251,10 +252,14 @@ const RENDER = {
       </div>
       <div class="hero-right">
         ${s.meta?.image || s.meta?.video ? `<div class="evidence-frame"><div class="evidence-label">${esc(s.meta?.label || "INCIDENT EVIDENCE")}</div><div class="evidence-viewport"><img class="evidence-image" src="${esc(s.meta.image || s.meta.poster || "")}" alt="${esc(s.meta.alt || s.headline)}" style="object-position:${esc(s.meta.position || "center")}${s.meta.video ? ";visibility:hidden" : ""}" /></div>${s.meta.caption ? `<div class="evidence-caption">${esc(s.meta.caption)}</div>` : ""}</div>` : s.meta?.logos ? `<div class="brand-grid">${s.meta.logos.map(logo => `<div class="brand-item"><img src="${esc(logo.src)}" alt="${esc(logo.name)}" style="background:${/^#[0-9a-f]{6}$/i.test(logo.background || "") ? logo.background : "transparent"}" /><span>${esc(logo.name)}</span></div>`).join("")}</div>` : `<div class="hero-mark" style="--hero-mark-size:${markSize}px">${esc(mark)}</div>`}
-        ${s.meta?.rule ? `<div class="hero-vrule"></div>` : ""}
+        ${s.meta?.rule ? `<div class="hero-vrule"><span class="hero-vrule-dot"></span></div>` : ""}
       </div>
     </div>
-    <div class="hero-baseline"></div>`;
+    <div class="hero-baseline">
+      <div class="hero-baseline-line"></div>
+      <div class="hero-baseline-ticks"><span></span><span></span><span></span><span></span><span></span></div>
+      <div class="hero-baseline-tag">// SPEC: ARCH-02 // REGION: ${esc(actLabel)} // TELEMETRY: ACTIVE</div>
+    </div>`;
   },
 
   statement(s) {

@@ -512,10 +512,12 @@
     hero: function (el, s, at, dur) {
       fade(el.querySelector(".eyebrow"), at, { y: 12, dur: 0.55 });
       words(el.querySelector(".hero-title"), at + 0.1, { stagger: 0.05, dur: 0.9 }, s);
-      fade(el.querySelector(".hero-sub"), at + 0.55, { dur: 0.7 });
-      tl.fromTo(el.querySelector(".hero-mark"), { opacity: 0, x: 40, scale: 0.94 }, { opacity: 1, x: 0, scale: 1, duration: 1.2, ease: E.expo }, at + 0.15);
-      tl.fromTo(el.querySelector(".hero-baseline"), { scaleX: 0 }, { scaleX: 1, duration: 1.1, ease: E.expo }, at + 0.3);
-      queueSFX("whoosh", at + 0.15, { vol: 0.5 });
+      fade(el.querySelector(".hero-sub"), at + 0.45, { dur: 0.7 });
+      tl.fromTo(el.querySelector(".hero-mark"), { opacity: 0, x: 40, scale: 0.94 }, { opacity: 1, x: 0, scale: 1, duration: 1.2, ease: E.expo }, at + 0.12);
+      var vrule = el.querySelector(".hero-vrule");
+      if (vrule) tl.fromTo(vrule, { scaleY: 0, opacity: 0 }, { scaleY: 1, opacity: 1, duration: 0.8, ease: E.expo }, at + 0.18);
+      tl.fromTo(el.querySelector(".hero-baseline"), { scaleX: 0, opacity: 0 }, { scaleX: 1, opacity: 1, duration: 0.9, ease: E.expo }, at + 0.25);
+      queueSFX("whoosh", at + 0.12, { vol: 0.5 });
       amb(el.querySelector(".hero-mark"), dur, at);
     },
 
@@ -1114,6 +1116,7 @@
       var mBubble = mOv.querySelector(".m-ov-bubble");
       if (mBubble) {
         tl.fromTo(mBubble, { scale: 0.82, opacity: 0, y: 12 }, { scale: 1, opacity: 1, y: 0, duration: 0.45, ease: E.spring }, at + 0.28);
+        queueSFX("chime", at + 0.3, { vol: 0.5 });
       }
       var mHud = mOv.querySelector(".m-ov-hud");
       if (mHud) {

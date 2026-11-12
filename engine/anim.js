@@ -1059,13 +1059,36 @@
     },
 
     outro: function (el, s, at, dur) {
-      tl.fromTo(el.querySelector(".out-ghost"), { opacity: 0, scale: 1.08, x: 40 }, { opacity: 1, scale: 1, x: 0, duration: 2.2, ease: E.expo }, at);
+      var wrap = el.querySelector(".out-wrap");
+      if (wrap) {
+        tl.fromTo(wrap, { scale: 0.985 }, { scale: 1.015, duration: dur, ease: "none" }, at);
+      }
+
+      var ghost = el.querySelector(".out-ghost");
+      if (ghost) {
+        tl.fromTo(ghost, { opacity: 0, scale: 1.08, x: 40 }, { opacity: 1, scale: 1, x: 0, duration: 2.2, ease: E.expo }, at);
+        var laser = el.querySelector(".out-ghost-laser");
+        if (laser) {
+          tl.fromTo(laser, { left: "-150px" }, { left: "100%", duration: 1.8, ease: "power2.inOut" }, at + 0.6);
+        }
+      }
+
       fade(el.querySelector(".eyebrow"), at, { y: 12, dur: 0.55 });
       words(el.querySelector(".out-title"), at + 0.1, { stagger: 0.05, dur: 0.9 }, s);
-      if (el.querySelector(".out-sub")) fade(el.querySelector(".out-sub"), at + 0.5, { dur: 0.75 });
-      fade(el.querySelector(".out-cta"), at + 0.85, { dur: 0.7 });
-      queueSFX("chime", at + 0.85, { vol: 0.85 });
-      fade(el.querySelector(".out-ch"), at + 1.05, { dur: 0.7 });
+      if (el.querySelector(".out-sub")) fade(el.querySelector(".out-sub"), at + 0.45, { dur: 0.7 });
+
+      var pill = el.querySelector(".out-btn-pill");
+      if (pill) {
+        tl.fromTo(pill, { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.6, ease: E.springSubtle }, at + 0.7);
+      }
+
+      var badges = q(el, ".out-social-badge");
+      if (badges.length) {
+        tl.fromTo(badges, { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, stagger: 0.12, ease: E.soft }, at + 0.85);
+      }
+
+      queueSFX("thud", at, { vol: 0.75 });
+      queueSFX("chime", at + 0.75, { vol: 0.85 });
     },
   };
 

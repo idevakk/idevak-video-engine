@@ -829,23 +829,69 @@
     },
 
     diff: function (el, s, at, dur) {
+      var ghost = el.querySelector(".diff-ghost");
+      if (ghost) {
+        fade(ghost, at, { dur: 0.8, y: 10 });
+        amb(ghost, dur, at);
+      }
       fade(el.querySelector(".eyebrow"), at, { y: 12, dur: 0.55 });
-      tl.fromTo(el.querySelector(".diff-shell"), { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.8, ease: E.expo }, at + 0.05);
+      if (el.querySelector(".diff-head-title")) {
+        words(el.querySelector(".diff-head-title"), at + 0.05, { dur: 0.65, stagger: 0.035, y: 16 });
+      }
+      queueSFX("whoosh", at + 0.05, { vol: 0.4 });
+      tl.fromTo(el.querySelector(".diff-shell"),
+        { y: 34, opacity: 0, scale: 0.985, rotateX: 3, rotateY: -1.5 },
+        { y: 0, opacity: 1, scale: 1, rotateX: 0, rotateY: 0, duration: 0.85, ease: E.expo, transformPerspective: 1200 },
+        at + 0.08
+      );
       var lines = q(el, ".df-line");
-      tl.fromTo(lines, { x: -14, opacity: 0 }, { x: 0, opacity: 1, duration: 0.4, stagger: 0.075, ease: E.soft }, at + 0.2);
+      tl.fromTo(lines, { x: -16, opacity: 0 }, { x: 0, opacity: 1, duration: 0.45, stagger: 0.08, ease: E.soft }, at + 0.22);
+
+      // Deleted lines (red) strike in first
       var del = q(el, ".df-del");
       if (del.length) {
-        tl.fromTo(del, { backgroundColor: "rgba(255,59,92,0)" }, { backgroundColor: "rgba(255,59,92,0.1)", duration: 0.5, stagger: 0.08 }, at + 0.45);
-        queueSFX("click", at + 0.45, { vol: 0.7 });
+        var delAt = at + 0.5;
+        tl.fromTo(del,
+          { backgroundColor: "rgba(255,59,92,0)", borderLeftColor: "transparent" },
+          { backgroundColor: "rgba(255,59,92,0.18)", borderLeftColor: "#ff3b5c", duration: 0.4, stagger: 0.08 },
+          delAt
+        );
+        var delTags = q(el, ".df-tag-del");
+        if (delTags.length) {
+          tl.fromTo(delTags, { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.3, ease: "back.out(1.7)" }, delAt + 0.1);
+        }
+        queueSFX("thud", delAt, { vol: 0.85 });
       }
+
+      // Added lines (green) reveal triumphantly
       var add = q(el, ".df-add");
       if (add.length) {
-        tl.fromTo(add, { backgroundColor: "rgba(45,212,191,0)" }, { backgroundColor: "rgba(45,212,191,0.09)", duration: 0.6, stagger: 0.1 }, at + 0.6);
-        queueSFX("chime", at + 0.6, { vol: 0.65 });
+        var addAt = at + 0.9;
+        tl.fromTo(add,
+          { backgroundColor: "rgba(52,211,153,0)", borderLeftColor: "transparent" },
+          { backgroundColor: "rgba(52,211,153,0.22)", borderLeftColor: "#34d399", duration: 0.45, stagger: 0.1 },
+          addAt
+        );
+        var addTags = q(el, ".df-tag-add");
+        if (addTags.length) {
+          tl.fromTo(addTags, { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.35, ease: "back.out(1.7)" }, addAt + 0.12);
+          tl.to(addTags, { boxShadow: "0 0 24px rgba(52,211,153,0.8)", duration: 0.6, yoyo: true, repeat: repYoyo(dur - (addAt - at) - 0.5, 1.2), ease: "sine.inOut" }, addAt + 0.5);
+        }
+        queueSFX("chime", addAt, { vol: 0.75 });
+        queueSFX("flare", addAt + 0.1, { vol: 0.7 });
       }
-      var call = el.querySelector(".code-callout");
-      if (call) tl.fromTo(call, { clipPath: "inset(0 100% 0 0)" }, { clipPath: "inset(0 0% 0 0)", duration: 0.8, ease: "steps(24)" }, at + 0.55);
-      if (el.querySelector(".code-sub")) fade(el.querySelector(".code-sub"), at + 0.8, { dur: 0.6 });
+
+      var call = el.querySelector(".diff-callout");
+      if (call) {
+        tl.fromTo(call,
+          { clipPath: "inset(0 100% 0 0)", opacity: 1 },
+          { clipPath: "inset(0 0% 0 0)", duration: 0.9, ease: "steps(28)" },
+          at + 0.6
+        );
+        [0.6, 0.7, 0.8, 0.9].forEach(function (dt) {
+          queueSFX("tick", at + dt, { vol: 0.35 });
+        });
+      }
     },
 
     flow: function (el, s, at, dur) {

@@ -233,6 +233,51 @@
     },
     {
       "id": "s009",
+      "type": "diff",
+      "act": "solution",
+      "accent": "#34d399",
+      "narration": "In pull request four eighteen, we replaced the immediate retry storm with exponential backoff and randomized jitter.",
+      "eyebrow": "THE REMEDIATION",
+      "headline": "Pull Request 418: ==Full Jitter Backoff==",
+      "subline": "Replacing zero-delay retry loops with truncated exponential backoff.",
+      "meta": {
+        "ghost": "PATCH",
+        "file": "src/database/pool.ts",
+        "ver": "PR #418 // MERGED",
+        "announce": "Immediate retry eliminated. Exponential jitter active.",
+        "lines": [
+          {
+            "t": "  while (pool.active >= MAX_POOL_SIZE) {",
+            "k": "ctx"
+          },
+          {
+            "t": "    await retryImmediate(); // BUG: zero backoff!",
+            "k": "del",
+            "del": true
+          },
+          {
+            "t": "    await backoffWithJitter(attempt); // FIX: full jitter",
+            "k": "add",
+            "add": true
+          },
+          {
+            "t": "  }",
+            "k": "ctx"
+          },
+          {
+            "t": "  return pool.allocate();",
+            "k": "ctx"
+          }
+        ]
+      },
+      "mascot": {
+        "expression": "cool",
+        "position": "bottom-right",
+        "bubble": "PR merged! Exponential backoff protects the cluster."
+      }
+    },
+    {
+      "id": "s010",
       "type": "terminal",
       "act": "core",
       "narration": "When the connection pool exhausted, every container node began throwing cascading connection timeouts.",
@@ -267,7 +312,7 @@
       }
     },
     {
-      "id": "s010",
+      "id": "s011",
       "type": "compare",
       "act": "solution",
       "narration": "Instead of blind retries that stampede your database, modern systems implement exponential backoff with jitter and circuit breaking.",
@@ -302,7 +347,7 @@
       }
     },
     {
-      "id": "s011",
+      "id": "s012",
       "type": "outro",
       "act": "solution",
       "narration": "If you build, solve, and deploy modern cloud software, subscribe for more real-world production autopsies.",

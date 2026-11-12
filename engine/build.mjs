@@ -413,6 +413,7 @@ const RENDER = {
   },
 
   diff(s) {
+    const ghost = s.ghost || s.meta?.ghost || "";
     const rawLines = s.meta?.lines || [];
     const lines = rawLines.map((rawL, k) => {
       let l = typeof rawL === "string"
@@ -423,17 +424,23 @@ const RENDER = {
       const kind = l.k || l.kind || (l.add ? "add" : l.del ? "del" : "ctx");
       const sig = kind === "add" ? "+" : kind === "del" ? "-" : " ";
       let text = l.t ?? l.text ?? l.c ?? "";
-      return `<div class="df-line df-${kind}" data-k="${k}"><span class="df-sig">${sig}</span><span class="df-t">${colorizeCode(text)}</span></div>`;
+      const tag = kind === "del"
+        ? `<span class="df-tag df-tag-del">REMOVED</span>`
+        : kind === "add"
+          ? `<span class="df-tag df-tag-add">FIX APPLIED</span>`
+          : "";
+      return `<div class="df-line df-${kind}" data-k="${k}"><span class="df-sig">${sig}</span><span class="df-t">${colorizeCode(text)}${tag}</span></div>`;
     });
     const file = s.meta?.file || "source";
     const ver = s.meta?.ver || "";
-    const callout = s.meta?.announce || s.headline || "";
-    const sub = callout === s.subline ? "" : (s.subline || "");
-    const foot = callout || sub
-      ? `<div class="code-foot">${callout ? `<div class="code-callout">${esc(callout)}</div>` : ""}${sub ? `<div class="code-sub">${esc(sub)}</div>` : ""}</div>`
+    const callout = s.meta?.announce || s.subline || "";
+    const foot = callout
+      ? `<div class="diff-foot"><div class="diff-callout">${splitWords(callout, s)}</div></div>`
       : "";
     return `
+    ${ghost ? `<div class="diff-ghost" data-layout-allow-overflow>${esc(ghost)}</div>` : ""}
     ${eyebrow(s)}
+    ${s.headline ? `<h2 class="diff-head-title">${splitWords(s.headline, s)}</h2>` : ""}
     <div class="diff-shell">
       <div class="diff-head">
         <div style="display:flex;align-items:center;gap:14px">

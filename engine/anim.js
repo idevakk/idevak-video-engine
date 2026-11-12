@@ -910,18 +910,69 @@
     timeline: function (el, s, at, dur) {
       fade(el.querySelector(".eyebrow"), at, { y: 12, dur: 0.55 });
       words(el.querySelector(".tl-head"), at + 0.05, { stagger: 0.04, dur: 0.8 }, s);
-      tl.fromTo(el.querySelector(".tl-line"), { scaleX: 0, transformOrigin: "left center" }, { scaleX: 1, duration: 0.85, ease: E.expo }, at + 0.35);
+      if (el.querySelector(".tl-sub")) fade(el.querySelector(".tl-sub"), at + 0.35, { dur: 0.65 });
+
+      var ghost = el.querySelector(".tl-ghost");
+      if (ghost) {
+        tl.fromTo(ghost, { opacity: 0, x: 45 }, { opacity: 0.85, x: 0, duration: 2, ease: E.expo }, at);
+        amb(ghost, dur, at);
+      }
+
+      var tlLine = el.querySelector(".tl-line");
+      if (tlLine) {
+        tl.fromTo(tlLine, { scaleX: 0, transformOrigin: "left center" }, { scaleX: 1, duration: 0.85, ease: E.expo }, at + 0.35);
+      }
+
       var fill = el.querySelector(".tl-line-fill");
-      tl.fromTo(fill, { scaleX: 0 }, { scaleX: 1, duration: Math.max(2.2, dur * 0.52), ease: "power2.inOut" }, at + 0.6);
-      tl.fromTo(el.querySelector(".tl-play"), { x: 0 }, { x: 1664, duration: Math.max(2.2, dur * 0.52), ease: "power2.inOut" }, at + 0.6);
+      var play = el.querySelector(".tl-play");
+      var sweepDur = Math.max(2.4, dur * 0.55);
+
+      if (fill) {
+        tl.fromTo(fill, { scaleX: 0 }, { scaleX: 1, duration: sweepDur, ease: "power2.inOut" }, at + 0.5);
+      }
+      if (play) {
+        tl.fromTo(play, { x: 0 }, { x: 1648, duration: sweepDur, ease: "power2.inOut" }, at + 0.5);
+      }
+
       var evs = q(el, ".tl-ev");
       evs.forEach(function (e, i) {
-        var t = at + 0.7 + (i / Math.max(1, evs.length)) * Math.max(1.6, dur * 0.46);
-        tl.fromTo(e.querySelector(".tl-dot"), { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.35, ease: E.soft }, t);
-        tl.fromTo(e.querySelector(".tl-card"), { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.55, ease: E.soft }, t + 0.06);
-        queueSFX("tick", t, { vol: 0.6 });
+        var isHot = e.classList.contains("is-hot");
+        var t = at + 0.65 + (i / Math.max(1, evs.length - 1)) * (sweepDur * 0.85);
+
+        var dot = e.querySelector(".tl-dot");
+        if (dot) {
+          tl.fromTo(dot,
+            { scale: 0, opacity: 0 },
+            { scale: isHot ? 1.3 : 1.0, opacity: 1, duration: 0.35, ease: E.springSubtle },
+            t
+          );
+          if (isHot) {
+            tl.to(dot, { scale: 1.6, opacity: 0.7, yoyo: true, repeat: -1, duration: 0.5, ease: "sine.inOut" }, t + 0.4);
+          }
+        }
+
+        var stem = e.querySelector(".tl-stem");
+        if (stem) {
+          tl.fromTo(stem, { scaleY: 0 }, { scaleY: 1, duration: 0.25, ease: "power2.out" }, t + 0.05);
+        }
+
+        var card = e.querySelector(".tl-card");
+        if (card) {
+          var yOffset = i % 2 === 0 ? 18 : -18;
+          tl.fromTo(card,
+            { y: yOffset, opacity: 0, scale: 0.95 },
+            { y: 0, opacity: 1, scale: 1, duration: 0.45, ease: E.soft },
+            t + 0.08
+          );
+        }
+
+        if (isHot) {
+          queueSFX("thud", t, { vol: 0.9 });
+          queueSFX("glitch", t + 0.08, { vol: 0.7 });
+        } else {
+          queueSFX("tick", t, { vol: 0.75 });
+        }
       });
-      if (el.querySelector(".tl-sub")) fade(el.querySelector(".tl-sub"), at + 0.8, { dur: 0.7 });
     },
 
     terminal: function (el, s, at, dur) {

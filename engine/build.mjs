@@ -530,9 +530,12 @@ const RENDER = {
 
   timeline(s) {
     const events = s.meta?.events || [];
+    const ghost = s.meta?.ghost || "TIMELINE";
     return `
+    <div class="tl-ghost">${esc(ghost)}</div>
     ${eyebrow(s)}
     <h2 class="tl-head">${splitWords(s.headline, s)}</h2>
+    ${s.subline ? `<div class="tl-sub">${esc(s.subline)}</div>` : ""}
     <div class="tl-stage">
       <div class="tl-line"><div class="tl-line-fill"></div></div>
       <div class="tl-play"></div>
@@ -540,17 +543,17 @@ const RENDER = {
         ${events
           .map(
             (e, k) => `<div class="tl-ev ${e.hot ? "is-hot" : ""}" data-k="${k}">
+            <div class="tl-stem"></div>
             <div class="tl-dot"></div>
             <div class="tl-card">
-              <div class="tl-t">${esc(e.t)}</div>
+              <div class="tl-t"><span class="tl-t-text">${esc(e.t)}</span>${e.hot ? `<span class="tl-hot-badge">CRITICAL</span>` : ""}</div>
               <div class="tl-s">${esc(e.s || "")}</div>
             </div>
           </div>`,
           )
           .join("")}
       </div>
-    </div>
-    ${s.subline ? `<div class="tl-sub">${esc(s.subline)}</div>` : ""}`;
+    </div>`;
   },
 
   terminal(s) {

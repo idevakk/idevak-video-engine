@@ -145,6 +145,42 @@
     },
     {
       "id": "s007",
+      "type": "timeline",
+      "act": "core",
+      "narration": "Within ninety seconds, the entire infrastructure collapsed across four availability zones as cascading timeouts overwhelmed the cluster.",
+      "eyebrow": "CASCADE TIMELINE",
+      "headline": "Ninety Seconds to ==Total Collapse==",
+      "subline": "How an isolated automated failover triggered an unstoppable multi-region blackout.",
+      "meta": {
+        "ghost": "CASCADE",
+        "events": [
+          {
+            "t": "03:14:02",
+            "s": "Automated failover triggered"
+          },
+          {
+            "t": "03:14:18",
+            "s": "Secondary pool saturated"
+          },
+          {
+            "t": "03:14:45",
+            "s": "Health check timeout storm"
+          },
+          {
+            "t": "03:15:32",
+            "s": "Cluster-wide blackout",
+            "hot": true
+          }
+        ]
+      },
+      "mascot": {
+        "expression": "panic",
+        "position": "bottom-right",
+        "bubble": "Four stages of fatal escalation!"
+      }
+    },
+    {
+      "id": "s008",
       "type": "terminal",
       "act": "core",
       "narration": "When the connection pool exhausted, every container node began throwing cascading connection timeouts.",
@@ -179,7 +215,7 @@
       }
     },
     {
-      "id": "s008",
+      "id": "s009",
       "type": "compare",
       "act": "solution",
       "narration": "Instead of blind retries that stampede your database, modern systems implement exponential backoff with jitter and circuit breaking.",
@@ -214,7 +250,7 @@
       }
     },
     {
-      "id": "s009",
+      "id": "s010",
       "type": "outro",
       "act": "solution",
       "narration": "If you build, solve, and deploy modern cloud software, subscribe for more real-world production autopsies.",

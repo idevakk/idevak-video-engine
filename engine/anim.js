@@ -839,12 +839,40 @@
     },
 
     quote: function (el, s, at, dur) {
+      var stage = el.querySelector(".q-stage");
+      if (stage) {
+        tl.fromTo(stage, { scale: 0.985 }, { scale: 1.015, duration: dur, ease: "none" }, at);
+      }
+
       if (el.querySelector(".eyebrow")) fade(el.querySelector(".eyebrow"), at, { y: 12, dur: 0.5 });
-      tl.fromTo(el.querySelector(".q-mark"), { opacity: 0, scale: 0.8, y: 20 }, { opacity: 0.12, scale: 1, y: 0, duration: 1.2, ease: E.expo }, at);
+      
+      var qMark = el.querySelector(".q-mark");
+      if (qMark) {
+        tl.fromTo(qMark, { opacity: 0, scale: 0.75, y: 30, rotation: -4 }, { opacity: 0.12, scale: 1, y: 0, rotation: 0, duration: 1.3, ease: E.expo }, at);
+        tl.to(qMark, { y: -12, rotation: 1.2, opacity: 0.15, duration: dur * 0.5, yoyo: true, repeat: 1, ease: "sine.inOut" }, at + 1.3);
+      }
+
       words(el.querySelector(".q-text"), at + 0.08, { stagger: 0.035, dur: 0.85 }, s);
-      fade(el.querySelector(".q-by"), at + 0.6, { dur: 0.7 });
-      tl.fromTo(el.querySelector(".q-line"), { scaleX: 0, transformOrigin: "left center" }, { scaleX: 1, duration: 0.8, ease: E.expo }, at + 0.5);
+
+      var avatar = el.querySelector(".q-avatar");
+      if (avatar) {
+        tl.fromTo(avatar, { scale: 0, opacity: 0, rotation: -20 }, { scale: 1, opacity: 1, rotation: 0, duration: 0.6, ease: E.springSubtle }, at + 0.48);
+      }
+
+      fade(el.querySelector(".q-by"), at + 0.52, { dur: 0.65 });
+
+      var lineBar = el.querySelector(".q-line-bar");
+      if (lineBar) {
+        tl.fromTo(lineBar, { scaleX: 0 }, { scaleX: 1, duration: 0.7, ease: E.expo }, at + 0.55);
+      }
+      var lineDot = el.querySelector(".q-line-dot");
+      if (lineDot) {
+        tl.fromTo(lineDot, { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.4, ease: E.spring }, at + 0.9);
+        tl.to(lineDot, { opacity: 0.4, scale: 0.8, yoyo: true, repeat: -1, duration: 0.8, ease: "sine.inOut" }, at + 1.3);
+      }
+
       queueSFX("whoosh", at + 0.45, { vol: 0.45 });
+      queueSFX("click", at + 0.9, { vol: 0.5 });
     },
 
     matrix: function (el, s, at, dur) {

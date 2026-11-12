@@ -590,13 +590,26 @@ const RENDER = {
   },
 
   quote(s) {
+    const avatar = s.meta?.avatar;
+    const authorInitials = s.meta?.initials || (s.subline ? s.subline.split(/[/,-]/)[0].trim().split(/\s+/).slice(0, 2).map(w => w[0]).join("").toUpperCase() : "");
+    const badgeHtml = avatar 
+      ? `<div class="q-avatar"><img src="${esc(avatar)}" alt="author" /><span class="q-avatar-ring"></span></div>` 
+      : authorInitials 
+        ? `<div class="q-avatar q-avatar-mono"><span>${esc(authorInitials)}</span><span class="q-avatar-ring"></span></div>` 
+        : "";
+
     return `
     <div class="q-stage">
       <div class="q-mark">&ldquo;</div>
       ${eyebrow(s)}
       <blockquote class="q-text">${splitWords(s.headline, s)}</blockquote>
-      <div class="q-by">${esc(s.subline || "")}</div>
-      <div class="q-line"></div>
+      <div class="q-author-row">
+        ${badgeHtml}
+        <div class="q-author-info">
+          <div class="q-by">${esc(s.subline || "")}</div>
+          <div class="q-line"><span class="q-line-bar"></span><span class="q-line-dot"></span></div>
+        </div>
+      </div>
     </div>`;
   },
 

@@ -91,6 +91,9 @@
       "eyebrow": "FIRST PRINCIPLES",
       "headline": "Everything fails, ==all the time==. If you don't design for recovery, you design for outage.",
       "subline": "WERNER VOGELS // VP & CTO, AMAZON",
+      "meta": {
+        "initials": "WV"
+      },
       "mascot": {
         "expression": "thinking",
         "position": "bottom-right",

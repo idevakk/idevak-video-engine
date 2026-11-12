@@ -242,7 +242,6 @@ const RENDER = {
   hero(s) {
     const mark = s.meta?.mark || String(s.headline || "").trim().split(/\s+/)[0].toUpperCase();
     const markSize = Math.min(128, Math.floor(400 / Math.max(1, [...mark].length * 0.8)));
-    const actLabel = (s.act || "SYS").toUpperCase();
     return `
     <div class="hero-grid">
       <div class="hero-left">
@@ -258,7 +257,7 @@ const RENDER = {
     <div class="hero-baseline">
       <div class="hero-baseline-line"></div>
       <div class="hero-baseline-ticks"><span></span><span></span><span></span><span></span><span></span></div>
-      <div class="hero-baseline-tag">// SPEC: ARCH-02 // REGION: ${esc(actLabel)} // TELEMETRY: ACTIVE</div>
+      ${s.meta?.tag ? `<div class="hero-baseline-tag">// ${esc(s.meta.tag)}</div>` : ""}
     </div>`;
   },
 

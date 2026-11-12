@@ -102,6 +102,28 @@
     },
     {
       "id": "s005",
+      "type": "stat",
+      "act": "core",
+      "narration": "Within ninety seconds, service availability dropped from ninety-nine point nine percent straight down to zero percent.",
+      "eyebrow": "SYSTEM METRIC",
+      "headline": "Service Availability Collapse",
+      "subline": "Cluster-wide health check drop across all production zones.",
+      "meta": {
+        "value": "99.9",
+        "suffix": "%",
+        "stat": {
+          "to": 0.0,
+          "dec": 1
+        }
+      },
+      "mascot": {
+        "expression": "shocked",
+        "position": "bottom-right",
+        "bubble": "Availability cratered to absolute zero!"
+      }
+    },
+    {
+      "id": "s006",
       "type": "terminal",
       "act": "core",
       "narration": "When the connection pool exhausted, every container node began throwing cascading connection timeouts.",
@@ -136,7 +158,7 @@
       }
     },
     {
-      "id": "s006",
+      "id": "s007",
       "type": "compare",
       "act": "solution",
       "narration": "Instead of blind retries that stampede your database, modern systems implement exponential backoff with jitter and circuit breaking.",
@@ -171,7 +193,7 @@
       }
     },
     {
-      "id": "s007",
+      "id": "s008",
       "type": "outro",
       "act": "solution",
       "narration": "If you build, solve, and deploy modern cloud software, subscribe for more real-world production autopsies.",

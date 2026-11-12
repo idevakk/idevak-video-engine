@@ -611,13 +611,51 @@
     },
 
     dateline: function (el, s, at, dur) {
-      tl.fromTo(el.querySelector(".dl-date"), { x: -40, opacity: 0 }, { x: 0, opacity: 1, duration: 0.9, ease: E.expo }, at);
-      tl.fromTo(el.querySelector(".dl-day"), { yPercent: 30, opacity: 0 }, { yPercent: 0, opacity: 1, duration: 1.1, ease: E.expo }, at + 0.05);
+      var grid = el.querySelector(".dl-grid");
+      if (grid) {
+        tl.fromTo(grid, { scale: 0.985 }, { scale: 1.015, duration: dur, ease: "none" }, at);
+      }
+
+      var ghost = el.querySelector(".dl-ghost");
+      if (ghost) {
+        tl.fromTo(ghost, { opacity: 0, x: 50 }, { opacity: 0.85, x: 0, duration: 2, ease: E.expo }, at);
+        amb(ghost, dur, at);
+      }
+
+      var laserBar = el.querySelector(".dl-laser-bar");
+      var laserDot = el.querySelector(".dl-laser-dot");
+      if (laserBar) {
+        tl.fromTo(laserBar, { scaleY: 0 }, { scaleY: 1, duration: 0.85, ease: E.expo }, at);
+      }
+      if (laserDot) {
+        tl.fromTo(laserDot, { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.4, ease: E.springSubtle }, at + 0.3);
+        tl.to(laserDot, { opacity: 0.4, scale: 0.8, yoyo: true, repeat: -1, duration: 0.6, ease: "sine.inOut" }, at + 0.7);
+      }
+
+      tl.fromTo(el.querySelector(".dl-date"), { x: -35, opacity: 0 }, { x: 0, opacity: 1, duration: 0.9, ease: E.expo }, at);
+      tl.fromTo(el.querySelector(".dl-day"), { yPercent: 25, opacity: 0 }, { yPercent: 0, opacity: 1, duration: 1.1, ease: E.expo }, at + 0.05);
       tl.fromTo(q(el, ".dl-mon, .dl-yr"), { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, stagger: 0.08, ease: E.soft }, at + 0.3);
+
+      /* Synchronized chronometer micro-ticks */
+      for (var k = 0; k < 6; k++) {
+        queueSFX("tick", at + 0.6 + k * 0.25, { vol: 0.75 });
+      }
+
       fade(el.querySelector(".eyebrow"), at + 0.15, { y: 12, dur: 0.55 });
       words(el.querySelector(".dl-title"), at + 0.2, { stagger: 0.04, dur: 0.82 }, s);
       if (el.querySelector(".dl-sub")) fade(el.querySelector(".dl-sub"), at + 0.55, { dur: 0.7 });
-      tl.fromTo(el.querySelector(".dl-rail span"), { scaleX: 0 }, { scaleX: 1, duration: 1.5, ease: "power2.inOut" }, at + 0.3);
+
+      var railSpan = el.querySelector(".dl-rail span");
+      if (railSpan) {
+        tl.fromTo(railSpan, { scaleX: 0 }, { scaleX: 1, duration: 1.5, ease: "power2.inOut" }, at + 0.3);
+      }
+      var bead = el.querySelector(".dl-rail-bead");
+      if (bead) {
+        tl.fromTo(bead, { left: "0%", opacity: 0 }, { left: "100%", opacity: 1, duration: 1.5, ease: "power2.inOut" }, at + 0.3);
+        tl.to(bead, { scale: 1.6, opacity: 0.3, yoyo: true, repeat: -1, duration: 0.7, ease: "sine.inOut" }, at + 1.8);
+      }
+
+      queueSFX("thud", at + 0.05, { vol: 0.8 });
       queueSFX("whoosh", at + 0.35, { vol: 0.45 });
     },
 

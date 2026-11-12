@@ -307,9 +307,16 @@ const RENDER = {
     const day = date.day || s.meta?.day || "";
     const month = date.month || s.meta?.mon || "";
     const year = date.year || s.meta?.yr || "";
+    const ghost = s.meta?.ghost || year.split(/\s+/)[0] || day || "UTC";
+
     return `
+    <div class="dl-ghost">${esc(ghost)}</div>
     <div class="dl-grid">
       <div class="dl-date">
+        <div class="dl-laser-line">
+          <span class="dl-laser-bar"></span>
+          <span class="dl-laser-dot"></span>
+        </div>
         <div class="dl-day">${esc(day)}</div>
         <div class="dl-mon">${esc(month)}</div>
         <div class="dl-yr">${esc(year)}</div>
@@ -320,7 +327,7 @@ const RENDER = {
         ${s.subline ? `<p class="dl-sub">${esc(s.subline)}</p>` : ""}
       </div>
     </div>
-    <div class="dl-rail"><span></span></div>`;
+    <div class="dl-rail"><span></span><div class="dl-rail-bead"></div></div>`;
   },
 
   code(s) {

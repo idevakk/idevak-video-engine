@@ -839,7 +839,8 @@
     },
 
     quote: function (el, s, at, dur) {
-      tl.fromTo(el.querySelector(".q-mark"), { opacity: 0, scale: 0.8, y: 20 }, { opacity: 0.1, scale: 1, y: 0, duration: 1.2, ease: E.expo }, at);
+      if (el.querySelector(".eyebrow")) fade(el.querySelector(".eyebrow"), at, { y: 12, dur: 0.5 });
+      tl.fromTo(el.querySelector(".q-mark"), { opacity: 0, scale: 0.8, y: 20 }, { opacity: 0.12, scale: 1, y: 0, duration: 1.2, ease: E.expo }, at);
       words(el.querySelector(".q-text"), at + 0.08, { stagger: 0.035, dur: 0.85 }, s);
       fade(el.querySelector(".q-by"), at + 0.6, { dur: 0.7 });
       tl.fromTo(el.querySelector(".q-line"), { scaleX: 0, transformOrigin: "left center" }, { scaleX: 1, duration: 0.8, ease: E.expo }, at + 0.5);

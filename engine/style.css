@@ -440,6 +440,9 @@ body{width:var(--composition-width,1920px);height:var(--composition-height,1080p
 .q-stage{position:absolute;inset:0;padding:0 200px;display:flex;flex-direction:column;justify-content:center}
 .q-mark{position:absolute;left:120px;top:60px;font-size:340px;line-height:1;color:var(--ac);opacity:.1;font-family:serif}
 .q-text{margin:0;font-size:76px;line-height:1.12;font-weight:760;letter-spacing:-.04em;max-width:1520px;quotes:none}
+.q-text .hl-marker{isolation:isolate;display:inline-block;position:relative}
+.q-text .hl-text{color:var(--ac);text-shadow:0 0 35px color-mix(in srgb,var(--ac) 85%,transparent),0 0 75px color-mix(in srgb,var(--ac) 45%,transparent)}
+.q-text .hl-ink{position:absolute;inset:4% -10px 4% -10px;border-radius:10px;background:color-mix(in srgb,var(--ac) 15%,transparent);border:1px solid color-mix(in srgb,var(--ac) 45%,transparent);box-shadow:0 0 26px color-mix(in srgb,var(--ac) 30%,transparent);z-index:-1}
 .q-by{margin-top:40px;font-family:var(--mono);font-size:17px;letter-spacing:.2em;text-transform:uppercase;color:var(--ac)}
 .q-line{margin-top:28px;width:120px;height:2px;background:var(--ac);box-shadow:0 0 20px var(--ac)}
 

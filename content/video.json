@@ -85,6 +85,20 @@
     },
     {
       "id": "s004",
+      "type": "quote",
+      "act": "core",
+      "narration": "As Werner Vogels famously reminded every engineer: Everything fails, all the time. If you do not design for graceful recovery, you design for outage.",
+      "eyebrow": "FIRST PRINCIPLES",
+      "headline": "Everything fails, ==all the time==. If you don't design for recovery, you design for outage.",
+      "subline": "WERNER VOGELS // VP & CTO, AMAZON",
+      "mascot": {
+        "expression": "thinking",
+        "position": "bottom-right",
+        "bubble": "Design for failure from day one."
+      }
+    },
+    {
+      "id": "s005",
       "type": "terminal",
       "act": "core",
       "narration": "When the connection pool exhausted, every container node began throwing cascading connection timeouts.",
@@ -119,7 +133,7 @@
       }
     },
     {
-      "id": "s005",
+      "id": "s006",
       "type": "compare",
       "act": "solution",
       "narration": "Instead of blind retries that stampede your database, modern systems implement exponential backoff with jitter and circuit breaking.",
@@ -154,7 +168,7 @@
       }
     },
     {
-      "id": "s006",
+      "id": "s007",
       "type": "outro",
       "act": "solution",
       "narration": "If you build, solve, and deploy modern cloud software, subscribe for more real-world production autopsies.",

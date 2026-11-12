@@ -739,36 +739,53 @@
     },
 
     code: function (el, s, at, dur) {
+      var ghost = el.querySelector(".code-ghost");
+      if (ghost) {
+        fade(ghost, at, { dur: 0.8, y: 10 });
+        amb(ghost, dur, at);
+      }
       fade(el.querySelector(".eyebrow"), at, { y: 12, dur: 0.55 });
+      if (el.querySelector(".code-head")) {
+        words(el.querySelector(".code-head"), at + 0.05, { dur: 0.65, stagger: 0.035, y: 16 });
+      }
+      queueSFX("whoosh", at + 0.05, { vol: 0.4 });
       tl.fromTo(el.querySelector(".code-shell"),
         { y: 34, opacity: 0, scale: 0.985, rotateX: 3, rotateY: -1.5 },
         { y: 0, opacity: 1, scale: 1, rotateX: 0, rotateY: 0, duration: 0.85, ease: E.expo, transformPerspective: 1200 },
-        at + 0.05
+        at + 0.08
       );
       var lines = q(el, ".cl");
       tl.fromTo(lines, { x: -18, opacity: 0 }, { x: 0, opacity: 1, duration: 0.5, stagger: 0.09, ease: E.soft }, at + 0.25);
+      queueSFX("click", at + 0.28, { vol: 0.55 });
       var key = el.querySelector(".cl.is-key");
       if (key) {
         tl.fromTo(key, { borderLeftColor: "rgba(0,0,0,0)", backgroundColor: "rgba(0,0,0,0)" },
           { borderLeftColor: ac(s), duration: 0.3 }, at + 0.3 + lines.length * 0.09);
-        tl.fromTo(el.querySelector(".code-scan"), { opacity: 0 }, { opacity: 0.5, duration: 0.25 }, at + 1.1);
-        tl.fromTo(el.querySelector(".code-scan"), { y: 0 }, { y: Math.max(120, lines.length * 52), duration: 1.0, ease: "power1.inOut" }, at + 1.1);
+        tl.fromTo(el.querySelector(".code-scan"), { opacity: 0 }, { opacity: 0.6, duration: 0.25 }, at + 1.05);
+        tl.fromTo(el.querySelector(".code-scan"), { y: 0 }, { y: Math.max(120, lines.length * 52), duration: 1.05, ease: "power1.inOut" }, at + 1.05);
         tl.to(el.querySelector(".code-scan"), { opacity: 0, duration: 0.35 }, at + 2.1);
         tl.to(key, { backgroundColor: "rgba(56,189,248,0.06)", duration: 1.6, ease: "sine.inOut", yoyo: true, repeat: repYoyo(dur - 2.1, 3.2) }, at + 2.2);
-        var otherLines = lines.filter(function (l) { return l !== key; });
+        var otherLines = lines.filter(function (l) {
+          return l !== key && !l.classList.contains("is-bad") && !l.classList.contains("cl-bad");
+        });
         if (otherLines.length) {
-          tl.to(otherLines, { opacity: 0.45, duration: 0.45, ease: "power2.out" }, at + 1.3);
+          tl.to(otherLines, { opacity: 0.4, duration: 0.45, ease: "power2.out" }, at + 1.3);
         }
       }
       var badLines = q(el, ".cl.is-bad, .cl-bad");
       badLines.forEach(function (bl) {
-        var badAt = at + 1.2;
-        tl.to(bl, { backgroundColor: "rgba(255,59,92,0.14)", duration: 0.35 }, badAt);
-        queueSFX("thud", badAt, { vol: 0.9 });
+        var badAt = at + 1.25;
+        tl.fromTo(bl,
+          { backgroundColor: "rgba(255,59,92,0)", borderLeftColor: "transparent", opacity: 0.7 },
+          { backgroundColor: "rgba(255,59,92,0.22)", borderLeftColor: "#ff3b5c", opacity: 1, duration: 0.35, ease: "power2.out" },
+          badAt
+        );
+        queueSFX("thud", badAt, { vol: 0.95 });
+        queueSFX("glitch", badAt + 0.05, { vol: 0.65 });
       });
       var call = el.querySelector(".code-callout");
-      if (call) tl.fromTo(call, { clipPath: "inset(0 100% 0 0)", opacity: 1 }, { clipPath: "inset(0 0% 0 0)", duration: 0.9, ease: "steps(28)" }, at + 0.5);
-      if (el.querySelector(".code-sub")) fade(el.querySelector(".code-sub"), at + 0.7, { dur: 0.6 });
+      if (call) tl.fromTo(call, { clipPath: "inset(0 100% 0 0)", opacity: 1 }, { clipPath: "inset(0 0% 0 0)", duration: 0.9, ease: "steps(28)" }, at + 0.55);
+      if (el.querySelector(".code-sub")) fade(el.querySelector(".code-sub"), at + 0.75, { dur: 0.6 });
     },
 
     diff: function (el, s, at, dur) {

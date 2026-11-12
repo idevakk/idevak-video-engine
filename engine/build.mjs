@@ -368,6 +368,7 @@ const RENDER = {
   },
 
   code(s) {
+    const ghost = s.ghost || s.meta?.ghost || "";
     const rawLines = s.meta?.lines || [];
     const lines = rawLines.map((rawL, k) => {
       const l = typeof rawL === "string" ? { t: rawL } : (rawL || {});
@@ -384,15 +385,16 @@ const RENDER = {
       const content = colorizeCode(rawText);
       return `<div class="${cls}" data-k="${k}"><span class="cl-n">${l.n ?? k + 1}</span><span class="cl-c">${content}</span></div>`;
     });
-    const callout = s.meta?.announce || s.headline || s.subline || "";
-    const sub = callout === s.subline ? "" : (s.subline || "");
     const file = s.meta?.file || "source";
     const tag = s.meta?.tag || "";
-    const foot = callout || sub
-      ? `<div class="code-foot">${callout ? `<div class="code-callout">${splitWords(callout, s)}</div>` : ""}${sub ? `<div class="code-sub">${esc(sub)}</div>` : ""}</div>`
+    const callout = s.meta?.announce || s.subline || "";
+    const foot = callout
+      ? `<div class="code-foot"><div class="code-callout">${splitWords(callout, s)}</div></div>`
       : "";
     return `
+    ${ghost ? `<div class="code-ghost" data-layout-allow-overflow>${esc(ghost)}</div>` : ""}
     ${eyebrow(s)}
+    ${s.headline ? `<h2 class="code-head">${splitWords(s.headline, s)}</h2>` : ""}
     <div class="code-shell">
       <div class="code-bar">
         <div style="display:flex;align-items:center;gap:14px">

@@ -67,6 +67,19 @@
     },
     {
       "id": "s003",
+      "type": "statement",
+      "act": "core",
+      "narration": "When every service retries at the same instant, the network does not slow down. It completely collapses.",
+      "eyebrow": "THE CASCADE",
+      "headline": "A retry storm turns minor latency into ==total blackout==.",
+      "subline": "Exponential amplification transforms minor latency into fatal paralysis.",
+      "variant": 1,
+      "meta": {
+        "ghost": "STORM"
+      }
+    },
+    {
+      "id": "s004",
       "type": "terminal",
       "act": "core",
       "narration": "When the connection pool exhausted, every container node began throwing cascading connection timeouts.",
@@ -101,7 +114,7 @@
       }
     },
     {
-      "id": "s004",
+      "id": "s005",
       "type": "compare",
       "act": "solution",
       "narration": "Instead of blind retries that stampede your database, modern systems implement exponential backoff with jitter and circuit breaking.",
@@ -136,7 +149,7 @@
       }
     },
     {
-      "id": "s005",
+      "id": "s006",
       "type": "outro",
       "act": "solution",
       "narration": "If you build, solve, and deploy modern cloud software, subscribe for more real-world production autopsies.",

@@ -780,11 +780,51 @@
           { backgroundColor: "rgba(255,59,92,0.22)", borderLeftColor: "#ff3b5c", opacity: 1, duration: 0.35, ease: "power2.out" },
           badAt
         );
+        // Warning glow pulse on the bad line across hold phase
+        tl.to(bl,
+          { backgroundColor: "rgba(255,59,92,0.32)", boxShadow: "inset 0 0 35px -4px rgba(255,59,92,0.75)", duration: 0.7, yoyo: true, repeat: repYoyo(dur - (badAt - at) - 0.4, 1.4), ease: "sine.inOut" },
+          badAt + 0.4
+        );
+        // Beacon tag entrance & warning pulse
+        var beacon = bl.querySelector(".cl-bad-beacon");
+        if (beacon) {
+          tl.fromTo(beacon,
+            { scale: 0, opacity: 0, x: -12 },
+            { scale: 1, opacity: 1, x: 0, duration: 0.35, ease: "back.out(1.7)" },
+            badAt + 0.15
+          );
+          tl.to(beacon,
+            { boxShadow: "0 0 26px rgba(255,59,92,0.85)", borderColor: "#ff3b5c", duration: 0.55, yoyo: true, repeat: repYoyo(dur - (badAt - at) - 0.5, 1.1), ease: "sine.inOut" },
+            badAt + 0.5
+          );
+        }
+        var cur = bl.querySelector(".cl-bad-cursor");
+        if (cur) {
+          tl.fromTo(cur,
+            { opacity: 0 },
+            { opacity: 1, duration: 0.18, repeat: repYoyo(Math.max(1.2, dur - (badAt - at) - 0.3), 0.5), yoyo: true },
+            badAt + 0.2
+          );
+        }
+        // Forensic inspection sound effects
         queueSFX("thud", badAt, { vol: 0.95 });
         queueSFX("glitch", badAt + 0.05, { vol: 0.65 });
+        queueSFX("click", badAt + 0.14, { vol: 0.65 });
+        queueSFX("click", badAt + 0.22, { vol: 0.72 });
+        queueSFX("click", badAt + 0.30, { vol: 0.8 });
+        queueSFX("flare", badAt + 0.38, { vol: 0.85 });
       });
       var call = el.querySelector(".code-callout");
-      if (call) tl.fromTo(call, { clipPath: "inset(0 100% 0 0)", opacity: 1 }, { clipPath: "inset(0 0% 0 0)", duration: 0.9, ease: "steps(28)" }, at + 0.55);
+      if (call) {
+        tl.fromTo(call,
+          { clipPath: "inset(0 100% 0 0)", opacity: 1 },
+          { clipPath: "inset(0 0% 0 0)", duration: 0.9, ease: "steps(28)" },
+          at + 0.55
+        );
+        [0.55, 0.65, 0.75, 0.85].forEach(function (dt) {
+          queueSFX("tick", at + dt, { vol: 0.35 });
+        });
+      }
       if (el.querySelector(".code-sub")) fade(el.querySelector(".code-sub"), at + 0.75, { dur: 0.6 });
     },
 

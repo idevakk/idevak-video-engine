@@ -383,7 +383,10 @@ const RENDER = {
         rawText = `==${rawText}==`;
       }
       const content = colorizeCode(rawText);
-      return `<div class="${cls}" data-k="${k}"><span class="cl-n">${l.n ?? k + 1}</span><span class="cl-c">${content}</span></div>`;
+      const beacon = isBad
+        ? `<span class="cl-bad-beacon"><span class="cl-bad-beacon-dot"></span><span>▶ ZERO BACKOFF</span><span class="cl-bad-cursor"></span></span>`
+        : "";
+      return `<div class="${cls}" data-k="${k}"><span class="cl-n">${l.n ?? k + 1}</span><span class="cl-c">${content}${beacon}</span></div>`;
     });
     const file = s.meta?.file || "source";
     const tag = s.meta?.tag || "";

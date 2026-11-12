@@ -632,6 +632,9 @@ body{width:var(--composition-width,1920px);height:var(--composition-height,1080p
 .cl.is-bad .tok-kw,.cl-bad .tok-kw{color:#ff4d6d !important;font-weight:700}
 .cl.is-bad .tok-fn,.cl-bad .tok-fn{color:#ff8fa3 !important}
 .cl.is-bad .tok-com,.cl-bad .tok-com{color:#ff6b81 !important;font-weight:700;font-style:normal;text-shadow:0 0 16px rgba(255,59,92,.6)}
+.cl-bad-beacon{display:inline-flex;align-items:center;gap:7px;vertical-align:middle;margin-left:24px;padding:3px 12px;border-radius:6px;background:rgba(255,59,92,.18);border:1px solid rgba(255,59,92,.65);box-shadow:0 0 16px rgba(255,59,92,.35);font-family:var(--mono);font-size:13px;font-weight:800;letter-spacing:.14em;color:#ff4d6d;text-transform:uppercase;transform-origin:left center}
+.cl-bad-beacon-dot{width:7px;height:7px;border-radius:50%;background:#ff3b5c;box-shadow:0 0 10px 2px #ff3b5c}
+.cl-bad-cursor{display:inline-block;width:7px;height:14px;background:#ff3b5c;box-shadow:0 0 6px #ff3b5c;margin-left:2px}
 .cmp-col.cmp-right{border-color:var(--ac);box-shadow:0 0 24px -4px rgba(56,189,248,.25)}
 
 

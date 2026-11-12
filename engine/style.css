@@ -474,6 +474,9 @@ body{width:var(--composition-width,1920px);height:var(--composition-height,1080p
 .out-ghost{position:absolute;right:-40px;bottom:-120px;font-size:600px;font-weight:900;letter-spacing:-.07em;line-height:.8;
   color:transparent;-webkit-text-stroke:1px rgba(255,255,255,.05);z-index:-1}
 .out-title{font-size:124px;line-height:.96;font-weight:800;letter-spacing:-.05em;margin:0;max-width:1400px}
+.out-title .hl-marker{isolation:isolate;display:inline-block;position:relative}
+.out-title .hl-text{color:var(--ac);text-shadow:0 0 35px color-mix(in srgb,var(--ac) 85%,transparent),0 0 75px color-mix(in srgb,var(--ac) 45%,transparent)}
+.out-title .hl-ink{position:absolute;inset:4% -10px 4% -10px;border-radius:10px;background:color-mix(in srgb,var(--ac) 15%,transparent);border:1px solid color-mix(in srgb,var(--ac) 45%,transparent);box-shadow:0 0 26px color-mix(in srgb,var(--ac) 30%,transparent);z-index:-1}
 .out-sub{margin-top:30px;font-size:32px;color:var(--dim);max-width:1000px;line-height:1.4}
 .out-cta{margin-top:64px;display:flex;align-items:center;gap:20px;border-left:2px solid var(--ac);padding-left:24px}
 .out-cta-k{font-family:var(--mono);font-size:14px;letter-spacing:.24em;text-transform:uppercase;color:var(--ac)}

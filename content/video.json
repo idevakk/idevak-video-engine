@@ -176,12 +176,17 @@
       "act": "solution",
       "narration": "If you build, solve, and deploy modern cloud software, subscribe for more real-world production autopsies.",
       "eyebrow": "NEXT STEPS",
-      "headline": "BUILD. SOLVE. DEPLOY.",
+      "headline": "==BUILD.== ==SOLVE.== ==DEPLOY.==",
       "subline": "Architecture breakdowns, cloud engineering, and AI automation every week.",
       "meta": {
         "ghost": "IDEVAK",
         "cta": "Subscribe",
         "ctaSub": "youtube.com/@iDevak"
+      },
+      "mascot": {
+        "expression": "happy",
+        "position": "bottom-right",
+        "bubble": "Subscribe for weekly deep dives!"
       }
     }
   ]

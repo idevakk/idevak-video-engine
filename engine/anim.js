@@ -629,7 +629,6 @@
       }
       if (laserDot) {
         tl.fromTo(laserDot, { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.4, ease: E.springSubtle }, at + 0.3);
-        tl.to(laserDot, { opacity: 0.4, scale: 0.8, yoyo: true, repeat: -1, duration: 0.6, ease: "sine.inOut" }, at + 0.7);
       }
 
       tl.fromTo(el.querySelector(".dl-date"), { x: -35, opacity: 0 }, { x: 0, opacity: 1, duration: 0.9, ease: E.expo }, at);
@@ -637,8 +636,88 @@
       tl.fromTo(q(el, ".dl-mon, .dl-yr"), { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, stagger: 0.08, ease: E.soft }, at + 0.3);
 
       /* Synchronized chronometer micro-ticks */
+      var clockSteps = q(el, ".dl-clock-step");
+      var pips = q(el, ".dl-pip");
+      var gauge = el.querySelector(".dl-chrono-gauge");
+      var statusEl = el.querySelector(".dl-chrono-status");
+
+      if (gauge) {
+        tl.fromTo(gauge, { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.5, ease: E.soft }, at + 0.45);
+      }
+
+      if (clockSteps.length) {
+        gsap.set(clockSteps, { opacity: 0, y: 8 });
+        gsap.set(clockSteps[0], { opacity: 1, y: 0 });
+      }
+
       for (var k = 0; k < 6; k++) {
-        queueSFX("tick", at + 0.6 + k * 0.25, { vol: 0.75 });
+        var tickTime = at + 0.6 + k * 0.25;
+
+        // 1. Audio tick
+        queueSFX("tick", tickTime, { vol: 0.85 });
+
+        // 2. Step the clock
+        if (clockSteps.length > k) {
+          var curStep = clockSteps[k];
+          var prevStep = k > 0 ? clockSteps[k - 1] : null;
+          if (prevStep) {
+            tl.to(prevStep, { opacity: 0, y: -6, duration: 0.08, ease: "power2.in" }, tickTime);
+          }
+          tl.fromTo(curStep,
+            { opacity: 0, y: 6, scale: 1.08 },
+            { opacity: 1, y: 0, scale: 1, duration: 0.12, ease: "power2.out" },
+            tickTime
+          );
+        }
+
+        // 3. Light up corresponding pip on the gauge
+        if (pips.length > k) {
+          var pip = pips[k];
+          tl.fromTo(pip,
+            { backgroundColor: "#ffffff", scaleY: 2.2, boxShadow: "0 0 14px #ffffff" },
+            { backgroundColor: "var(--ac)", scaleY: 1.0, boxShadow: "0 0 10px var(--ac)", duration: 0.22, ease: "power2.out" },
+            tickTime
+          );
+        }
+
+        // 4. Pulse the laser beacon dot on top of the vertical rule
+        if (laserDot) {
+          tl.fromTo(laserDot,
+            { scale: 2.2, opacity: 1, boxShadow: "0 0 24px 4px var(--ac)" },
+            { scale: 1.0, opacity: 0.8, duration: 0.22, ease: "power2.out" },
+            tickTime
+          );
+        }
+      }
+
+      // Lock-in impact when the 6th tick arrives!
+      var lockTime = at + 0.6 + 5 * 0.25;
+      queueSFX("click", lockTime, { vol: 0.95 });
+      if (statusEl) {
+        tl.to(statusEl, { color: "var(--ac)", textShadow: "0 0 12px var(--ac)", duration: 0.2 }, lockTime);
+        tl.call(function () {
+          if (statusEl) statusEl.textContent = "LOCKED";
+        }, null, lockTime);
+      }
+      if (clockSteps.length >= 6) {
+        var finalStep = clockSteps[5];
+        tl.to(finalStep, {
+          color: "var(--ac)",
+          textShadow: "0 0 20px color-mix(in srgb,var(--ac) 80%,transparent), 0 0 40px var(--ac)",
+          scale: 1.06,
+          duration: 0.3,
+          ease: E.springSubtle
+        }, lockTime);
+      }
+      if (pips.length) {
+        tl.fromTo(pips,
+          { boxShadow: "0 0 18px 2px var(--ac)" },
+          { boxShadow: "0 0 8px var(--ac)", duration: 0.35, ease: "power2.out" },
+          lockTime
+        );
+      }
+      if (laserDot) {
+        tl.to(laserDot, { opacity: 0.4, scale: 0.8, yoyo: true, repeat: -1, duration: 0.6, ease: "sine.inOut" }, lockTime + 0.3);
       }
 
       fade(el.querySelector(".eyebrow"), at + 0.15, { y: 12, dur: 0.55 });

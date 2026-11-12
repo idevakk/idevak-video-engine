@@ -309,6 +309,42 @@ const RENDER = {
     const year = date.year || s.meta?.yr || "";
     const ghost = s.meta?.ghost || year.split(/\s+/)[0] || day || "UTC";
 
+    const timeMatch = year.match(/^(.*?)(\b(\d{1,2}):(\d{2}):(\d{2})\b)(.*)$/);
+    let yrContent = esc(year);
+    let chronoMeterHtml = "";
+
+    if (timeMatch) {
+      const prefix = timeMatch[1];
+      const hh = parseInt(timeMatch[3], 10);
+      const mm = parseInt(timeMatch[4], 10);
+      const targetSec = parseInt(timeMatch[5], 10);
+      const suffix = timeMatch[6];
+
+      const timeSteps = [];
+      for (let k = 0; k < 6; k++) {
+        const offsetSec = targetSec - (5 - k);
+        let totalSec = hh * 3600 + mm * 60 + offsetSec;
+        if (totalSec < 0) totalSec += 86400;
+        const curH = Math.floor(totalSec / 3600) % 24;
+        const curM = Math.floor((totalSec % 3600) / 60);
+        const curS = totalSec % 60;
+        const stepStr = `${String(curH).padStart(2, "0")}:${String(curM).padStart(2, "0")}:${String(curS).padStart(2, "0")}`;
+        timeSteps.push(stepStr);
+      }
+
+      yrContent = `${esc(prefix)}<span class="dl-clock-box">${timeSteps.map((t, idx) => 
+        `<span class="dl-clock-step${idx === 5 ? " is-locked" : ""}" data-tick="${idx}">${esc(t)}</span>`
+      ).join("")}</span>${esc(suffix)}`;
+
+      chronoMeterHtml = `
+        <div class="dl-chrono-gauge">
+          <div class="dl-chrono-pips">
+            ${timeSteps.map((_, idx) => `<span class="dl-pip" data-pip="${idx}"></span>`).join("")}
+          </div>
+          <span class="dl-chrono-status">SYNCING</span>
+        </div>`;
+    }
+
     return `
     <div class="dl-ghost">${esc(ghost)}</div>
     <div class="dl-grid">
@@ -319,7 +355,8 @@ const RENDER = {
         </div>
         <div class="dl-day">${esc(day)}</div>
         <div class="dl-mon">${esc(month)}</div>
-        <div class="dl-yr">${esc(year)}</div>
+        <div class="dl-yr">${yrContent}</div>
+        ${chronoMeterHtml}
       </div>
       <div class="dl-right">
         ${eyebrow(s)}

@@ -267,7 +267,14 @@ body{width:var(--composition-width,1920px);height:var(--composition-height,1080p
 .dl-laser-dot{position:absolute;left:-4px;top:-4px;width:10px;height:10px;border-radius:50%;background:var(--ac);box-shadow:0 0 16px 2px var(--ac);display:block}
 .dl-day{font-size:150px;font-weight:800;line-height:.86;letter-spacing:-.05em;font-variant-numeric:tabular-nums;text-shadow:0 10px 40px rgba(0,0,0,.6)}
 .dl-mon{font-family:var(--mono);font-size:34px;letter-spacing:.22em;color:var(--ac);margin-top:16px;font-weight:600;text-shadow:0 0 20px color-mix(in srgb,var(--ac) 50%,transparent)}
-.dl-yr{font-family:var(--mono);font-size:20px;letter-spacing:.26em;color:rgba(244,247,251,.72);margin-top:12px}
+.dl-yr{font-family:var(--mono);font-size:20px;letter-spacing:.26em;color:rgba(244,247,251,.72);margin-top:12px;display:flex;align-items:center}
+.dl-clock-box{display:inline-grid;position:relative;vertical-align:baseline;font-variant-numeric:tabular-nums;margin:0 4px}
+.dl-clock-step{grid-area:1/1;opacity:0;transform:translateY(8px);letter-spacing:.14em;transition:none}
+.dl-clock-step.is-locked{color:var(--ac);font-weight:700}
+.dl-chrono-gauge{display:flex;align-items:center;gap:14px;margin-top:16px}
+.dl-chrono-pips{display:flex;gap:6px;align-items:center}
+.dl-pip{width:16px;height:4px;background:rgba(255,255,255,.14);border-radius:2px;display:block}
+.dl-chrono-status{font-family:var(--mono);font-size:11px;letter-spacing:.26em;color:rgba(244,247,251,.45);text-transform:uppercase}
 .dl-title{font-size:96px;line-height:1.0;font-weight:800;letter-spacing:-.045em;margin:0;max-width:1180px}
 .dl-title .hl-marker{isolation:isolate;display:inline-block;position:relative}
 .dl-title .hl-text{color:var(--ac);text-shadow:0 0 35px color-mix(in srgb,var(--ac) 85%,transparent),0 0 75px color-mix(in srgb,var(--ac) 45%,transparent)}

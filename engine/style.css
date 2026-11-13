@@ -677,6 +677,8 @@ body{width:var(--composition-width,1920px);height:var(--composition-height,1080p
   background:radial-gradient(circle at 35% 35%,rgba(16,24,45,.95),rgba(4,6,11,.98));
   border:3px solid var(--ac);box-shadow:0 0 38px -2px var(--ac),inset 0 1px 0 rgba(255,255,255,.3);
   overflow:visible}
+.m-ov-emitter{position:absolute;bottom:-20px;left:50%;transform:translateX(-50%);width:170px;height:26px;border-radius:50%;background:radial-gradient(ellipse at center,var(--ac) 0%,transparent 70%);opacity:.7;filter:blur(6px);pointer-events:none}
+.m-ov-beam{position:absolute;bottom:0;left:24px;right:24px;height:75px;background:linear-gradient(to top,color-mix(in srgb,var(--ac) 28%,transparent),transparent);clip-path:polygon(18% 0%,82% 0%,100% 100%,0% 100%);pointer-events:none;opacity:.45}
 .m-ov-ring{position:absolute;inset:-8px;border-radius:50%;border:1px dashed var(--ac);opacity:.5;
   box-shadow:0 0 16px -2px var(--ac)}
 .m-ov-glare{position:absolute;inset:6px;border-radius:50%;pointer-events:none;
@@ -697,22 +699,37 @@ body{width:var(--composition-width,1920px);height:var(--composition-height,1080p
 /* pos-bl: bubble sits right of the avatar, so the tail leaves the left edge. */
 .pos-bl .m-ov-bubble::after{left:-8px;transform:rotate(135deg)}
 .m-ov-btext{font-size:20px;line-height:1.35;font-weight:600;color:var(--ink);text-shadow:0 2px 8px rgba(0,0,0,.6)}
+.m-ov-btext .hl-text{color:var(--ac,#38bdf8);font-weight:700;text-shadow:0 0 16px var(--ac,#38bdf8)}
+.m-ov-btext .m-code{font-family:var(--mono);font-size:16px;background:rgba(255,255,255,.08);padding:2px 7px;border-radius:4px;border:1px solid rgba(255,255,255,.18);color:#38bdf8}
 
-/* Emotion-specific cyber-visor chromatic pulses */
+/* 12-Emotion Visor Chromatic Matrix */
 .m-expr-shocked .m-ov-avatar-wrap{border-color:#ff3b5c;box-shadow:0 0 45px rgba(255,59,92,.7)}
-
 .m-expr-thinking .m-ov-avatar-wrap{border-color:#a855f7;box-shadow:0 0 40px rgba(168,85,247,.6)}
-
 .m-expr-happy .m-ov-avatar-wrap{border-color:#10b981;box-shadow:0 0 40px rgba(16,185,129,.6)}
-
 .m-expr-panic .m-ov-avatar-wrap{border-color:#f59e0b;box-shadow:0 0 45px rgba(245,158,11,.7)}
+.m-expr-cool .m-ov-avatar-wrap{border-color:#06b6d4;box-shadow:0 0 42px rgba(6,182,212,.7)}
+.m-expr-angry .m-ov-avatar-wrap{border-color:#dc2626;box-shadow:0 0 45px rgba(220,38,38,.75)}
+.m-expr-facepalm .m-ov-avatar-wrap{border-color:#f43f5e;box-shadow:0 0 40px rgba(244,63,94,.65)}
+.m-expr-skeptical .m-ov-avatar-wrap{border-color:#6366f1;box-shadow:0 0 40px rgba(99,102,241,.65)}
+.m-expr-pointing .m-ov-avatar-wrap{border-color:#38bdf8;box-shadow:0 0 42px rgba(56,189,248,.7)}
+.m-expr-sad .m-ov-avatar-wrap{border-color:#64748b;box-shadow:0 0 35px rgba(100,116,139,.5)}
 
 .m-ov-hud{position:absolute;top:-42px;right:14px;background:rgba(7,10,19,.94);border:1px solid var(--ac,#38bdf8);
   box-shadow:0 0 16px -2px var(--ac,#38bdf8),inset 0 0 8px rgba(56,189,248,.2);padding:4px 12px;border-radius:5px;
   font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:.08em;color:var(--ac,#38bdf8);
-  white-space:nowrap;pointer-events:none;z-index:30;text-transform:uppercase;overflow:hidden}
+  white-space:nowrap;pointer-events:none;z-index:30;text-transform:uppercase;overflow:hidden;display:inline-flex;align-items:center;gap:6px}
 .m-ov-hud-scan{position:absolute;top:0;left:0;right:0;height:1px;background:rgba(255,255,255,.8);opacity:.4}
 .pos-bl .m-ov-hud{right:auto;left:14px}
+
+.m-ov-eq{display:inline-flex;align-items:flex-end;gap:2px;height:10px}
+.m-ov-eq-bar{width:2px;background:var(--ac,#38bdf8);border-radius:1px;animation:mEqBounce .8s ease-in-out infinite alternate}
+.m-ov-eq-bar:nth-child(1){height:4px;animation-delay:0s}
+.m-ov-eq-bar:nth-child(2){height:9px;animation-delay:.2s}
+.m-ov-eq-bar:nth-child(3){height:6px;animation-delay:.4s}
+.m-ov-eq-bar:nth-child(4){height:10px;animation-delay:.15s}
+@keyframes mEqBounce{0%{transform:scaleY(.3)}100%{transform:scaleY(1)}}
+
+.mascot-emitter{position:absolute;bottom:-20px;left:50%;transform:translateX(-50%);width:420px;height:32px;border-radius:50%;background:radial-gradient(ellipse at center,var(--ac,#38bdf8) 0%,transparent 70%);opacity:.7;filter:blur(10px);pointer-events:none}
 
 .flow-node.is-bad{border-color:#ff3b5c !important;color:#ff3b5c !important;box-shadow:0 0 24px -2px rgba(255,59,92,.45)}
 .flow-node.is-bad .fn-k{color:#ff3b5c !important}

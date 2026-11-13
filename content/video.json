@@ -228,7 +228,7 @@
       "mascot": {
         "expression": "shocked",
         "position": "bottom-right",
-        "bubble": "Zero backoff! Every single client retried instantly!"
+        "bubble": "Zero backoff! 50,000 clients retried instantly!"
       }
     },
     {
@@ -342,7 +342,7 @@
       "mascot": {
         "expression": "pointing",
         "position": "bottom-right",
-        "bubble": "Full jitter decorrelates retry bursts completely!"
+        "bubble": "==Full jitter== decorrelates retry bursts completely!"
       }
     },
     {
@@ -418,7 +418,7 @@
       "mascot": {
         "expression": "cool",
         "position": "bottom-right",
-        "bubble": "Zero cascading timeouts across the entire mesh!"
+        "bubble": "Zero cascading timeouts across the ==entire mesh!== "
       }
     },
     {
@@ -633,7 +633,7 @@
       "mascot": {
         "expression": "cool",
         "position": "bottom-right",
-        "bubble": "Circuit breakers protect your database!"
+        "bubble": "==Circuit breakers== protect your database!"
       }
     },
     {
@@ -703,7 +703,7 @@
       "mascot": {
         "expression": "facepalm",
         "position": "bottom-right",
-        "bubble": "Every single buffer slot in the heap is locked!"
+        "bubble": "Every buffer slot in the ==heap is deadlocked!== "
       }
     },
     {
@@ -725,7 +725,7 @@
       "mascot": {
         "expression": "panic",
         "position": "bottom-right",
-        "bubble": "Almost the entire cluster fleet went red!"
+        "bubble": "Almost the ==entire cluster fleet== went red!"
       }
     },
     {

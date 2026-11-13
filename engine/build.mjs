@@ -111,13 +111,21 @@ for (const expr of MASCOT_EXPRS) {
 // Alias legacy 'solved' to 'happy'
 MASCOT_IMAGES["solved"] = MASCOT_IMAGES["happy"];
 
+function formatMascotText(text) {
+  if (!text) return "";
+  let html = esc(text);
+  html = html.replace(/==(.*?)==/g, '<span class="hl-text">$1</span>');
+  html = html.replace(/`([^`]+)`/g, '<code class="m-code">$1</code>');
+  return html;
+}
+
 function renderMascotOverlay(mascot) {
   if (!mascot) return "";
   const rawExpr = mascot.expression || "neutral";
   const expr = rawExpr === "solved" ? "happy" : rawExpr;
   const pos = mascot.position === "bottom-left" ? "pos-bl" : "pos-br";
   const imgSrc = MASCOT_IMAGES[expr] || MASCOT_IMAGES["neutral"] || "";
-  const bubble = mascot.bubble ? `<div class="m-ov-bubble"><div class="m-ov-btext">${esc(mascot.bubble)}</div></div>` : (Array.isArray(mascot.timeline) && mascot.timeline.some(t => t.bubble) ? `<div class="m-ov-bubble" style="display:none"><div class="m-ov-btext"></div></div>` : "");
+  const bubble = mascot.bubble ? `<div class="m-ov-bubble"><div class="m-ov-btext">${formatMascotText(mascot.bubble)}</div></div>` : (Array.isArray(mascot.timeline) && mascot.timeline.some(t => t.bubble) ? `<div class="m-ov-bubble" style="display:none"><div class="m-ov-btext"></div></div>` : "");
 
   const timeline = Array.isArray(mascot.timeline) ? mascot.timeline : [];
   const extraImgs = timeline.map((step, idx) => {
@@ -127,13 +135,15 @@ function renderMascotOverlay(mascot) {
     return `<img class="m-ov-avatar m-ov-avatar-step" data-step-idx="${idx}" data-expr="${esc(stepExpr)}" src="${stepSrc}" alt="${esc(stepExpr)}" style="opacity:0;position:absolute;inset:6px;z-index:2;" />`;
   }).join("");
 
-  const hudTag = mascot.hud ? `<div class="m-ov-hud"><span class="m-ov-hud-scan"></span><span class="m-ov-hud-tag">${esc(mascot.hud)}</span></div>` : "";
+  const hudTag = mascot.hud ? `<div class="m-ov-hud"><span class="m-ov-hud-scan"></span><span class="m-ov-eq"><span class="m-ov-eq-bar"></span><span class="m-ov-eq-bar"></span><span class="m-ov-eq-bar"></span><span class="m-ov-eq-bar"></span></span><span class="m-ov-hud-tag">${esc(mascot.hud)}</span></div>` : "";
 
   return `
   <div class="m-ov ${pos} m-expr-${expr}" data-expr="${esc(expr)}">
     ${hudTag}
     ${bubble}
     <div class="m-ov-avatar-wrap">
+      <div class="m-ov-emitter"></div>
+      <div class="m-ov-beam"></div>
       <div class="m-ov-ring"></div>
       <div class="m-ov-glare"></div>
       <img class="m-ov-avatar" src="${imgSrc}" alt="${esc(expr)}" />
@@ -1019,6 +1029,7 @@ const RENDER = {
       <div class="mascot-ghost">${esc(ghost)}</div>
       <div class="mascot-left">
         <div class="mascot-hud-frame">
+          <div class="mascot-emitter"></div>
           <div class="mascot-hud-corner tl"></div>
           <div class="mascot-hud-corner tr"></div>
           <div class="mascot-hud-corner bl"></div>
@@ -1028,7 +1039,7 @@ const RENDER = {
 
           <img class="mascot-img" src="${imgSrc}" alt="${esc(expr)}" />
           <div class="mascot-hud-tag">${esc(badge)}</div>
-          <div class="mascot-hud-telemetry"><span class="mst-tel-pulse"></span><span>${esc(telemetry)}</span></div>
+          <div class="mascot-hud-telemetry"><span class="mst-tel-pulse"></span><span class="m-ov-eq"><span class="m-ov-eq-bar"></span><span class="m-ov-eq-bar"></span><span class="m-ov-eq-bar"></span><span class="m-ov-eq-bar"></span></span><span>${esc(telemetry)}</span></div>
         </div>
       </div>
       <div class="mascot-right">

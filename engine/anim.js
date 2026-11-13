@@ -1688,7 +1688,11 @@
         if (glare) {
           tl.fromTo(glare, { opacity: 0.3 }, { opacity: 0.7, duration: 1.8, ease: "sine.inOut", yoyo: true, repeat: repYoyo(dur, 3.6) }, at + 0.2);
         }
-
+        var emitter = hud.querySelector(".mascot-emitter");
+        if (emitter) {
+          tl.fromTo(emitter, { opacity: 0, scale: 0.8 }, { opacity: 0.75, scale: 1, duration: 0.8, ease: E.expo }, at + 0.1);
+          tl.to(emitter, { opacity: 0.45, scale: 0.95, duration: 2.2, ease: "sine.inOut", yoyo: true, repeat: repYoyo(dur, 4.4) }, at + 0.8);
+        }
       }
       var bubble = el.querySelector(".mascot-bubble-box");
       if (bubble) {
@@ -1910,6 +1914,28 @@
         tl.fromTo(mGlare, { opacity: 0.2 }, { opacity: 0.65, duration: 1.5, ease: "sine.inOut", yoyo: true, repeat: repYoyo(dur, 3.0) }, at + 0.3);
       }
 
+      /* Holographic Emitter & Light Beam */
+      var mEmitter = mOv.querySelector(".m-ov-emitter");
+      var mBeam = mOv.querySelector(".m-ov-beam");
+      if (mEmitter) {
+        tl.fromTo(mEmitter, { opacity: 0, scale: 0.8 }, { opacity: 0.75, scale: 1, duration: 0.6, ease: E.soft }, at + 0.15);
+        tl.to(mEmitter, { opacity: 0.45, scale: 0.95, duration: 1.6, ease: "sine.inOut", yoyo: true, repeat: repYoyo(dur, 3.2) }, at + 0.7);
+      }
+      if (mBeam) {
+        tl.fromTo(mBeam, { opacity: 0 }, { opacity: 0.45, duration: 0.8, ease: E.soft }, at + 0.18);
+        tl.to(mBeam, { opacity: 0.25, duration: 2.0, ease: "sine.inOut", yoyo: true, repeat: repYoyo(dur, 4.0) }, at + 0.8);
+      }
+
+      /* Inward Gaze Auto-Mirroring for Left-Anchored Overlays */
+      var isLeft = mOv.classList.contains("pos-bl");
+      if (isLeft && avatar) {
+        tl.set(avatar, { scaleX: -1 });
+      }
+
+      /* Reactive Flinch on Critical System Errors */
+      if (isShock) {
+        tl.fromTo(mOv, { y: -8, scale: 0.98 }, { y: 0, scale: 1, duration: 0.3, ease: "bounce.out" }, at + 0.35);
+      }
 
       var mBubble = mOv.querySelector(".m-ov-bubble");
       if (mBubble) {
@@ -1929,7 +1955,6 @@
 
       /* Directional Pointing Angle */
       if (expr === "pointing") {
-        var isLeft = mOv.classList.contains("pos-bl");
         tl.to(mOv, { rotate: isLeft ? 3.5 : -3.5, duration: 0.6, ease: E.soft }, at + 0.35);
       }
 

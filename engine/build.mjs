@@ -906,6 +906,10 @@ const RENDER = {
     const sub = s.meta?.subtext || s.meta?.sub || s.subline || "";
     const expr = s.meta?.expression || "facepalm";
     const image = s.meta?.image || MASCOT_IMAGES[expr] || MASCOT_IMAGES["shocked"] || "";
+    const file = s.meta?.file || "hotfix_prod_v2_FINAL.sh";
+    const bubble = s.meta?.bubble || s.meta?.thought || "";
+    const stamp = s.meta?.stamp || s.meta?.reactionTag || "";
+    const timestamp = s.meta?.time || s.meta?.timestamp || "REC ● 16:59:58 (FRIDAY)";
 
     return `
     <div class="meme-stage">
@@ -913,10 +917,20 @@ const RENDER = {
       ${eyebrow(s)}
       <div class="meme-badge"><span>INCIDENT_REPORT</span><b>${esc(badge)}</b></div>
       <div class="meme-card">
-        <div class="meme-media-wrap">
-          <img class="meme-img" src="${image}" alt="reaction" />
-          <div class="meme-scanlines"></div>
-          <div class="meme-glitch-bar"></div>
+        <div class="meme-media-chassis">
+          <div class="meme-titlebar">
+            <div class="mac-dots"><span></span><span></span><span></span></div>
+            <span class="meme-filename">${esc(file)}</span>
+            <span class="meme-rec-tag"><span class="meme-rec-dot"></span>REC</span>
+          </div>
+          <div class="meme-media-wrap">
+            <img class="meme-img" src="${image}" alt="reaction" />
+            <div class="meme-scanlines"></div>
+            <div class="meme-glitch-bar"></div>
+            ${bubble ? `<div class="meme-bubble"><span class="meme-bubble-text">${esc(bubble)}</span><span class="meme-bubble-tail"></span></div>` : ""}
+            ${stamp ? `<div class="meme-stamp"><span class="meme-stamp-inner">${esc(stamp)}</span></div>` : ""}
+            <div class="meme-timestamp">${esc(timestamp)}</div>
+          </div>
         </div>
         <div class="meme-right">
           <h2 class="meme-caption">${splitWords(caption, s)}</h2>

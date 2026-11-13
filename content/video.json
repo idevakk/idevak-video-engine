@@ -359,9 +359,21 @@
         "tag": "CLOUD MESH TOPOLOGY",
         "flow": "CloudFront L7 -> Envoy Circuit Breaker -> Worker Pool -> Sharded Aurora",
         "edges": [
-          { "proto": "TLS 1.3", "lat": "0.8ms", "tag": "VERIFIED" },
-          { "proto": "mTLS / gRPC", "lat": "0.2ms", "tag": "SHED 14%" },
-          { "proto": "TCP POOL", "lat": "1.1ms", "tag": "ISOLATED" }
+          {
+            "proto": "TLS 1.3",
+            "lat": "0.8ms",
+            "tag": "VERIFIED"
+          },
+          {
+            "proto": "mTLS / gRPC",
+            "lat": "0.2ms",
+            "tag": "SHED 14%"
+          },
+          {
+            "proto": "TCP POOL",
+            "lat": "1.1ms",
+            "tag": "ISOLATED"
+          }
         ],
         "nodes": [
           {
@@ -472,10 +484,29 @@
       "subline": "Tracing the failure wavefront across the four service tiers.",
       "meta": {
         "nodes": [
-          { "t": "Edge CDN", "k": "INGRESS", "s": "420k RPS" },
-          { "t": "API Gateway", "k": "PROXY", "s": "504 Timeouts", "hot": true },
-          { "t": "Worker Pool", "k": "COMPUTE", "s": "OOM Backoff", "bad": true },
-          { "t": "Aurora Shard", "k": "DATABASE", "s": "Deadlocked", "bad": true }
+          {
+            "t": "Edge CDN",
+            "k": "INGRESS",
+            "s": "420k RPS"
+          },
+          {
+            "t": "API Gateway",
+            "k": "PROXY",
+            "s": "504 Timeouts",
+            "hot": true
+          },
+          {
+            "t": "Worker Pool",
+            "k": "COMPUTE",
+            "s": "OOM Backoff",
+            "bad": true
+          },
+          {
+            "t": "Aurora Shard",
+            "k": "DATABASE",
+            "s": "Deadlocked",
+            "bad": true
+          }
         ]
       },
       "mascot": {
@@ -495,10 +526,26 @@
       "subline": "Every abstraction layer amplifies the thundering herd retry surge.",
       "meta": {
         "layers": [
-          { "t": "L7 Client SDK: Unjittered Retry Loop", "s": "50,000 parallel retries", "bad": true },
-          { "t": "L5 Envoy Proxy: Connection Backpressure", "s": "Upstream circuit queues blocked", "hot": true },
-          { "t": "L4 Node.js Pool: Threadpool Starvation", "s": "libuv worker thread deadlock", "bad": true },
-          { "t": "L2 PostgreSQL Driver: Spinlock Contention", "s": "Connection slots 500/500 locked", "bad": true }
+          {
+            "t": "L7 Client SDK: Unjittered Retry Loop",
+            "s": "50,000 parallel retries",
+            "bad": true
+          },
+          {
+            "t": "L5 Envoy Proxy: Connection Backpressure",
+            "s": "Upstream circuit queues blocked",
+            "hot": true
+          },
+          {
+            "t": "L4 Node.js Pool: Threadpool Starvation",
+            "s": "libuv worker thread deadlock",
+            "bad": true
+          },
+          {
+            "t": "L2 PostgreSQL Driver: Spinlock Contention",
+            "s": "Connection slots 500/500 locked",
+            "bad": true
+          }
         ]
       },
       "mascot": {
@@ -521,10 +568,25 @@
         "live": "SEV-1 OUTAGE",
         "stamp": "POST-MORTEM VERIFIED",
         "rows": [
-          { "k": "CLUSTER REGION", "v": "eu-west-1 (Ireland)" },
-          { "k": "CONNECTION POOL", "v": "500 / 500 (100%)", "bad": true },
-          { "k": "LOCK LATENCY", "v": "28,450ms p99", "bad": true },
-          { "k": "FLEET STATUS", "v": "0.00% (BLACKOUT)", "bad": true }
+          {
+            "k": "CLUSTER REGION",
+            "v": "eu-west-1 (Ireland)"
+          },
+          {
+            "k": "CONNECTION POOL",
+            "v": "500 / 500 (100%)",
+            "bad": true
+          },
+          {
+            "k": "LOCK LATENCY",
+            "v": "28,450ms p99",
+            "bad": true
+          },
+          {
+            "k": "FLEET STATUS",
+            "v": "0.00% (BLACKOUT)",
+            "bad": true
+          }
         ],
         "points": [
           "Zero backoff turned transient drops into regional blackout",
@@ -588,18 +650,54 @@
         "pointer": "CORRUPT DEADLOCK",
         "liveCount": 12,
         "cells": [
-          { "addr": "0x00", "bad": true },
-          { "addr": "0x04", "bad": true },
-          { "addr": "0x08", "bad": true },
-          { "addr": "0x0C", "bad": true },
-          { "addr": "0x10", "bad": true },
-          { "addr": "0x14", "bad": true },
-          { "addr": "0x18", "bad": true },
-          { "addr": "0x1C", "bad": true },
-          { "addr": "0x20", "bad": true },
-          { "addr": "0x24", "bad": true },
-          { "addr": "0x28", "bad": true },
-          { "addr": "0x2C", "bad": true }
+          {
+            "addr": "0x00",
+            "bad": true
+          },
+          {
+            "addr": "0x04",
+            "bad": true
+          },
+          {
+            "addr": "0x08",
+            "bad": true
+          },
+          {
+            "addr": "0x0C",
+            "bad": true
+          },
+          {
+            "addr": "0x10",
+            "bad": true
+          },
+          {
+            "addr": "0x14",
+            "bad": true
+          },
+          {
+            "addr": "0x18",
+            "bad": true
+          },
+          {
+            "addr": "0x1C",
+            "bad": true
+          },
+          {
+            "addr": "0x20",
+            "bad": true
+          },
+          {
+            "addr": "0x24",
+            "bad": true
+          },
+          {
+            "addr": "0x28",
+            "bad": true
+          },
+          {
+            "addr": "0x2C",
+            "bad": true
+          }
         ]
       },
       "mascot": {
@@ -644,7 +742,11 @@
         "badge": "INCIDENT_AUTOPSY",
         "reaction": "FRIDAY_DEPLOY",
         "expression": "facepalm",
-        "punch": true
+        "punch": true,
+        "file": "hotfix_prod_v2_FINAL.sh",
+        "bubble": "...it worked on localhost!",
+        "stamp": "SKILL ISSUE",
+        "time": "16:59:58 (FRIDAY)"
       }
     },
     {

@@ -806,13 +806,31 @@ body{width:var(--composition-width,1920px);height:var(--composition-height,1080p
 /* ============================================================ meme */
 .meme-stage{position:absolute;inset:0;padding:0 128px;display:flex;flex-direction:column;justify-content:center;align-items:center}
 .meme-ghost{position:absolute;font-size:380px;font-weight:900;letter-spacing:-.06em;color:transparent;-webkit-text-stroke:1px rgba(255,255,255,.04);line-height:.8;z-index:-1;text-transform:uppercase;pointer-events:none;user-select:none}
-.meme-badge{display:flex;align-items:center;gap:12px;font-family:var(--mono);font-size:13px;letter-spacing:.2em;color:var(--dim);margin-bottom:24px}
+.meme-badge{display:flex;align-items:center;gap:12px;font-family:var(--mono);font-size:13px;letter-spacing:.2em;color:var(--dim);margin-bottom:20px}
 .meme-badge b{color:var(--ac);background:rgba(255,255,255,.06);padding:4px 12px;border:1px solid color-mix(in srgb,var(--ac) 45%,transparent);border-radius:4px;box-shadow:0 0 16px color-mix(in srgb,var(--ac) 25%,transparent)}
-.meme-card{display:flex;align-items:center;gap:56px;background:linear-gradient(170deg,rgba(18,24,40,.94),rgba(10,14,26,.96));border:1px solid rgba(255,255,255,.08);padding:36px 48px;border-radius:14px;box-shadow:0 40px 100px rgba(0,0,0,.7),inset 0 1px 0 rgba(255,255,255,.08);max-width:1440px}
-.meme-media-wrap{position:relative;width:340px;height:340px;flex-shrink:0;border-radius:12px;overflow:hidden;border:2px solid var(--ac);box-shadow:0 0 35px -4px var(--ac)}
+.meme-card{display:flex;align-items:center;gap:56px;background:linear-gradient(170deg,rgba(18,24,40,.94),rgba(10,14,26,.96));border:1px solid rgba(255,255,255,.08);padding:34px 44px;border-radius:14px;box-shadow:0 40px 100px rgba(0,0,0,.7),inset 0 1px 0 rgba(255,255,255,.08);max-width:1440px}
+
+.meme-media-chassis{position:relative;width:340px;flex-shrink:0;border-radius:12px;overflow:hidden;border:2px solid var(--ac);box-shadow:0 0 35px -4px var(--ac);background:#0a0d18}
+.meme-titlebar{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:rgba(255,255,255,.05);border-bottom:1px solid rgba(255,255,255,.08)}
+.meme-filename{font-family:var(--mono);font-size:11px;color:var(--dim);letter-spacing:.05em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px}
+.meme-rec-tag{display:flex;align-items:center;gap:5px;font-family:var(--mono);font-size:10px;font-weight:700;color:#ff3b5c;letter-spacing:.1em}
+.meme-rec-dot{width:6px;height:6px;border-radius:50%;background:#ff3b5c;box-shadow:0 0 8px #ff3b5c}
+
+.meme-media-wrap{position:relative;width:100%;height:320px;overflow:hidden}
 .meme-img{width:100%;height:100%;object-fit:cover;display:block}
 .meme-scanlines{position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(0,0,0,.25) 0,rgba(0,0,0,.25) 2px,transparent 2px,transparent 4px);pointer-events:none}
 .meme-glitch-bar{position:absolute;left:0;right:0;height:4px;background:var(--ac);opacity:.75;box-shadow:0 0 14px var(--ac);pointer-events:none}
+
+.meme-timestamp{position:absolute;left:10px;bottom:8px;font-family:var(--mono);font-size:11px;color:rgba(255,255,255,.6);background:rgba(0,0,0,.65);padding:2px 8px;border-radius:3px;letter-spacing:.1em;pointer-events:none}
+
+.meme-bubble{position:absolute;top:12px;right:10px;background:rgba(15,23,42,.92);border:1.5px solid var(--ac);border-radius:10px;padding:8px 12px;box-shadow:0 8px 24px rgba(0,0,0,.6),0 0 16px color-mix(in srgb,var(--ac) 30%,transparent);z-index:4;max-width:200px}
+.meme-bubble-text{font-size:13px;font-weight:700;color:#fff;line-height:1.25;display:block}
+.meme-bubble-tail{position:absolute;left:16px;bottom:-7px;width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent;border-top:7px solid var(--ac)}
+
+.meme-stamp{position:absolute;top:38%;left:50%;transform:translate(-50%,-50%) rotate(-14deg);z-index:5;pointer-events:none;opacity:0}
+.meme-stamp-inner{display:inline-block;font-family:var(--mono);font-size:26px;font-weight:900;letter-spacing:.2em;color:#ff3b5c;border:3px solid #ff3b5c;border-radius:6px;padding:6px 18px;text-transform:uppercase;box-shadow:0 0 25px rgba(255,59,92,.45),inset 0 0 12px rgba(255,59,92,.25);background:rgba(20,5,10,.75)}
+
+.meme-right{flex:1;min-width:0}
 .meme-caption{font-size:74px;line-height:1.04;font-weight:900;letter-spacing:-.045em;margin:0;max-width:920px;color:var(--ink)}
 .meme-caption .hl-marker{isolation:isolate;display:inline-block;position:relative}
 .meme-caption .hl-text{color:var(--ac);text-shadow:0 0 35px color-mix(in srgb,var(--ac) 85%,transparent)}

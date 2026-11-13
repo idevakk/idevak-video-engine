@@ -1535,10 +1535,32 @@
         tl.fromTo(card, { scale: 0.82, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.42, ease: E.soft }, at + 0.05);
         queueSFX("thud", at + 0.08, { vol: 1.1 });
       }
+      var chassis = el.querySelector(".meme-media-chassis");
+      if (chassis) {
+        tl.fromTo(chassis, { x: -6 }, { x: 6, duration: 0.05, repeat: 4, yoyo: true, ease: "sine.inOut" }, at + 0.08);
+      }
       var glitch = el.querySelector(".meme-glitch-bar");
       if (glitch) {
-        tl.fromTo(glitch, { y: 0, opacity: 0 }, { y: 340, opacity: 0.8, duration: 0.7, ease: "none", repeat: rep(dur, 0.7) }, at + 0.1);
+        tl.fromTo(glitch, { y: 0, opacity: 0 }, { y: 320, opacity: 0.8, duration: 0.7, ease: "none", repeat: rep(dur, 0.7) }, at + 0.1);
         queueSFX("decrypt", at + 0.1, { vol: 0.75 });
+      }
+      var bubble = el.querySelector(".meme-bubble");
+      if (bubble) {
+        tl.fromTo(bubble,
+          { scale: 0, opacity: 0, y: 15 },
+          { scale: 1, opacity: 1, y: 0, duration: 0.45, ease: E.springSubtle },
+          at + 0.6
+        );
+        queueSFX("click", at + 0.62, { vol: 0.6 });
+      }
+      var stamp = el.querySelector(".meme-stamp");
+      if (stamp) {
+        tl.fromTo(stamp,
+          { scale: 2.8, opacity: 0, rotate: -28 },
+          { scale: 1, opacity: 1, rotate: -14, duration: 0.28, ease: E.expo },
+          at + 1.1
+        );
+        queueSFX("thud", at + 1.12, { vol: 1.2 });
       }
       words(el.querySelector(".meme-caption"), at + 0.18, { stagger: 0.038, dur: 0.65 }, s);
       if (el.querySelector(".meme-sub")) fade(el.querySelector(".meme-sub"), at + 0.5, { dur: 0.6 });

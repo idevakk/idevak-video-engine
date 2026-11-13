@@ -1005,43 +1005,124 @@ body{width:var(--composition-width,1920px);height:var(--composition-height,1080p
     --portrait-pad-x: 70px;
   }
 
+  /* Universal Vertical Centering in Safe Zone */
   .sc-in {
     padding: var(--portrait-pad-top) var(--portrait-pad-x) var(--portrait-pad-bot) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    box-sizing: border-box !important;
   }
 
-  /* Safe margins for vertical canvases */
-  .cold-wrap, .stat-wrap, .stat-stage, .q-stage {
-    padding: var(--portrait-pad-top) var(--portrait-pad-x) var(--portrait-pad-bot) !important;
+  /* Reset all scene stage/wrapper containers from absolute to in-flow relative flex children */
+  .cold-wrap,
+  .hero-grid,
+  .stat-wrap,
+  .stat-stage,
+  .q-stage,
+  .dl-grid,
+  .code-shell,
+  .diff-shell,
+  .tm-shell,
+  .web-shell,
+  .cloud-stage,
+  .flow-stage,
+  .stk-grid,
+  .lg-grid,
+  .cmp-stage,
+  .mx-grid,
+  .meme-stage,
+  .mascot-stage,
+  .out-wrap {
+    position: relative !important;
+    inset: auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    height: auto !important;
+    box-sizing: border-box !important;
   }
 
-  /* Eyebrows */
+  /* ============================================================ UNIFIED TYPOGRAPHIC SYSTEM */
+  /* Consistent Eyebrows across all scenes */
   .eyebrow {
-    font-size: 13px;
-    letter-spacing: .22em;
-    margin-bottom: 20px;
+    font-size: 13px !important;
+    letter-spacing: .24em !important;
+    margin-bottom: 16px !important;
+    text-transform: uppercase !important;
+    font-family: var(--mono) !important;
   }
 
-  /* Cold Scene */
-  .cold-title {
-    font-size: 80px;
-    line-height: .98;
-    max-width: 100%;
+  /* Standardized Headline Scale across all scenes (52px baseline) */
+  .cold-title,
+  .hero-title,
+  .statement,
+  .dl-title,
+  .tl-head,
+  .code-head,
+  .diff-head-title,
+  .tm-head-title,
+  .web-head-title,
+  .cloud-head-title,
+  .stk-title,
+  .lg-title,
+  .cmp-cap,
+  .mem-title,
+  .mx-title,
+  .meme-caption,
+  .mascot-bubble-text,
+  .out-title,
+  .q-text {
+    font-size: 52px !important;
+    line-height: 1.12 !important;
+    font-weight: 800 !important;
+    letter-spacing: -0.04em !important;
+    max-width: 100% !important;
+    margin: 0 0 16px 0 !important;
   }
-  .cold-sub {
-    font-size: 24px;
-    line-height: 1.35;
-    margin-top: 24px;
-    max-width: 100%;
+
+  /* Standardized Subline Scale across all scenes (22px baseline) */
+  .cold-sub,
+  .hero-sub,
+  .st-sub,
+  .stat-sub,
+  .dl-sub,
+  .tl-sub,
+  .stk-sub,
+  .lg-sub,
+  .mem-sub,
+  .mx-sub,
+  .cloud-foot-sub,
+  .diff-callout,
+  .code-callout,
+  .tm-callout,
+  .cmp-sub,
+  .meme-sub,
+  .web-foot-sub,
+  .out-sub,
+  .mascot-sub {
+    font-size: 22px !important;
+    line-height: 1.4 !important;
+    color: var(--dim) !important;
+    margin-top: 14px !important;
+    max-width: 100% !important;
+  }
+
+  /* s001 Cold Scene */
+  .cold-wrap {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
   }
   .cold-ghost {
-    font-size: 240px;
-    top: auto;
-    bottom: 260px;
+    font-size: 200px;
+    bottom: -60px;
     right: -10px;
     opacity: 0.04;
   }
   .cold-meta {
-    margin-top: 36px;
+    margin-top: 28px;
     flex-wrap: wrap;
     gap: 10px;
   }
@@ -1050,696 +1131,748 @@ body{width:var(--composition-width,1920px);height:var(--composition-height,1080p
     padding: 8px 14px;
   }
 
-  /* Hero Scene */
+  /* s002 Hero Scene: centered headline, prominent watermark badge, in-flow baseline */
   .hero-grid {
-    grid-template-columns: 1fr;
-    gap: 20px;
-    height: auto;
-    align-items: flex-start;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 24px !important;
+    width: 100% !important;
   }
-  .hero-title {
-    font-size: 68px;
-    line-height: 1.05;
-    max-width: 100%;
-  }
-  .hero-sub {
-    font-size: 24px;
-    margin-top: 24px;
-    max-width: 100%;
+  .hero-left {
+    width: 100% !important;
   }
   .hero-right {
-    justify-content: flex-start;
-    height: auto;
+    width: 100% !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    margin-top: 24px !important;
   }
   .hero-mark {
-    font-size: min(54px, var(--hero-mark-size,128px));
-    text-align: left;
-    max-width: 100%;
+    font-size: 104px !important;
+    font-weight: 900 !important;
+    letter-spacing: .08em !important;
+    opacity: 0.32 !important;
+    text-align: center !important;
+    color: var(--ac) !important;
+    -webkit-text-stroke: 1.5px rgba(255, 255, 255, 0.4) !important;
+    text-shadow: 0 0 35px rgba(56, 189, 248, 0.45) !important;
   }
   .hero-baseline {
-    left: var(--portrait-pad-x);
-    right: var(--portrait-pad-x);
-    bottom: 230px;
+    position: relative !important;
+    inset: auto !important;
+    width: 100% !important;
+    margin-top: 36px !important;
+    bottom: auto !important;
+    left: auto !important;
+    right: auto !important;
   }
 
-  /* Statement Scene */
-  .statement {
-    font-size: 64px;
-    line-height: 1.1;
-    max-width: 100%;
-  }
-  .statement-sm {
-    font-size: 52px;
-  }
-  .st-sub {
-    font-size: 24px;
-    margin-top: 24px;
-    max-width: 100%;
+  /* s003 Statement Scene */
+  .stat-wrap {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
   }
   .st-ghost {
     font-size: 180px;
     right: 20px;
-    bottom: 240px;
+    bottom: -40px;
     opacity: 0.05;
   }
 
-  /* Stat Scene */
+  /* s004 Quote Scene */
+  .q-stage {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+  }
+  .q-mark {
+    position: relative !important;
+    top: auto !important;
+    left: auto !important;
+    font-size: 96px !important;
+    line-height: .6 !important;
+    margin-bottom: 24px !important;
+    opacity: 0.4 !important;
+  }
+  .q-author-row {
+    margin-top: 28px !important;
+  }
+
+  /* s005 Stat Scene */
+  .stat-stage {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+  }
   .stat-number {
-    font-size: 160px;
+    font-size: 140px;
     line-height: .92;
   }
   .stat-prefix, .stat-suffix {
-    font-size: 54px;
+    font-size: 48px;
   }
   .stat-label {
-    font-size: 34px;
-    margin-top: 24px;
-  }
-  .stat-sub {
-    font-size: 22px;
-    margin-top: 14px;
+    font-size: 38px !important;
+    font-weight: 750 !important;
+    margin-top: 20px !important;
   }
   .stat-ruler {
     width: 100%;
-    max-width: 100%;
-    margin-top: 36px;
+    margin-top: 32px;
   }
   .stat-ghost {
-    font-size: 220px;
-    top: auto;
-    bottom: 240px;
-    left: 20px;
+    font-size: 200px;
+    bottom: -60px;
+    left: 10px;
+    opacity: 0.05;
   }
 
-  /* Dateline Scene */
+  /* s006 Dateline Scene: centered in-flow layout, inline date chip, no bottom void */
   .dl-grid {
-    grid-template-columns: 1fr;
-    gap: 28px;
-    height: auto;
-    align-items: flex-start;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    gap: 20px !important;
+    height: auto !important;
+    width: 100% !important;
+  }
+  .dl-date {
+    display: flex !important;
+    align-items: baseline !important;
+    gap: 16px !important;
+    border-bottom: 1px solid var(--line) !important;
+    padding-bottom: 16px !important;
+    margin-bottom: 20px !important;
   }
   .dl-day {
-    font-size: 100px;
-    line-height: .9;
+    font-size: 76px !important;
+    line-height: 1 !important;
   }
   .dl-mon {
-    font-size: 26px;
-    margin-top: 8px;
+    font-size: 26px !important;
+    margin: 0 !important;
   }
   .dl-yr {
-    font-size: 16px;
-    margin-top: 6px;
-  }
-  .dl-title {
-    font-size: 54px;
-    line-height: 1.08;
-    max-width: 100%;
-  }
-  .dl-sub {
-    font-size: 22px;
-    margin-top: 18px;
-    max-width: 100%;
+    font-size: 18px !important;
+    margin: 0 !important;
   }
   .dl-rail {
-    left: var(--portrait-pad-x);
-    right: var(--portrait-pad-x);
-    bottom: 430px;
+    position: relative !important;
+    margin-top: 32px !important;
+    bottom: auto !important;
+    left: auto !important;
+    right: auto !important;
+    width: 100% !important;
   }
 
-  /* Timeline Scene */
-  .tl-head {
-    font-size: 52px;
-  }
-  .tl-sub {
-    font-size: 20px;
+  /* s007 Timeline Scene: centered stage in-flow, eliminating bottom void */
+  .sc-timeline .sc-in {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
   }
   .tl-stage {
-    left: 36px;
-    right: 36px;
-    top: 500px;
-    height: 480px;
+    position: relative !important;
+    top: auto !important;
+    left: auto !important;
+    right: auto !important;
+    width: 100% !important;
+    height: 440px !important;
+    margin-top: 32px !important;
   }
   .tl-card {
-    width: 215px;
-    padding: 12px 14px;
+    width: 215px !important;
+    padding: 12px 14px !important;
   }
   .tl-t {
-    font-size: 15px;
+    font-size: 15px !important;
   }
   .tl-s {
-    font-size: 13px;
-    margin-top: 6px;
+    font-size: 13px !important;
+    margin-top: 6px !important;
   }
   .tl-hot-badge {
-    font-size: 9px;
-    padding: 2px 5px;
+    font-size: 9px !important;
+    padding: 2px 5px !important;
   }
 
-  /* Code Scene */
+  /* s008 Code Scene */
+  .code-shell {
+    width: 100% !important;
+    margin: 20px 0 !important;
+  }
   .code-bar {
-    padding: 14px 20px;
+    padding: 14px 20px !important;
   }
   .code-file {
-    font-size: 14px;
+    font-size: 14px !important;
   }
   .code-tag {
-    font-size: 11px;
-    padding: 4px 8px;
+    font-size: 11px !important;
+    padding: 4px 8px !important;
   }
   .code-body {
-    padding: 24px 0;
+    padding: 24px 0 !important;
   }
   .cl {
-    padding: 6px 20px;
-    gap: 16px;
+    padding: 7px 20px !important;
+    gap: 16px !important;
   }
   .cl-n {
-    font-size: 14px;
-    width: 32px;
+    font-size: 14px !important;
+    width: 32px !important;
   }
   .cl-c {
-    font-size: 21px;
-    line-height: 1.4;
+    font-size: 20px !important;
+    line-height: 1.45 !important;
   }
   .code-foot {
-    grid-template-columns: 1fr;
-    gap: 16px;
-    margin-top: 24px;
-  }
-  .code-callout {
-    font-size: 28px;
-    max-width: 100%;
-  }
-  .code-sub {
-    text-align: left;
-    max-width: 100%;
+    margin-top: 20px !important;
   }
 
-  /* Terminal Scene */
+  /* s010 Terminal Scene */
+  .tm-shell {
+    width: 100% !important;
+    margin: 20px 0 !important;
+  }
   .tm-bar {
-    padding: 12px 18px;
-    font-size: 12px;
+    padding: 12px 18px !important;
+    font-size: 12px !important;
   }
   .tm-body {
-    padding: 22px 18px 26px;
+    padding: 22px 18px 26px !important;
   }
   .tm-line {
-    font-size: 20px;
-    gap: 12px;
+    font-size: 20px !important;
+    gap: 12px !important;
   }
   .tm-cursor {
-    height: 22px;
-    width: 11px;
+    height: 22px !important;
+    width: 11px !important;
   }
   .tm-foot {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 14px;
-    margin-top: 24px;
-  }
-  .tm-title {
-    font-size: 34px;
-  }
-  .tm-sub {
-    font-size: 14px;
-    text-align: left;
-    max-width: 100%;
-  }
-  .term-sub {
-    text-align: left;
-    max-width: 100%;
+    margin-top: 20px !important;
   }
 
-  /* Diff Scene */
+  /* s009 Diff Scene: strike line positioned precisely across glyph center */
+  .diff-shell {
+    width: 100% !important;
+    margin: 20px 0 !important;
+  }
   .diff-head {
-    padding: 12px 18px;
+    padding: 12px 18px !important;
   }
   .df-file {
-    font-size: 13px;
+    font-size: 13px !important;
   }
   .df-ver {
-    font-size: 11px;
-    padding: 3px 8px;
+    font-size: 11px !important;
+    padding: 3px 8px !important;
   }
   .diff-body {
-    padding: 20px 0;
+    padding: 20px 0 !important;
   }
   .df-line {
-    padding: 7px 18px;
-    gap: 12px;
-    font-size: 19px;
-    line-height: 1.4;
+    padding: 8px 18px !important;
+    gap: 12px !important;
+    font-size: 19px !important;
+    line-height: 1.4 !important;
+    align-items: center !important;
   }
   .df-sig {
-    font-size: 19px;
-    width: 18px;
+    font-size: 19px !important;
+    width: 18px !important;
   }
   .df-t {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-    flex-wrap: wrap;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 10px !important;
+    flex-wrap: wrap !important;
   }
   .df-code-wrap {
-    position: relative;
-    display: inline-flex;
-    align-items: center;
+    position: relative !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    line-height: 1 !important;
+  }
+  .df-strike {
+    top: 48% !important;
+    margin-top: -1.5px !important;
+    height: 3px !important;
   }
   .df-tag {
-    margin-left: 0;
-    font-size: 11px;
-    padding: 2px 7px;
+    margin-left: 0 !important;
+    font-size: 11px !important;
+    padding: 2px 7px !important;
   }
 
-  /* Compare Scene (Vertical Stacking) */
-  .sc-compare .sc-in {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-  }
-  .cmp-cap {
-    order: 1;
-    font-size: 38px;
-    margin-top: 0;
-    margin-bottom: 8px;
-  }
-  .cmp-sub {
-    order: 2;
-    font-size: 18px;
-    margin-top: 0;
-    margin-bottom: 20px;
-  }
-  .cmp-stage {
-    order: 3;
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-    align-items: center;
-    margin-top: 0;
-  }
-  .cmp-col {
-    width: 100%;
-    min-height: auto;
-    padding: 24px 22px;
-    border-radius: 10px;
-  }
-  .cmp-t {
-    font-size: 26px;
-    margin-bottom: 12px;
-  }
-  .cmp-p {
-    font-size: 16px;
-    padding-top: 8px;
-  }
-  .cmp-mid {
-    margin: -4px 0;
-    z-index: 5;
-  }
-  .cmp-mid .cmp-diamond, .cmp-mid span {
-    width: 46px;
-    height: 46px;
-  }
-  .cmp-mid .cmp-vs, .cmp-mid span>* {
-    font-size: 12px;
-  }
-  /* Stack Scene (Vertical Stacking) */
-  .stk-grid {
-    grid-template-columns: 1fr;
-    gap: 24px;
-    height: auto;
-    align-items: flex-start;
-  }
-  .stk-title {
-    font-size: 54px;
-    max-width: 100%;
-  }
-  .stk-sub {
-    font-size: 22px;
-    margin-top: 16px;
-    max-width: 100%;
-  }
-  .stk-layer {
-    padding: 16px 20px;
-    gap: 16px;
-    margin-bottom: 10px;
-  }
-  .stk-t {
-    font-size: 20px;
-  }
-
-  /* Quote Scene */
-  .q-stage {
-    padding: var(--portrait-pad-top) var(--portrait-pad-x) var(--portrait-pad-bot) !important;
-  }
-  .q-mark {
-    font-size: 180px;
-    left: 40px;
-    top: 250px;
-  }
-  .q-text {
-    font-size: 46px;
-    line-height: 1.15;
-    max-width: 100%;
-  }
-  .q-by {
-    font-size: 14px;
-    margin-top: 24px;
-  }
-
-  /* Matrix Scene: the 16-column grid is too narrow on a phone, so drop to 8. */
-  .mx-grid {
-    grid-template-columns: 1fr;
-    gap: 28px;
-    height: auto;
-    align-items: flex-start;
-  }
-  .mx-title {
-    font-size: 44px;
-    max-width: 100%;
-  }
-  .mx-sub {
-    font-size: 20px;
-    max-width: 100%;
-  }
-  .mx-right {
-    width: 100%;
-    max-width: 580px;
-    margin: 0 auto;
-  }
-  .mx-cells {
-    grid-template-columns: repeat(8, 1fr);
-    gap: 8px;
-  }
-  .mx-count {
-    position: static;
-    margin-top: 18px;
-    text-align: right;
-  }
-
-  /* Webref Scene */
+  /* s011 Webref Scene */
   .web-shell {
-    margin: 14px 0 20px;
+    width: 100% !important;
+    margin: 20px 0 !important;
   }
-  .web-doc-title {
-    font-size: 26px;
-  }
-  .web-p {
-    font-size: 16px;
-  }
-  .web-foot-title {
-    font-size: 28px;
-  }
-
-  /* Meme Scene */
-  .meme-stage {
-    padding: 0;
-  }
-  .meme-card {
-    flex-direction: column;
-    gap: 28px;
-    padding: 28px 24px;
-    width: 100%;
-  }
-  .meme-media-chassis {
-    width: 320px;
-  }
-  .meme-caption {
-    font-size: 44px;
-  }
-  .meme-sub {
-    font-size: 20px;
-    margin-top: 12px;
-  }
-  .meme-ghost {
-    font-size: 140px;
-  }
-
-  /* Split Scene (Vertical Stacking) */
-  .split-head-title {
-    font-size: 44px;
-    margin-bottom: 12px;
-  }
-  .split-grid {
-    grid-template-columns: 1fr;
-    gap: 16px;
-  }
-  .split-connector {
-    flex-direction: row;
-    height: auto;
-    padding: 6px 0;
-  }
-  .split-conn-svg {
-    transform: rotate(90deg);
-    width: 60px;
-    height: 20px;
-  }
-  .split-pane-body {
-    padding: 16px 18px;
-    min-height: auto;
-  }
-  .split-foot-sub {
-    font-size: 18px;
-    margin-top: 14px;
-  }
-
-  /* Cloud Topology Scene (Vertical Stack) */
-  .cloud-nodes {
-    flex-direction: column;
-    gap: 12px;
-  }
-  .cloud-node {
-    width: 100%;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    padding: 14px 18px;
-    text-align: left;
-  }
-  .cloud-edge {
-    transform: rotate(90deg);
-    height: 18px;
-  }
-  .cloud-title {
-    font-size: 32px;
-  }
-  .cld-badge {
-    font-size: 13px;
-    letter-spacing: .16em;
-    margin-bottom: 0;
-  }
-  .cld-title {
-    font-size: 20px;
-    margin-bottom: 0;
-  }
-  .cld-status {
-    font-size: 13px;
-  }
-  .cld-sub {
-    font-size: 13px;
-    margin-top: 0;
-  }
-
-  /* Flow scene: stack the row and turn the connectors into down-arrows. */
-  .flow-row {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 0;
-  }
-  .flow-node {
-    width: 100%;
-    padding: 24px 26px;
-  }
-  .fn-t {
-    font-size: 28px;
-  }
-  .fn-s {
-    font-size: 18px;
-  }
-  /* Rotate only the glyph so the arrow reads downward without a wide element
-     spinning out of the frame. */
-  .flow-link {
-    width: 100%;
-    height: 54px;
-    padding: 0;
-    justify-content: center;
-  }
-  .flow-link svg {
-    width: 54px;
-    height: 24px;
-    transform: rotate(90deg);
-  }
-  .flow-cap {
-    margin-top: 32px;
-    font-size: 32px;
-  }
-  .flow-sub {
-    font-size: 20px;
-  }
-
-  /* Webref Scene */
   .web-viewport {
-    height: 420px;
+    height: 380px !important;
   }
   .web-doc-scroll {
-    padding-top: 14px;
+    padding-top: 14px !important;
+  }
+  .web-doc-title {
+    font-size: 24px !important;
+  }
+  .web-p {
+    font-size: 17px !important;
+  }
+  .web-foot-title {
+    font-size: 26px !important;
   }
 
-  /* Ledger Scene: fixed two-column grid pushed the headline off the frame. */
+  /* s012 Cloud Topology Scene: clean vertical architecture, de-cluttered cards */
+  .cloud-stage {
+    width: 100% !important;
+    margin: 20px 0 !important;
+  }
+  .cloud-nodes {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+    width: 100% !important;
+  }
+  .cloud-node {
+    width: 100% !important;
+    display: grid !important;
+    grid-template-columns: 48px 1fr auto !important;
+    grid-template-rows: auto auto !important;
+    grid-template-areas:
+      "icon title status"
+      "icon sub telem" !important;
+    align-items: center !important;
+    gap: 4px 16px !important;
+    padding: 16px 20px !important;
+    box-sizing: border-box !important;
+    position: relative !important;
+  }
+  .cld-badge {
+    display: none !important;
+  }
+  .cld-icon-box {
+    grid-area: icon !important;
+    width: 48px !important;
+    height: 48px !important;
+    margin: 0 !important;
+  }
+  .cld-title {
+    grid-area: title !important;
+    font-size: 22px !important;
+    font-weight: 800 !important;
+    margin: 0 !important;
+    text-align: left !important;
+    line-height: 1.2 !important;
+  }
+  .cld-sub {
+    grid-area: sub !important;
+    font-size: 14px !important;
+    color: var(--dim) !important;
+    margin: 0 !important;
+    text-align: left !important;
+    line-height: 1.3 !important;
+  }
+  .cld-status {
+    grid-area: status !important;
+    font-size: 12px !important;
+    padding: 3px 8px !important;
+    border-radius: 4px !important;
+    margin: 0 !important;
+    justify-self: end !important;
+  }
+  .cld-breaker-beacon {
+    position: absolute !important;
+    top: -12px !important;
+    right: 24px !important;
+    margin: 0 !important;
+  }
+  .cld-telem {
+    grid-area: telem !important;
+    display: flex !important;
+    gap: 8px !important;
+    margin: 0 !important;
+    justify-self: end !important;
+  }
+  .cld-edge-svg,
+  .cld-shed-stream {
+    display: none !important;
+  }
+  .cloud-edge {
+    position: relative !important;
+    transform: none !important;
+    width: 100% !important;
+    height: 28px !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    margin: 0 !important;
+  }
+  .cloud-edge-chip {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    padding: 3px 10px !important;
+    border-radius: 4px !important;
+    background: rgba(13, 18, 32, 0.9) !important;
+    border: 1px solid var(--line-soft) !important;
+    font-family: var(--mono) !important;
+    font-size: 11px !important;
+  }
+
+  /* s013 Split Scene (Vertical Stacking) */
+  .split-head-title {
+    margin-bottom: 12px !important;
+  }
+  .split-grid {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+    width: 100% !important;
+  }
+  .split-connector {
+    flex-direction: row !important;
+    height: auto !important;
+    padding: 6px 0 !important;
+  }
+  .split-conn-svg {
+    transform: rotate(90deg) !important;
+    width: 44px !important;
+    height: 20px !important;
+  }
+  .split-pane-body {
+    padding: 16px 18px !important;
+    min-height: auto !important;
+  }
+  .split-foot-sub {
+    font-size: 18px !important;
+    margin-top: 14px !important;
+  }
+
+  /* s014 Flow Scene: vertical downward flow, centered in golden window */
+  .flow-row {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 0 !important;
+    width: 100% !important;
+  }
+  .flow-node {
+    width: 100% !important;
+    padding: 20px 24px !important;
+    box-sizing: border-box !important;
+  }
+  .fn-t {
+    font-size: 26px !important;
+  }
+  .fn-s {
+    font-size: 17px !important;
+  }
+  .flow-link {
+    width: 100% !important;
+    height: 46px !important;
+    padding: 0 !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+  }
+  .flow-link svg {
+    width: 46px !important;
+    height: 22px !important;
+    transform: rotate(90deg) !important;
+  }
+  .flow-cap {
+    margin-top: 28px !important;
+    font-size: 30px !important;
+  }
+
+  /* s015 Stack Scene: centered in-flow layout, well-spaced layers, no empty abyss */
+  .sc-stack .sc-in {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+  }
+  .stk-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    gap: 24px !important;
+    height: auto !important;
+    width: 100% !important;
+  }
+  .stk-layer {
+    padding: 22px 24px !important;
+    gap: 16px !important;
+    margin-bottom: 14px !important;
+    border-radius: 12px !important;
+    box-sizing: border-box !important;
+  }
+  .stk-t {
+    font-size: 22px !important;
+    font-weight: 700 !important;
+  }
+
+  /* s016 Ledger Scene: vertically centered layout, title top, card bottom, balanced frame */
+  .sc-ledger .sc-in {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+  }
   .lg-grid {
-    grid-template-columns: 1fr;
-    gap: 32px;
-    height: auto;
-    align-items: flex-start;
-    display: flex;
-    flex-direction: column;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    gap: 28px !important;
+    height: auto !important;
+    width: 100% !important;
   }
   .lg-right {
-    order: 1;
-    width: 100%;
+    order: 1 !important;
+    width: 100% !important;
   }
   .lg-left {
-    order: 2;
-    width: 100%;
+    order: 2 !important;
+    width: 100% !important;
   }
   .lg-card {
-    width: 100%;
-    padding: 22px 24px 26px;
+    width: 100% !important;
+    padding: 26px 28px !important;
+    border-radius: 12px !important;
+    box-sizing: border-box !important;
   }
   .lg-head {
-    font-size: 11px;
-    letter-spacing: .16em;
+    font-size: 11px !important;
+    letter-spacing: .16em !important;
   }
   .lg-row {
-    padding: 14px 2px;
+    padding: 16px 4px !important;
   }
   .lg-k {
-    font-size: 13px;
+    font-size: 13px !important;
   }
   .lg-v {
-    font-size: 24px;
+    font-size: 26px !important;
   }
   .lg-stamp {
-    position: static;
-    display: inline-block;
-    margin-top: 16px;
-    font-size: 20px;
-    padding: 7px 12px;
-  }
-  .lg-title {
-    font-size: 46px;
-    max-width: 100%;
-  }
-  .lg-sub {
-    font-size: 20px;
-    margin-top: 18px;
-    max-width: 100%;
+    position: static !important;
+    display: inline-block !important;
+    margin-top: 18px !important;
+    font-size: 20px !important;
+    padding: 7px 12px !important;
   }
   .lg-pt {
-    font-size: 19px;
-    margin-top: 16px;
+    font-size: 18px !important;
+    margin-top: 14px !important;
   }
 
-  /* Memory Scene: the shell is absolutely positioned at a landscape offset. */
+  /* s017 Compare Scene (Vertical Stacking) */
+  .sc-compare .sc-in {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+  }
+  .cmp-cap {
+    order: 1 !important;
+    margin-bottom: 8px !important;
+  }
+  .cmp-sub {
+    order: 2 !important;
+    margin-bottom: 20px !important;
+  }
+  .cmp-stage {
+    order: 3 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 14px !important;
+    align-items: center !important;
+    width: 100% !important;
+  }
+  .cmp-col {
+    width: 100% !important;
+    min-height: auto !important;
+    padding: 22px 22px !important;
+    border-radius: 12px !important;
+    box-sizing: border-box !important;
+  }
+  .cmp-t {
+    font-size: 24px !important;
+    margin-bottom: 12px !important;
+  }
+  .cmp-p {
+    font-size: 16px !important;
+    padding-top: 8px !important;
+  }
+  .cmp-mid {
+    margin: -4px 0 !important;
+    z-index: 5 !important;
+  }
+  .cmp-mid .cmp-diamond, .cmp-mid span {
+    width: 46px !important;
+    height: 46px !important;
+  }
+  .cmp-mid .cmp-vs, .cmp-mid span>* {
+    font-size: 12px !important;
+  }
+
+  /* s018 Memory Scene: centered in-flow layout */
   .sc-memory .sc-in {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
   }
   .mem-shell,
   .mem-side {
-    position: static;
-    width: 100%;
-    left: auto;
-    right: auto;
-    top: auto;
+    position: static !important;
+    width: 100% !important;
+    left: auto !important;
+    right: auto !important;
+    top: auto !important;
   }
   .mem-side {
-    order: 1;
-    margin-bottom: 24px;
+    order: 1 !important;
+    margin-bottom: 24px !important;
   }
   .mem-shell {
-    order: 2;
-    margin-bottom: 0;
+    order: 2 !important;
+    margin-bottom: 0 !important;
   }
   .mem-name {
-    font-size: 24px;
+    font-size: 24px !important;
   }
   .mem-count {
-    font-size: 12px;
+    font-size: 12px !important;
   }
   .mem-count b {
-    font-size: 19px;
+    font-size: 19px !important;
   }
   .mem-cells {
-    grid-template-columns: repeat(4, 1fr);
-    gap: 9px;
-    margin-top: 18px;
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 10px !important;
+    margin-top: 18px !important;
   }
   .mc {
-    height: 96px;
+    height: 90px !important;
   }
   .mc-i {
-    font-size: 13px;
-    top: 6px;
-    left: 8px;
+    font-size: 13px !important;
+    top: 6px !important;
+    left: 8px !important;
   }
   .mem-ptr {
-    margin-top: 6px;
-    height: 48px;
-    gap: 14px;
+    margin-top: 6px !important;
+    height: 48px !important;
+    gap: 14px !important;
   }
   .mem-ptr svg {
-    width: 170px;
-    height: 44px;
+    width: 170px !important;
+    height: 44px !important;
   }
   .mem-ptr span {
-    font-size: 14px;
+    font-size: 14px !important;
   }
   .mem-legend {
-    font-size: 11px;
-    gap: 20px;
-  }
-  .mem-title {
-    font-size: 42px;
-    max-width: 100%;
-  }
-  .mem-sub {
-    font-size: 20px;
-    margin-top: 16px;
+    font-size: 11px !important;
+    gap: 20px !important;
   }
 
-  /* Mascot Spotlight Scene */
+  /* s019 Matrix Scene: centered in golden window */
+  .sc-matrix .sc-in {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+  }
+  .mx-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    gap: 28px !important;
+    height: auto !important;
+    width: 100% !important;
+  }
+  .mx-right {
+    width: 100% !important;
+    max-width: 580px !important;
+    margin: 0 auto !important;
+  }
+  .mx-cells {
+    grid-template-columns: repeat(8, 1fr) !important;
+    gap: 8px !important;
+  }
+  .mx-count {
+    position: static !important;
+    margin-top: 18px !important;
+    text-align: right !important;
+  }
+
+  /* s020 Meme Scene: centered card layout */
+  .sc-meme .sc-in {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+  }
+  .meme-stage {
+    padding: 0 !important;
+  }
+  .meme-card {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 24px !important;
+    padding: 28px 24px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  .meme-media-chassis {
+    width: 320px !important;
+  }
+  .meme-ghost {
+    font-size: 140px !important;
+  }
+
+  /* s021 Mascot Spotlight Scene: centered HUD frame */
+  .sc-mascot .sc-in {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+  }
   .mascot-stage {
-    grid-template-columns: 1fr;
-    gap: 28px;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 24px !important;
+    width: 100% !important;
   }
   .mascot-hud-frame {
-    width: 540px;
-    height: 540px;
-    margin: 0 auto;
+    width: 480px !important;
+    height: 480px !important;
+    margin: 0 auto !important;
   }
   .mascot-bubble-box {
-    padding: 26px 30px;
-    margin-bottom: 18px;
-  }
-  .mascot-bubble-text {
-    font-size: 44px;
-  }
-  .mascot-sub {
-    font-size: 22px;
+    padding: 24px 28px !important;
+    margin-bottom: 18px !important;
   }
 
-  /* Outro Scene */
+  /* s022 Outro Scene: centered in golden window */
+  .sc-outro .sc-in {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+  }
   .out-wrap {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
     padding: 0 var(--portrait-pad-x) !important;
   }
-  .out-title {
-    font-size: 58px;
-    line-height: 1.05;
-  }
   .out-ghost {
-    font-size: 180px;
+    font-size: 180px !important;
   }
 
   /* Universal Mascot Overlay Safe Zone Position for Mobile */

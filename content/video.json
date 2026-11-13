@@ -619,6 +619,7 @@
       "subline": "64 worker nodes across Europe-West failing health checks simultaneously.",
       "meta": {
         "cells": 64,
+        "badCount": 60,
         "legendOk": "RECOVERED (6%)",
         "legendBad": "DEADLOCKED (94%)",
         "count": "60 / 64 NODES DOWN"

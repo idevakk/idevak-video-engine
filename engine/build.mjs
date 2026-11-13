@@ -504,12 +504,14 @@ const RENDER = {
             <span>${esc(label)}</span>
             <span class="lg-live">${esc(status)}</span>
           </div>
-          ${rows
-            .map(
-              (r, k) => `<div class="lg-row" data-k="${k}"><span class="lg-k">${esc(r.k)}</span><span class="lg-v ${r.bad ? "is-bad" : ""}">${esc(r.v)}</span></div>`,
-            )
-            .join("")}
-          ${stamp ? `<div class="lg-stamp">${esc(stamp)}</div>` : ""}
+          <div class="lg-rows">
+            ${rows
+              .map(
+                (r, k) => `<div class="lg-row" data-k="${k}"><span class="lg-k">${esc(r.k)}</span><span class="lg-v ${r.bad ? "is-bad" : ""}">${esc(r.v)}</span></div>`,
+              )
+              .join("")}
+          </div>
+          ${stamp ? `<div class="lg-foot"><div class="lg-stamp">${esc(stamp)}</div></div>` : ""}
         </div>
       </div>
       <div class="lg-right">
@@ -692,6 +694,47 @@ const RENDER = {
 
   stack(s) {
     const layers = s.meta?.layers || [];
+    const count = layers.length;
+    const layerItems = layers.map((l, k) => {
+      const idxStr = String(count - k).padStart(2, "0");
+      let fullText = String(l.t || "");
+      let tier = "";
+      let name = fullText;
+      let detail = "";
+      
+      const colonIdx = fullText.indexOf(":");
+      if (colonIdx !== -1) {
+        name = fullText.slice(0, colonIdx).trim();
+        detail = fullText.slice(colonIdx + 1).trim();
+      }
+      const tierMatch = name.match(/^(L\d+)\s*(.*)/i);
+      if (tierMatch) {
+        tier = tierMatch[1];
+        name = tierMatch[2];
+      }
+      const metric = l.s || "";
+      const statusCls = l.bad ? "is-bad" : (l.hot ? "is-hot" : "is-norm");
+
+      return `
+      <div class="stk-layer ${statusCls}" data-k="${k}">
+        <div class="stk-tier-wrap">
+          <span class="stk-num">${idxStr}</span>
+          ${tier ? `<span class="stk-tier-pill">${esc(tier)}</span>` : ""}
+        </div>
+        <div class="stk-info">
+          <div class="stk-name">${esc(name)}</div>
+          ${detail ? `<div class="stk-detail">${esc(detail)}</div>` : ""}
+        </div>
+        ${metric ? `
+        <div class="stk-telemetry">
+          <span class="stk-metric-pill ${statusCls}">
+            <span class="stk-led"></span>
+            <span class="stk-metric-txt">${esc(metric)}</span>
+          </span>
+        </div>` : ""}
+      </div>`;
+    }).join("");
+
     return `
     <div class="stk-grid">
       <div class="stk-left">
@@ -701,15 +744,8 @@ const RENDER = {
       </div>
       <div class="stk-right">
         <div class="stk-stack">
-          ${layers
-            .map(
-              (l, k) => `<div class="stk-layer ${l.hot ? "is-hot" : ""} ${l.bad ? "is-bad" : ""}" data-k="${k}">
-              <span class="stk-i">${String(layers.length - k).padStart(2, "0")}</span>
-              <span class="stk-t">${esc(l.t)}</span>
-              ${l.s ? `<span class="stk-s">${esc(l.s)}</span>` : ""}
-            </div>`,
-            )
-            .join("")}
+          <div class="stk-spine"><div class="stk-packet"></div></div>
+          <div class="stk-layers">${layerItems}</div>
         </div>
       </div>
     </div>`;
@@ -740,8 +776,48 @@ const RENDER = {
   },
 
   matrix(s) {
-    const n = Math.min(64, Math.max(16, s.meta?.cells || 48));
-    const cells = Array.from({ length: n }, (_, k) => `<span class="mx-c" data-k="${k}"></span>`).join("");
+    const totalCells = Math.min(64, Math.max(16, s.meta?.cells || 64));
+    let badCount = s.meta?.badCount;
+    if (badCount == null && s.meta?.count) {
+      const m = String(s.meta.count).match(/(\d+)\s*\/\s*(\d+)/);
+      if (m) badCount = parseInt(m[1], 10);
+    }
+    if (badCount == null && s.meta?.ratio != null) {
+      badCount = Math.round(s.meta.ratio * totalCells);
+    }
+    if (badCount == null) {
+      const text = `${s.headline || ""} ${s.subline || ""}`;
+      const m = text.match(/(\d+)%/);
+      badCount = m ? Math.round((parseInt(m[1], 10) / 100) * totalCells) : Math.round(totalCells * 0.5);
+    }
+    badCount = Math.min(totalCells, Math.max(0, badCount));
+    const okCount = totalCells - badCount;
+
+    // Distribute ok (surviving/healthy) cells deterministically across different rows and columns
+    const okIndices = new Set();
+    if (okCount > 0) {
+      const cols = 16;
+      const numRows = Math.ceil(totalCells / cols);
+      for (let i = 0; i < okCount; i++) {
+        const row = i % numRows;
+        const col = Math.floor((i * 4.5 + 3) % cols);
+        const idx = Math.min(totalCells - 1, row * cols + col);
+        okIndices.add(idx);
+      }
+      let cur = 0;
+      while (okIndices.size < okCount && cur < totalCells) {
+        okIndices.add(cur);
+        cur++;
+      }
+    }
+
+    const cells = Array.from({ length: totalCells }, (_, k) => {
+      const isBad = !okIndices.has(k);
+      return `<span class="mx-c" data-k="${k}" data-bad="${isBad ? "1" : "0"}"></span>`;
+    }).join("");
+
+    const displayCount = s.meta?.count || `${badCount} / ${totalCells} NODES DOWN`;
+
     return `
     <div class="mx-grid">
       <div class="mx-left">
@@ -749,11 +825,14 @@ const RENDER = {
         <h2 class="mx-title">${splitWords(s.headline, s)}</h2>
         ${s.subline ? `<p class="mx-sub">${esc(s.subline)}</p>` : ""}
         <div class="mx-legend">
-          <span><i class="mx-sw ok"></i>${esc(s.meta?.legendOk || "ok")}</span>
-          <span><i class="mx-sw bad"></i>${esc(s.meta?.legendBad || "flagged")}</span>
+          <span><i class="mx-sw ok"></i>${esc(s.meta?.legendOk || "RECOVERED")}</span>
+          <span><i class="mx-sw bad"></i>${esc(s.meta?.legendBad || "DEADLOCKED")}</span>
         </div>
       </div>
-      <div class="mx-right"><div class="mx-cells">${cells}</div><div class="mx-count">${esc(s.meta?.count || "")}</div></div>
+      <div class="mx-right">
+        <div class="mx-cells" data-total="${totalCells}" data-bad="${badCount}">${cells}</div>
+        <div class="mx-count" data-total="${totalCells}" data-target="${badCount}">${esc(displayCount)}</div>
+      </div>
     </div>`;
   },
 

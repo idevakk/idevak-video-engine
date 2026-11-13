@@ -997,7 +997,7 @@
       var stamp = el.querySelector(".lg-stamp");
       if (stamp) {
         var stampTime = at + Math.min(dur * 0.55, 3.4);
-        tl.fromTo(stamp, { opacity: 0, scale: 2.1, rotate: -18 }, { opacity: 1, scale: 1, rotate: -7, duration: 0.34, ease: E.soft }, stampTime);
+        tl.fromTo(stamp, { opacity: 0, scale: 2.2, rotate: -15 }, { opacity: 1, scale: 1, rotate: -3, duration: 0.36, ease: E.soft }, stampTime);
         queueSFX("thud", stampTime, { vol: 1.1 });
       }
 
@@ -1311,20 +1311,38 @@
       fade(el.querySelector(".eyebrow"), at, { y: 12, dur: 0.55 });
       words(el.querySelector(".stk-title"), at + 0.08, { stagger: 0.04, dur: 0.82 }, s);
       if (el.querySelector(".stk-sub")) fade(el.querySelector(".stk-sub"), at + 0.5, { dur: 0.7 });
-      var layers = q(el, ".stk-layer");
-      tl.fromTo(el.querySelector(".stk-stack"), { rotateX: 14, rotateY: -8, y: 40, opacity: 0 }, { rotateX: 0, rotateY: 0, y: 0, opacity: 1, duration: 1.2, ease: E.expo, transformPerspective: 1600 }, at + 0.1);
-      tl.fromTo(layers, { z: -80, opacity: 0 }, { z: 0, opacity: 1, duration: 0.7, stagger: 0.12, ease: E.out }, at + 0.25);
-      var hot = el.querySelector(".stk-layer.is-hot");
-      if (hot) {
-        tl.fromTo(hot, { borderColor: "rgba(255,255,255,.11)" }, { borderColor: ac(s), boxShadow: "0 0 28px -2px " + ac(s), duration: 0.4 }, at + 1.4);
-        queueSFX("chime", at + 1.4, { vol: 0.75 });
+
+      var spine = el.querySelector(".stk-spine");
+      if (spine) {
+        tl.fromTo(spine, { scaleY: 0, transformOrigin: "top center", opacity: 0 }, { scaleY: 1, opacity: 1, duration: 0.85, ease: E.expo }, at + 0.15);
       }
-      var bad = el.querySelector(".stk-layer.is-bad");
-      if (bad) {
-        var badAt = at + 1.4;
-        tl.fromTo(bad, { borderColor: "rgba(255,255,255,.11)" }, { borderColor: "#ff3b5c", boxShadow: "0 0 32px -4px rgba(255,59,92,0.85)", duration: 0.4 }, badAt);
-        tl.fromTo(bad, { x: 8 }, { x: 0, duration: 0.25, ease: "power2.out" }, badAt);
-        queueSFX("thud", badAt, { vol: 1.0 });
+      var packet = el.querySelector(".stk-packet");
+      if (packet) {
+        tl.fromTo(packet, { top: "0%", opacity: 0 }, { top: "96%", opacity: 1, duration: 1.8, repeat: -1, ease: "power1.inOut" }, at + 0.5);
+      }
+
+      var layers = q(el, ".stk-layer");
+      tl.fromTo(layers, 
+        { x: 28, opacity: 0 }, 
+        { x: 0, opacity: 1, duration: 0.65, stagger: 0.11, ease: E.expo }, 
+        at + 0.2
+      );
+
+      var hotLayers = q(el, ".stk-layer.is-hot");
+      hotLayers.forEach(function (hot, idx) {
+        var hotAt = at + 0.9 + idx * 0.15;
+        tl.fromTo(hot, { borderColor: "rgba(255,255,255,.08)" }, { borderColor: "rgba(245,158,11,.7)", boxShadow: "0 0 35px -8px rgba(245,158,11,.45)", duration: 0.4 }, hotAt);
+      });
+
+      var badLayers = q(el, ".stk-layer.is-bad");
+      badLayers.forEach(function (bad, idx) {
+        var badAt = at + 1.05 + idx * 0.16;
+        tl.fromTo(bad, { borderColor: "rgba(255,255,255,.08)" }, { borderColor: "rgba(255,90,110,.7)", boxShadow: "0 0 35px -8px rgba(255,90,110,.5)", duration: 0.35 }, badAt);
+        tl.fromTo(bad, { x: 5 }, { x: 0, duration: 0.2, ease: "power2.out" }, badAt);
+      });
+
+      if (badLayers.length) {
+        queueSFX("thud", at + 1.1, { vol: 0.95 });
       }
     },
 
@@ -1370,21 +1388,53 @@
       words(el.querySelector(".mx-title"), at + 0.05, { stagger: 0.038, dur: 0.8 }, s);
       if (el.querySelector(".mx-sub")) fade(el.querySelector(".mx-sub"), at + 0.45, { dur: 0.7 });
       fade(el.querySelector(".mx-legend"), at + 0.6, { dur: 0.6 });
+
+      var cellsWrap = el.querySelector(".mx-cells");
+      var totalCells = parseInt((cellsWrap && cellsWrap.getAttribute("data-total")) || "64", 10);
+      var targetBad = parseInt((cellsWrap && cellsWrap.getAttribute("data-bad")) || "60", 10);
+
       var cells = q(el, ".mx-c");
-      var bad = [];
-      cells.forEach(function (c, i) {
-        /* deterministic sparse pattern: seeded by index */
-        var h = (i * 2654435761) % 100;
-        if (h < 26) c.classList.add("is-bad");
-        if (c.classList.contains("is-bad")) bad.push(c);
+      var bad = cells.filter(function (c) {
+        return c.getAttribute("data-bad") === "1";
       });
-      tl.fromTo(cells, { opacity: 0, scale: 0.4 }, { opacity: 1, scale: 1, duration: 0.5, stagger: { each: 0.004, from: "center", grid: "auto" }, ease: "power2.out" }, at + 0.15);
-      tl.fromTo(bad, { backgroundColor: "rgba(255,255,255,.055)" }, { backgroundColor: ac(s), duration: 0.3, stagger: { each: 0.012, from: "start" } }, at + 1.1);
-      tl.fromTo(bad, { boxShadow: "0 0 0px rgba(0,0,0,0)" }, { boxShadow: "0 0 12px -2px " + ac(s), duration: 0.4, stagger: 0.012 }, at + 1.1);
+
+      // Initial cell reveal: all cells pop into grid
+      tl.fromTo(cells, 
+        { opacity: 0, scale: 0.45 }, 
+        { opacity: 1, scale: 1, duration: 0.5, stagger: { each: 0.005, from: "center", grid: [4, 16] }, ease: "power2.out" }, 
+        at + 0.15
+      );
+
+      // Deadlock saturation cascade: 60 bad nodes turn crimson red
+      var cascadeStart = at + 0.95;
+      tl.to(bad, {
+        backgroundColor: "#ff3b5c",
+        borderColor: "rgba(255, 59, 92, 0.75)",
+        boxShadow: "0 0 16px rgba(255, 59, 92, 0.75), inset 0 0 6px rgba(255, 255, 255, 0.35)",
+        duration: 0.28,
+        stagger: { each: 0.012, from: "start" },
+        ease: "power2.in"
+      }, cascadeStart);
+
       if (bad.length) {
-        queueSFX("thud", at + 1.1, { vol: 0.95 });
+        queueSFX("thud", cascadeStart + 0.1, { vol: 0.95 });
       }
-      if (el.querySelector(".mx-count")) fade(el.querySelector(".mx-count"), at + 0.9, { dur: 0.6 });
+
+      // Dynamic counter: tick up in real time from 0 to targetBad down!
+      var countEl = el.querySelector(".mx-count");
+      if (countEl) {
+        fade(countEl, at + 0.5, { dur: 0.4 });
+        var cp = { val: 0 };
+        tl.to(cp, {
+          val: targetBad,
+          duration: 0.9,
+          ease: "power2.out",
+          onUpdate: function () {
+            var curr = Math.round(cp.val);
+            countEl.textContent = curr + " / " + totalCells + " NODES DOWN";
+          }
+        }, cascadeStart);
+      }
     },
 
     webref: function (el, s, at, dur) {

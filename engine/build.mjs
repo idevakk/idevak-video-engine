@@ -683,6 +683,7 @@ const RENDER = {
     const points = (side) => (Array.isArray(side.pts) ? side.pts : [side.p || ""])
       .filter(Boolean).map(p => `<div class="cmp-p">${esc(p)}</div>`).join("");
     const longMid = mid.length > 3;
+    const isArrow = /^(?:->+|-->+|=>+|==>+|→|⇒|>|&gt;|&rarr;|-&gt;)$/i.test(mid.trim());
     return `
     ${eyebrow(s)}
     <div class="cmp-stage">
@@ -691,7 +692,7 @@ const RENDER = {
         <div class="cmp-t">${esc(left.t || "")}</div>
         ${points(left)}
       </div>
-      <div class="cmp-mid"><div class="cmp-diamond"><span class="cmp-vs ${longMid ? "is-long" : ""}">${esc(mid)}</span></div></div>
+      <div class="cmp-mid"><div class="cmp-diamond"><span class="cmp-vs ${isArrow ? "is-arrow" : ""} ${longMid ? "is-long" : ""}">${esc(mid)}</span></div></div>
       <div class="cmp-col cmp-right">
         <div class="cmp-k">${esc(right.k || "AFTER")}</div>
         <div class="cmp-t">${esc(right.t || "")}</div>

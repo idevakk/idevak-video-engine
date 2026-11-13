@@ -945,6 +945,7 @@ body{width:var(--composition-width,1920px);height:var(--composition-height,1080p
 /* ============================================================ retention subtitle rail */
 .retention-subtitles{position:absolute;left:0;right:0;bottom:36px;display:flex;justify-content:center;align-items:center;pointer-events:none;z-index:90}
 .is-portrait .retention-subtitles{bottom:440px}
+.is-portrait .cmp-mid .cmp-vs.is-arrow, .is-portrait .cmp-mid span>*.is-arrow{transform:rotate(45deg) !important}
 .retention-sub-track{background:rgba(7,10,19,.88);border:1px solid rgba(255,255,255,.14);backdrop-filter:blur(14px);padding:10px 24px;border-radius:9999px;box-shadow:0 14px 40px rgba(0,0,0,.7),0 0 24px -6px var(--ac);display:flex;gap:6px;align-items:center}
 .retention-sub-chunk{display:flex;flex-wrap:wrap;justify-content:center;gap:6px}
 .sub-w{font-family:var(--sans);font-size:24px;font-weight:700;color:rgba(255,255,255,.45);letter-spacing:-.01em;white-space:nowrap}
@@ -1718,6 +1719,9 @@ body{width:var(--composition-width,1920px);height:var(--composition-height,1080p
   }
   .cmp-mid .cmp-vs, .cmp-mid span>* {
     font-size: 12px !important;
+  }
+  .cmp-mid .cmp-vs.is-arrow, .cmp-mid span>*.is-arrow {
+    transform: rotate(45deg) !important;
   }
 
   /* s018 Memory Scene: centered in-flow layout */

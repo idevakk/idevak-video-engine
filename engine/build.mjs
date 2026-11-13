@@ -904,15 +904,17 @@ const RENDER = {
     const caption = s.meta?.caption || s.meta?.text || s.headline || "";
     const badge = s.meta?.badge || s.meta?.reaction || "SYSTEM PANIC";
     const sub = s.meta?.subtext || s.meta?.sub || s.subline || "";
-    const image = s.meta?.image || MASCOT_IMAGES[s.meta?.expression] || "assets/mascot/shocked.png";
+    const expr = s.meta?.expression || "facepalm";
+    const image = s.meta?.image || MASCOT_IMAGES[expr] || MASCOT_IMAGES["shocked"] || "";
 
     return `
     <div class="meme-stage">
       <div class="meme-ghost">${esc(ghost)}</div>
+      ${eyebrow(s)}
       <div class="meme-badge"><span>INCIDENT_REPORT</span><b>${esc(badge)}</b></div>
       <div class="meme-card">
         <div class="meme-media-wrap">
-          <img class="meme-img" src="${esc(image)}" alt="reaction" />
+          <img class="meme-img" src="${image}" alt="reaction" />
           <div class="meme-scanlines"></div>
           <div class="meme-glitch-bar"></div>
         </div>

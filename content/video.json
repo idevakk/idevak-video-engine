@@ -632,6 +632,23 @@
     },
     {
       "id": "s020",
+      "type": "meme",
+      "act": "core",
+      "accent": "#f59e0b",
+      "narration": "And that is why seasoned cloud engineers never push unjittered retry loops to production on a Friday afternoon.",
+      "eyebrow": "DEV REALITY",
+      "headline": "Works on My Machine: ==Deploy to Prod==",
+      "subline": "Famous last words before 50,000 connection pool retries melted the cluster.",
+      "meta": {
+        "ghost": "SKILL ISSUE",
+        "badge": "INCIDENT_AUTOPSY",
+        "reaction": "FRIDAY_DEPLOY",
+        "expression": "facepalm",
+        "punch": true
+      }
+    },
+    {
+      "id": "s021",
       "type": "outro",
       "act": "solution",
       "narration": "If you build, solve, and deploy modern cloud software, subscribe for more real-world production autopsies.",

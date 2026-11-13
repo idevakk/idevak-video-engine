@@ -55,8 +55,10 @@ const totalFrames = Math.round(targetDuration * fps);
 
 console.log(`Rendering scenes [${outLabel}]: start=${startTime.toFixed(2)}s, duration=${targetDuration.toFixed(2)}s (${totalFrames} frames)`);
 
+const compWidth = Number(project.width) || 1920;
+const compHeight = Number(project.height) || 1080;
 const browser = await chromium.launch({ headless: true, args: ['--no-sandbox'] });
-const page = await browser.newPage({ viewport: { width: 1920, height: 1080 } });
+const page = await browser.newPage({ viewport: { width: compWidth, height: compHeight } });
 await page.goto('file://' + path.join(root, 'index.html').replace(/\\/g, '/'));
 await page.evaluate(() => document.fonts.ready);
 await page.waitForTimeout(500);

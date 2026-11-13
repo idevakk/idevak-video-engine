@@ -1370,14 +1370,52 @@ body{width:var(--composition-width,1920px);height:var(--composition-height,1080p
   .meme-stage {
     padding: 0;
   }
+  .meme-card {
+    flex-direction: column;
+    gap: 28px;
+    padding: 28px 24px;
+    width: 100%;
+  }
+  .meme-media-chassis {
+    width: 320px;
+  }
   .meme-caption {
     font-size: 44px;
   }
   .meme-sub {
     font-size: 20px;
+    margin-top: 12px;
   }
   .meme-ghost {
     font-size: 140px;
+  }
+
+  /* Split Scene (Vertical Stacking) */
+  .split-head-title {
+    font-size: 44px;
+    margin-bottom: 12px;
+  }
+  .split-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .split-connector {
+    flex-direction: row;
+    height: auto;
+    padding: 6px 0;
+  }
+  .split-conn-svg {
+    transform: rotate(90deg);
+    width: 60px;
+    height: 20px;
+  }
+  .split-pane-body {
+    padding: 16px 18px;
+    min-height: auto;
+  }
+  .split-foot-sub {
+    font-size: 18px;
+    margin-top: 14px;
   }
 
   /* Cloud Topology Scene (Vertical Stack) */

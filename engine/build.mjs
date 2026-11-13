@@ -440,7 +440,7 @@ const RENDER = {
         : kind === "add"
           ? `<span class="df-tag df-tag-add">FIX APPLIED</span>`
           : "";
-      return `<div class="df-line df-${kind}" data-k="${k}"><span class="df-sig">${sig}</span><span class="df-t">${colorizeCode(text)}${strike}${tag}</span></div>`;
+      return `<div class="df-line df-${kind}" data-k="${k}"><span class="df-sig">${sig}</span><span class="df-t"><span class="df-code-wrap"><span class="df-code-text">${colorizeCode(text)}</span>${strike}</span>${tag}</span></div>`;
     });
     const file = s.meta?.file || "source";
     const ver = s.meta?.ver || "";

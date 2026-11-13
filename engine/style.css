@@ -357,7 +357,9 @@ body{width:var(--composition-width,1920px);height:var(--composition-height,1080p
 .diff-body{padding:28px 0 32px}
 .df-line{display:flex;align-items:flex-start;gap:20px;padding:9px 34px;position:relative;border-left:2px solid transparent;font-family:var(--mono);font-size:29px;line-height:1.44}
 .df-sig{width:22px;flex:none;font-weight:700;font-size:28px;line-height:1}
-.df-t{white-space:pre-wrap;word-break:break-word;flex:1}
+.df-t{white-space:pre-wrap;word-break:break-word;flex:1;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.df-code-wrap{position:relative;display:inline-flex;align-items:center}
+.df-code-text{display:inline}
 .df-ctx{color:#8194ad}
 .df-ctx .df-sig{color:rgba(255,255,255,.25)}
 .df-del{background:linear-gradient(90deg,rgba(255,59,92,.18),rgba(255,59,92,.03) 80%);border-left-color:#ff3b5c;box-shadow:inset 0 0 20px -6px rgba(255,59,92,.4);position:relative}
@@ -366,7 +368,7 @@ body{width:var(--composition-width,1920px);height:var(--composition-height,1080p
 .df-del .tok-kw{color:#ff4d6d}
 .df-del .tok-fn{color:#ff8fa3}
 .df-del .tok-com{color:#ff6b81;font-style:italic}
-.df-strike{position:absolute;left:0;right:0;top:50%;height:3px;background:#ff3b5c;box-shadow:0 0 14px 2px rgba(255,59,92,.85);transform-origin:left center;transform:scaleX(0);pointer-events:none;z-index:3}
+.df-strike{position:absolute;left:0;right:0;top:50%;margin-top:-1.5px;height:3px;background:#ff3b5c;box-shadow:0 0 14px 2px rgba(255,59,92,.85);transform-origin:left center;transform:scaleX(0);pointer-events:none;z-index:3}
 
 .df-add{background:linear-gradient(90deg,rgba(52,211,153,.20),rgba(52,211,153,.03) 80%);border-left-color:#34d399;box-shadow:inset 0 0 22px -6px rgba(52,211,153,.45)}
 .df-add .df-sig{color:#34d399}
@@ -942,7 +944,7 @@ body{width:var(--composition-width,1920px);height:var(--composition-height,1080p
 
 /* ============================================================ retention subtitle rail */
 .retention-subtitles{position:absolute;left:0;right:0;bottom:36px;display:flex;justify-content:center;align-items:center;pointer-events:none;z-index:90}
-.is-portrait .retention-subtitles{bottom:220px}
+.is-portrait .retention-subtitles{bottom:440px}
 .retention-sub-track{background:rgba(7,10,19,.88);border:1px solid rgba(255,255,255,.14);backdrop-filter:blur(14px);padding:10px 24px;border-radius:9999px;box-shadow:0 14px 40px rgba(0,0,0,.7),0 0 24px -6px var(--ac);display:flex;gap:6px;align-items:center}
 .retention-sub-chunk{display:flex;flex-wrap:wrap;justify-content:center;gap:6px}
 .sub-w{font-family:var(--sans);font-size:24px;font-weight:700;color:rgba(255,255,255,.45);letter-spacing:-.01em;white-space:nowrap}
@@ -996,11 +998,11 @@ body{width:var(--composition-width,1920px);height:var(--composition-height,1080p
 
 
 /* ============================================================ 9:16 portrait & shorts responsive */
-@media (max-aspect-ratio: 1/1), .is-portrait {
+@media (max-aspect-ratio: 1/1) {
   :root {
-    --portrait-pad-top: 160px;
-    --portrait-pad-bot: 240px;
-    --portrait-pad-x: 56px;
+    --portrait-pad-top: 250px;
+    --portrait-pad-bot: 430px;
+    --portrait-pad-x: 70px;
   }
 
   .sc-in {
@@ -1161,7 +1163,36 @@ body{width:var(--composition-width,1920px);height:var(--composition-height,1080p
   .dl-rail {
     left: var(--portrait-pad-x);
     right: var(--portrait-pad-x);
-    bottom: 230px;
+    bottom: 430px;
+  }
+
+  /* Timeline Scene */
+  .tl-head {
+    font-size: 52px;
+  }
+  .tl-sub {
+    font-size: 20px;
+  }
+  .tl-stage {
+    left: 36px;
+    right: 36px;
+    top: 500px;
+    height: 480px;
+  }
+  .tl-card {
+    width: 215px;
+    padding: 12px 14px;
+  }
+  .tl-t {
+    font-size: 15px;
+  }
+  .tl-s {
+    font-size: 13px;
+    margin-top: 6px;
+  }
+  .tl-hot-badge {
+    font-size: 9px;
+    padding: 2px 5px;
   }
 
   /* Code Scene */
@@ -1239,13 +1270,73 @@ body{width:var(--composition-width,1920px);height:var(--composition-height,1080p
     max-width: 100%;
   }
 
+  /* Diff Scene */
+  .diff-head {
+    padding: 12px 18px;
+  }
+  .df-file {
+    font-size: 13px;
+  }
+  .df-ver {
+    font-size: 11px;
+    padding: 3px 8px;
+  }
+  .diff-body {
+    padding: 20px 0;
+  }
+  .df-line {
+    padding: 7px 18px;
+    gap: 12px;
+    font-size: 19px;
+    line-height: 1.4;
+  }
+  .df-sig {
+    font-size: 19px;
+    width: 18px;
+  }
+  .df-t {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .df-code-wrap {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+  }
+  .df-tag {
+    margin-left: 0;
+    font-size: 11px;
+    padding: 2px 7px;
+  }
+
   /* Compare Scene (Vertical Stacking) */
+  .sc-compare .sc-in {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .cmp-cap {
+    order: 1;
+    font-size: 38px;
+    margin-top: 0;
+    margin-bottom: 8px;
+  }
+  .cmp-sub {
+    order: 2;
+    font-size: 18px;
+    margin-top: 0;
+    margin-bottom: 20px;
+  }
   .cmp-stage {
+    order: 3;
     display: flex;
     flex-direction: column;
     gap: 14px;
     align-items: center;
-    margin-top: 8px;
+    margin-top: 0;
   }
   .cmp-col {
     width: 100%;
@@ -1272,15 +1363,6 @@ body{width:var(--composition-width,1920px);height:var(--composition-height,1080p
   .cmp-mid .cmp-vs, .cmp-mid span>* {
     font-size: 12px;
   }
-  .cmp-cap {
-    font-size: 30px;
-    margin-top: 24px;
-  }
-  .cmp-sub {
-    font-size: 18px;
-    margin-top: 8px;
-  }
-
   /* Stack Scene (Vertical Stacking) */
   .stk-grid {
     grid-template-columns: 1fr;
@@ -1308,12 +1390,12 @@ body{width:var(--composition-width,1920px);height:var(--composition-height,1080p
 
   /* Quote Scene */
   .q-stage {
-    padding: 0 var(--portrait-pad-x) !important;
+    padding: var(--portrait-pad-top) var(--portrait-pad-x) var(--portrait-pad-bot) !important;
   }
   .q-mark {
     font-size: 180px;
-    left: 20px;
-    top: 140px;
+    left: 40px;
+    top: 250px;
   }
   .q-text {
     font-size: 46px;
@@ -1492,12 +1574,30 @@ body{width:var(--composition-width,1920px);height:var(--composition-height,1080p
     font-size: 20px;
   }
 
+  /* Webref Scene */
+  .web-viewport {
+    height: 420px;
+  }
+  .web-doc-scroll {
+    padding-top: 14px;
+  }
+
   /* Ledger Scene: fixed two-column grid pushed the headline off the frame. */
   .lg-grid {
     grid-template-columns: 1fr;
     gap: 32px;
     height: auto;
     align-items: flex-start;
+    display: flex;
+    flex-direction: column;
+  }
+  .lg-right {
+    order: 1;
+    width: 100%;
+  }
+  .lg-left {
+    order: 2;
+    width: 100%;
   }
   .lg-card {
     width: 100%;
@@ -1538,6 +1638,11 @@ body{width:var(--composition-width,1920px);height:var(--composition-height,1080p
   }
 
   /* Memory Scene: the shell is absolutely positioned at a landscape offset. */
+  .sc-memory .sc-in {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
   .mem-shell,
   .mem-side {
     position: static;
@@ -1546,8 +1651,13 @@ body{width:var(--composition-width,1920px);height:var(--composition-height,1080p
     right: auto;
     top: auto;
   }
+  .mem-side {
+    order: 1;
+    margin-bottom: 24px;
+  }
   .mem-shell {
-    margin-bottom: 32px;
+    order: 2;
+    margin-bottom: 0;
   }
   .mem-name {
     font-size: 24px;
@@ -1631,26 +1741,29 @@ body{width:var(--composition-width,1920px);height:var(--composition-height,1080p
 
   /* Universal Mascot Overlay Safe Zone Position for Mobile */
   .m-ov.pos-br {
-    right: 48px;
-    bottom: 240px; /* Sits comfortably above YouTube Shorts / IG Reels bottom pill and actions */
+    right: 120px; /* Clears 150px right action rail */
+    bottom: 430px; /* Clears 400px bottom platform danger zone */
   }
   .m-ov.pos-bl {
-    left: 48px;
-    bottom: 240px;
+    left: 70px;
+    bottom: 430px;
   }
   .m-ov-avatar-wrap {
-    width: 210px;
-    height: 210px;
+    width: 170px;
+    height: 170px;
     border-width: 3px;
     box-shadow: 0 0 28px -2px var(--ac);
   }
   .m-ov-bubble {
-    max-width: 380px;
-    padding: 14px 20px;
+    max-width: 320px;
+    padding: 12px 16px;
     border-radius: 12px;
   }
   .m-ov-btext {
-    font-size: 18px;
+    font-size: 16px;
+  }
+  .retention-subtitles {
+    bottom: 440px;
   }
 }
 

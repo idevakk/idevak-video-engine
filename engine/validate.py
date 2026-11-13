@@ -429,6 +429,8 @@ def validate_scene(
         sfield(meta, "highlight", where, errors)
         sfield(meta, "callout", where, errors)
         sfield(meta, "calloutType", where, errors)
+        sfield(meta, "crumb", where, errors)
+        sfield(meta, "formula", where, errors)
         sfield(meta, "image", where, errors)
         if "snippet" in meta and not isinstance(meta["snippet"], (str, list)):
             errors.append(f"{where}.meta.snippet: must be a string or list of strings")
@@ -446,11 +448,13 @@ def validate_scene(
 
     elif scene_type == "cloud":
         nodes = listfield(meta, "nodes", where, errors, required=True, lo=2, hi=6)
-        items = check_items(nodes, f"{where}.meta.nodes", errors, ("t",), ("k", "s", "status", "icon"))
+        items = check_items(nodes, f"{where}.meta.nodes", errors, ("t",), ("k", "s", "status", "icon", "latency", "rate", "drop"))
         for k, item in enumerate(items):
             for bkey in ("hot", "bad"):
                 if bkey in item and not isinstance(item[bkey], bool):
                     errors.append(f"{where}.meta.nodes[{k}].{bkey}: must be a boolean")
+        if "edges" in meta:
+            listfield(meta, "edges", where, errors, hi=6)
         sfield(meta, "flow", where, errors)
 
     elif scene_type == "mascot":
@@ -471,6 +475,7 @@ def validate_scene(
         left = objectfield(meta, "left", where, errors, required=True)
         right = objectfield(meta, "right", where, errors, required=True)
         sfield(meta, "tag", where, errors)
+        sfield(meta, "ghost", where, errors)
         if left:
             sfield(left, "title", f"{where}.meta.left", errors)
             sfield(left, "badge", f"{where}.meta.left", errors)

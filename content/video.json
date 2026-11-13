@@ -36,12 +36,12 @@
       "act": "hook",
       "narration": "What if one small configuration bug brought down an entire cloud infrastructure in seconds?",
       "eyebrow": "COLD OPEN",
-      "headline": "The Silent Outage",
+      "headline": "The Silent ==Outage==",
       "subline": "A single line of configuration. Millions of requests dropped.",
       "meta": {
         "chips": [
-          "AWS CLOUD",
-          "KUBERNETES",
+          "\u25cf SEV-1 CRITICAL",
+          "AWS US-EAST-1",
           "POSTMORTEM"
         ],
         "ghost": "ZERO"
@@ -53,7 +53,7 @@
       "act": "hook",
       "narration": "Today we are dissecting how modern distributed systems fail, and how to design them so they never do.",
       "eyebrow": "ARCHITECTURE",
-      "headline": "How Distributed Systems Fail",
+      "headline": "How Distributed Systems ==Fail==",
       "subline": "Resilience is not an afterthought. It is an engineering discipline.",
       "meta": {
         "mark": "CLOUD",
@@ -67,14 +67,229 @@
     },
     {
       "id": "s003",
+      "type": "statement",
+      "act": "core",
+      "narration": "When every service retries at the same instant, the network does not slow down. It completely collapses.",
+      "eyebrow": "THE CASCADE",
+      "headline": "A retry storm turns minor latency into ==total blackout==.",
+      "subline": "Exponential amplification transforms minor latency into fatal paralysis.",
+      "variant": 1,
+      "meta": {
+        "ghost": "STORM"
+      },
+      "mascot": {
+        "expression": "panic",
+        "position": "bottom-right",
+        "bubble": "Every retry multiplies the load!"
+      }
+    },
+    {
+      "id": "s004",
+      "type": "quote",
+      "act": "core",
+      "narration": "As Werner Vogels famously reminded every engineer: Everything fails, all the time. If you do not design for graceful recovery, you design for outage.",
+      "eyebrow": "FIRST PRINCIPLES",
+      "headline": "Everything fails, ==all the time==. If you don't design for recovery, you design for outage.",
+      "subline": "WERNER VOGELS // VP & CTO, AMAZON",
+      "meta": {
+        "initials": "WV"
+      },
+      "mascot": {
+        "expression": "thinking",
+        "position": "bottom-right",
+        "bubble": "Design for failure from day one."
+      }
+    },
+    {
+      "id": "s005",
+      "type": "stat",
+      "act": "core",
+      "narration": "Within ninety seconds, service availability dropped from ninety-nine point nine percent straight down to zero percent.",
+      "eyebrow": "SYSTEM METRIC",
+      "headline": "Service Availability Collapse",
+      "subline": "Cluster-wide health check drop across all production zones.",
+      "meta": {
+        "value": "99.9",
+        "suffix": "%",
+        "delta": "-100% COLLAPSE",
+        "deltaDir": "down",
+        "stat": {
+          "to": 0.0,
+          "dec": 1
+        }
+      },
+      "mascot": {
+        "expression": "shocked",
+        "position": "bottom-right",
+        "bubble": "Availability cratered to absolute zero!"
+      }
+    },
+    {
+      "id": "s006",
+      "type": "dateline",
+      "act": "core",
+      "narration": "On October fourteenth, at exactly three fourteen UTC, the automated health checker triggered the fatal failover cascade.",
+      "eyebrow": "INCIDENT TIMELINE",
+      "headline": "The Automated ==Failover Trigger==",
+      "subline": "Primary us-east database health checks fail after automated rolling restart.",
+      "meta": {
+        "day": "14",
+        "mon": "OCTOBER",
+        "yr": "2025 // 03:14:02 UTC"
+      },
+      "mascot": {
+        "expression": "pointing",
+        "position": "bottom-right",
+        "bubble": "03:14 AM \u2014 the exact moment the cascade began."
+      }
+    },
+    {
+      "id": "s007",
+      "type": "timeline",
+      "act": "core",
+      "narration": "Within ninety seconds, the entire infrastructure collapsed across four availability zones as cascading timeouts overwhelmed the cluster.",
+      "eyebrow": "CASCADE TIMELINE",
+      "headline": "Ninety Seconds to ==Total Collapse==",
+      "subline": "How an isolated automated failover triggered an unstoppable multi-region blackout.",
+      "meta": {
+        "ghost": "CASCADE",
+        "events": [
+          {
+            "t": "03:14:02",
+            "s": "Automated failover triggered"
+          },
+          {
+            "t": "03:14:18",
+            "s": "Secondary pool saturated"
+          },
+          {
+            "t": "03:14:45",
+            "s": "Health check timeout storm"
+          },
+          {
+            "t": "03:15:32",
+            "s": "Cluster-wide blackout",
+            "hot": true
+          }
+        ]
+      },
+      "mascot": {
+        "expression": "panic",
+        "position": "bottom-right",
+        "bubble": "Four stages of fatal escalation!"
+      }
+    },
+    {
+      "id": "s008",
+      "type": "code",
+      "act": "core",
+      "narration": "Deep inside the connection pool driver was a fatal retry loop with zero backoff and an immediate retry stampede.",
+      "eyebrow": "THE ROOT CAUSE",
+      "headline": "The Four Lines That ==Broke Production==",
+      "subline": "Zero jitter backoff turns every timeout into a fatal stampede.",
+      "meta": {
+        "ghost": "BUG",
+        "file": "src/database/pool.ts",
+        "tag": "FATAL RETRY LOOP",
+        "announce": "Zero backoff turns every timeout into an immediate retry storm.",
+        "lines": [
+          {
+            "t": "const MAX_POOL_SIZE = 500;",
+            "k": "dim"
+          },
+          {
+            "t": "async function acquire(pool) {",
+            "k": "fn"
+          },
+          {
+            "t": "  while (pool.active >= MAX_POOL_SIZE) {",
+            "k": "key",
+            "key": true
+          },
+          {
+            "t": "    await retryImmediate(); // BUG: zero backoff!",
+            "k": "bad",
+            "bad": true
+          },
+          {
+            "t": "  }",
+            "k": "dim"
+          },
+          {
+            "t": "  return pool.allocate();",
+            "k": "kw"
+          },
+          {
+            "t": "}",
+            "k": "dim"
+          }
+        ]
+      },
+      "mascot": {
+        "expression": "shocked",
+        "position": "bottom-right",
+        "bubble": "Zero backoff! 50,000 clients retried instantly!"
+      }
+    },
+    {
+      "id": "s009",
+      "type": "diff",
+      "act": "solution",
+      "accent": "#34d399",
+      "narration": "In pull request four eighteen, we replaced the immediate retry storm with exponential backoff and randomized jitter.",
+      "eyebrow": "THE REMEDIATION",
+      "headline": "Pull Request 418: ==Full Jitter Backoff==",
+      "subline": "Replacing zero-delay retry loops with truncated exponential backoff.",
+      "meta": {
+        "ghost": "PATCH",
+        "file": "src/database/pool.ts",
+        "ver": "PR #418 // MERGED",
+        "announce": "Immediate retry eliminated. Exponential jitter active.",
+        "lines": [
+          {
+            "t": "  while (pool.active >= MAX_POOL_SIZE) {",
+            "k": "ctx"
+          },
+          {
+            "t": "    await retryImmediate(); // BUG: zero backoff!",
+            "k": "del",
+            "del": true
+          },
+          {
+            "t": "    await backoffWithJitter(attempt); // FIX: full jitter",
+            "k": "add",
+            "add": true
+          },
+          {
+            "t": "  }",
+            "k": "ctx"
+          },
+          {
+            "t": "  return pool.allocate();",
+            "k": "ctx"
+          }
+        ]
+      },
+      "mascot": {
+        "expression": "cool",
+        "position": "bottom-right",
+        "bubble": "PR merged! Exponential backoff protects the cluster."
+      }
+    },
+    {
+      "id": "s010",
       "type": "terminal",
       "act": "core",
+      "accent": "#ff3b5c",
       "narration": "When the connection pool exhausted, every container node began throwing cascading connection timeouts.",
       "eyebrow": "THE FAILURE",
-      "headline": "Cascading Pool Exhaustion",
+      "headline": "Cascading ==Pool Exhaustion==",
       "subline": "Max connections reached. Health checks failed.",
       "meta": {
-        "host": "prod-cluster / us-east-1",
+        "ghost": "CRASH",
+        "host": "prod-cluster // us-east-1a",
+        "tag": "FATAL CRASH LOOP",
+        "announce": "All worker nodes deadlocked in CrashLoopBackOff.",
         "lines": [
           {
             "t": "kubectl get pods -n production",
@@ -89,8 +304,8 @@
             "k": "err"
           },
           {
-            "t": "[CRITICAL] Connection pool limit 500 exceeded",
-            "k": "out"
+            "t": "[CRITICAL] Connection pool limit 500 exceeded: DEADLOCK",
+            "k": "err"
           }
         ]
       },
@@ -101,53 +316,492 @@
       }
     },
     {
-      "id": "s004",
+      "id": "s011",
+      "type": "webref",
+      "act": "solution",
+      "accent": "#38bdf8",
+      "narration": "The AWS Architecture Center specifies exponential backoff with full jitter to permanently prevent cascading retry storms.",
+      "eyebrow": "ARCHITECTURAL STANDARD",
+      "headline": "AWS Architecture Center: ==Backoff & Jitter==",
+      "subline": "The industry standard pattern for thundering herd mitigation.",
+      "meta": {
+        "ghost": "SPEC",
+        "url": "https://aws.amazon.com/builders-library/timeouts-retries-and-backoff-with-jitter/",
+        "badge": "AWS BUILDERS LIBRARY",
+        "crumb": "AWS ARCHITECTURE / RELIABILITY / RESILIENCY",
+        "title": "Timeouts, Retries, and Backoff with Jitter",
+        "snippet": [
+          "When clients retry immediately upon failure, downstream systems face a catastrophic thundering herd collapse.",
+          "Adding full random jitter decorator ensures retries disperse uniformly across time, completely preventing backend deadlock."
+        ],
+        "highlight": "thundering herd collapse",
+        "callout": "Always decorate exponential backoff with full jitter to decorrelate client retry bursts.",
+        "calloutType": "MANDATORY SPEC",
+        "formula": "t_sleep = rand(0, min(cap, base * 2 ** attempt))"
+      },
+      "mascot": {
+        "expression": "pointing",
+        "position": "bottom-right",
+        "bubble": "==Full jitter== decorrelates retry bursts completely!"
+      }
+    },
+    {
+      "id": "s012",
+      "type": "cloud",
+      "act": "solution",
+      "accent": "#4ade80",
+      "narration": "By decoupling edge ingress, applying fast-fail circuit breakers at the proxy, and isolating connection pools, our cloud topology remains completely resilient.",
+      "eyebrow": "RECOVERED TOPOLOGY",
+      "headline": "Resilient Multi-Tier ==Cloud Mesh==",
+      "subline": "Decoupled ingress, proxy circuit breaking, and isolated connection pools.",
+      "meta": {
+        "ghost": "TOPOLOGY",
+        "tag": "CLOUD MESH TOPOLOGY",
+        "flow": "CloudFront L7 -> Envoy Circuit Breaker -> Worker Pool -> Sharded Aurora",
+        "edges": [
+          {
+            "proto": "TLS 1.3",
+            "lat": "0.8ms",
+            "tag": "VERIFIED"
+          },
+          {
+            "proto": "mTLS / gRPC",
+            "lat": "0.2ms",
+            "tag": "SHED 14%"
+          },
+          {
+            "proto": "TCP POOL",
+            "lat": "1.1ms",
+            "tag": "ISOLATED"
+          }
+        ],
+        "nodes": [
+          {
+            "t": "CloudFront Edge",
+            "k": "INGRESS",
+            "icon": "\ud83c\udf10",
+            "status": "HEALTHY",
+            "latency": "p99 1.4ms",
+            "rate": "42.8k req/s",
+            "s": "L7 Edge Shield \u00b7 0ms"
+          },
+          {
+            "t": "Envoy Mesh",
+            "k": "CIRCUIT PROXY",
+            "icon": "\u26a1",
+            "status": "CIRCUIT OPEN",
+            "latency": "p99 0.2ms",
+            "rate": "Fast-Fail Shed 14%",
+            "hot": true,
+            "s": "Fast-Fail \u00b7 0.2ms"
+          },
+          {
+            "t": "Worker Cluster",
+            "k": "COMPUTE",
+            "icon": "\u2699\ufe0f",
+            "status": "HEALTHY",
+            "latency": "p99 4.8ms",
+            "rate": "Jitter Decorr 100%",
+            "s": "Full Jitter Backoff"
+          },
+          {
+            "t": "Aurora Cluster",
+            "k": "STORAGE",
+            "icon": "\ud83d\uddc4\ufe0f",
+            "status": "OPTIMAL",
+            "latency": "p99 8.1ms",
+            "rate": "Pool Cap 88/500",
+            "s": "Pool Usage: 18%"
+          }
+        ]
+      },
+      "mascot": {
+        "expression": "cool",
+        "position": "bottom-right",
+        "bubble": "Zero cascading timeouts across the ==entire mesh!== "
+      }
+    },
+    {
+      "id": "s013",
+      "type": "split",
+      "act": "core",
+      "accent": "#ff5a6e",
+      "narration": "When fifty thousand client instances hammered the gateway without backoff, the primary database shard suffered instantaneous deadlock.",
+      "eyebrow": "INCIDENT FORENSICS",
+      "headline": "Dual-Pane Correlation: ==The Stampede Mechanism==",
+      "subline": "Left: unjittered client retry dispatch. Right: instant database pool exhaustion.",
+      "meta": {
+        "ghost": "AUTOPSY",
+        "tag": "LIVE CORRELATION TRACE",
+        "left": {
+          "title": "CLIENT RETRY STORM",
+          "badge": "REPLAY / 50K",
+          "lines": [
+            {
+              "k": "cmd",
+              "t": "curl -X POST https://api.idevak.internal/v1/checkout"
+            },
+            {
+              "k": "out",
+              "t": "HTTP/1.1 504 Gateway Timeout [elapsed: 5000ms]"
+            },
+            {
+              "k": "cmd",
+              "t": "storm-client --concurrency=50000 --backoff=none"
+            },
+            {
+              "k": "err",
+              "t": "[DISPATCH] 50,000 parallel retries fired simultaneously"
+            }
+          ]
+        },
+        "right": {
+          "title": "AURORA SHARD 01 IMPACT",
+          "status": "DEADLOCKED",
+          "bad": true,
+          "pts": [
+            "Max connection pool limit 500/500 exhausted",
+            "PostgreSQL active thread spinlock reached 100%",
+            "Cascading connection timeouts across Europe-West",
+            "Secondary read replicas starved of health check pings"
+          ]
+        }
+      },
+      "mascot": {
+        "expression": "shocked",
+        "position": "bottom-right",
+        "bubble": "Fifty thousand clients hit the DB with zero backoff!"
+      }
+    },
+    {
+      "id": "s014",
+      "type": "flow",
+      "act": "core",
+      "accent": "#f59e0b",
+      "narration": "Traffic enters through the edge gateway, hits the worker pool, and deadlocks on the shared relational store.",
+      "eyebrow": "FAILURE PROPAGATION",
+      "headline": "Request Path: ==Cascading Collapse==",
+      "subline": "Tracing the failure wavefront across the four service tiers.",
+      "meta": {
+        "nodes": [
+          {
+            "t": "Edge CDN",
+            "k": "INGRESS",
+            "s": "420k RPS"
+          },
+          {
+            "t": "API Gateway",
+            "k": "PROXY",
+            "s": "504 Timeouts",
+            "hot": true
+          },
+          {
+            "t": "Worker Pool",
+            "k": "COMPUTE",
+            "s": "OOM Backoff",
+            "bad": true
+          },
+          {
+            "t": "Aurora Shard",
+            "k": "DATABASE",
+            "s": "Deadlocked",
+            "bad": true
+          }
+        ]
+      },
+      "mascot": {
+        "expression": "panic",
+        "position": "bottom-right",
+        "bubble": "The cascade propagated from edge to DB in 2 seconds!"
+      }
+    },
+    {
+      "id": "s015",
+      "type": "stack",
+      "act": "core",
+      "accent": "#ef4444",
+      "narration": "From the client runtime down to kernel socket buffers, each abstraction layer accumulated saturated queue depth.",
+      "eyebrow": "ENGINEERING LAYERS",
+      "headline": "Full-Stack ==Deadlock Cascade==",
+      "subline": "Every abstraction layer amplifies the thundering herd retry surge.",
+      "meta": {
+        "layers": [
+          {
+            "t": "L7 Client SDK: Unjittered Retry Loop",
+            "s": "50,000 parallel retries",
+            "bad": true
+          },
+          {
+            "t": "L5 Envoy Proxy: Connection Backpressure",
+            "s": "Upstream circuit queues blocked",
+            "hot": true
+          },
+          {
+            "t": "L4 Node.js Pool: Threadpool Starvation",
+            "s": "libuv worker thread deadlock",
+            "bad": true
+          },
+          {
+            "t": "L2 PostgreSQL Driver: Spinlock Contention",
+            "s": "Connection slots 500/500 locked",
+            "bad": true
+          }
+        ]
+      },
+      "mascot": {
+        "expression": "shocked",
+        "position": "bottom-right",
+        "bubble": "Every layer from TCP to Postgres completely locked up!"
+      }
+    },
+    {
+      "id": "s016",
+      "type": "ledger",
+      "act": "core",
+      "accent": "#ff3b5c",
+      "narration": "The forensic audit confirmed five hundred active connection slots locked with zero available pool capacity.",
+      "eyebrow": "INCIDENT AUDIT LOG",
+      "headline": "Production Audit: ==Fatal Telemetry==",
+      "subline": "Telemetry metrics confirmed full regional service degradation.",
+      "meta": {
+        "head": "INCIDENT FORENSIC AUDIT",
+        "live": "SEV-1 OUTAGE",
+        "stamp": "POST-MORTEM VERIFIED",
+        "rows": [
+          {
+            "k": "CLUSTER REGION",
+            "v": "eu-west-1 (Ireland)"
+          },
+          {
+            "k": "CONNECTION POOL",
+            "v": "500 / 500 (100%)",
+            "bad": true
+          },
+          {
+            "k": "LOCK LATENCY",
+            "v": "28,450ms p99",
+            "bad": true
+          },
+          {
+            "k": "FLEET STATUS",
+            "v": "0.00% (BLACKOUT)",
+            "bad": true
+          }
+        ],
+        "points": [
+          "Zero backoff turned transient drops into regional blackout",
+          "Connection slots exhausted in 840 milliseconds",
+          "Secondary read replicas disconnected on ping timeout"
+        ]
+      },
+      "mascot": {
+        "expression": "pointing",
+        "position": "bottom-right",
+        "bubble": "100% pool saturation confirmed across all replicas!"
+      }
+    },
+    {
+      "id": "s017",
       "type": "compare",
       "act": "solution",
+      "accent": "#10b981",
       "narration": "Instead of blind retries that stampede your database, modern systems implement exponential backoff with jitter and circuit breaking.",
-      "eyebrow": "THE PATTERN",
-      "headline": "Thundering Herd versus Circuit Breakers",
-      "subline": "Graceful degradation under catastrophic load spikes.",
+      "eyebrow": "ARCHITECTURAL PATTERN",
+      "headline": "Naive Retries vs ==Full Jitter Breaker==",
+      "subline": "Replacing thundering herd stampedes with graceful load shedding.",
       "meta": {
         "left": {
           "k": "NAIVE RETRIES",
-          "t": "Immediate retry on error",
+          "t": "Zero Backoff Stampede",
           "pts": [
-            "amplifies backend load",
-            "thundering herd collapse",
-            "cascading timeouts"
+            "Amplifies backend load 50x",
+            "Thundering herd collapse",
+            "Cascading regional blackout"
           ]
         },
         "right": {
           "k": "CIRCUIT BREAKER",
-          "t": "Exponential backoff and jitter",
+          "t": "Full Jitter & Fast-Fail",
           "pts": [
-            "fast-fail protection",
-            "sheds excess traffic",
-            "instant recovery"
+            "Instant fast-fail protection",
+            "Decorrelates retry bursts",
+            "Sub-millisecond recovery"
           ]
         },
         "vs": "->"
       },
       "mascot": {
         "expression": "cool",
-        "position": "bottom-left",
-        "bubble": "Circuit breakers protect your database."
+        "position": "bottom-right",
+        "bubble": "==Circuit breakers== protect your database!"
       }
     },
     {
-      "id": "s005",
+      "id": "s018",
+      "type": "memory",
+      "act": "core",
+      "accent": "#a855f7",
+      "narration": "Inside the database connection manager, every memory slot was held hostage by deadlocked worker processes.",
+      "eyebrow": "KERNEL BUFFER STATE",
+      "headline": "Pool Buffer: ==Heap Exhaustion==",
+      "subline": "Visualizing the memory arena when connection pool buffers deadlock.",
+      "meta": {
+        "segment": "CONNECTION BUFFER HEAP",
+        "pointer": "CORRUPT DEADLOCK",
+        "liveCount": 12,
+        "cells": [
+          {
+            "addr": "0x00",
+            "bad": true
+          },
+          {
+            "addr": "0x04",
+            "bad": true
+          },
+          {
+            "addr": "0x08",
+            "bad": true
+          },
+          {
+            "addr": "0x0C",
+            "bad": true
+          },
+          {
+            "addr": "0x10",
+            "bad": true
+          },
+          {
+            "addr": "0x14",
+            "bad": true
+          },
+          {
+            "addr": "0x18",
+            "bad": true
+          },
+          {
+            "addr": "0x1C",
+            "bad": true
+          },
+          {
+            "addr": "0x20",
+            "bad": true
+          },
+          {
+            "addr": "0x24",
+            "bad": true
+          },
+          {
+            "addr": "0x28",
+            "bad": true
+          },
+          {
+            "addr": "0x2C",
+            "bad": true
+          }
+        ]
+      },
+      "mascot": {
+        "expression": "facepalm",
+        "position": "bottom-right",
+        "bubble": "Every buffer slot in the ==heap is deadlocked!== "
+      }
+    },
+    {
+      "id": "s019",
+      "type": "matrix",
+      "act": "core",
+      "accent": "#ef4444",
+      "narration": "Across the cluster, ninety-four percent of worker instances failed their liveness probes as cascading timeouts spread.",
+      "eyebrow": "FLEET HEALTH MATRIX",
+      "headline": "Cluster Fleet: ==94% Deadlock==",
+      "subline": "64 worker nodes across Europe-West failing health checks simultaneously.",
+      "meta": {
+        "cells": 64,
+        "badCount": 60,
+        "legendOk": "RECOVERED (6%)",
+        "legendBad": "DEADLOCKED (94%)",
+        "count": "60 / 64 NODES DOWN"
+      },
+      "mascot": {
+        "expression": "panic",
+        "position": "bottom-right",
+        "bubble": "Almost the ==entire cluster fleet== went red!"
+      }
+    },
+    {
+      "id": "s020",
+      "type": "meme",
+      "act": "core",
+      "accent": "#f59e0b",
+      "narration": "And that is why seasoned cloud engineers never push unjittered retry loops to production on a Friday afternoon.",
+      "eyebrow": "DEV REALITY",
+      "headline": "Works on My Machine: ==Deploy to Prod==",
+      "subline": "Famous last words before 50,000 connection pool retries melted the cluster.",
+      "meta": {
+        "ghost": "SKILL ISSUE",
+        "badge": "INCIDENT_AUTOPSY",
+        "reaction": "FRIDAY_DEPLOY",
+        "expression": "facepalm",
+        "punch": true,
+        "file": "hotfix_prod_v2_FINAL.sh",
+        "bubble": "...it worked on localhost!",
+        "stamp": "SKILL ISSUE",
+        "time": "16:59:58 (FRIDAY)"
+      }
+    },
+    {
+      "id": "s021",
+      "type": "mascot",
+      "act": "solution",
+      "accent": "#38bdf8",
+      "narration": "Always decorrelate your retry storms with full jitter and fast-fail circuit breakers. Your database will thank you.",
+      "eyebrow": "ARCHITECTURAL TAKEAWAY",
+      "headline": "Always Decorrelate Retries: ==Full Jitter Rule==",
+      "subline": "Prevent catastrophic thundering herd deadlocks before they reach downstream clusters.",
+      "meta": {
+        "ghost": "VERDICT",
+        "badge": "DEVAK // ARCHITECT VERDICT",
+        "expression": "cool",
+        "bubble": "Always decorrelate retry storms with ==full jitter==",
+        "stats": [
+          {
+            "label": "RETRY SURGE",
+            "val": "DISPERSED",
+            "hot": false
+          },
+          {
+            "label": "POOL LOCKS",
+            "val": "0ms",
+            "hot": false
+          },
+          {
+            "label": "AVAILABILITY",
+            "val": "99.99%",
+            "hot": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "s022",
       "type": "outro",
       "act": "solution",
       "narration": "If you build, solve, and deploy modern cloud software, subscribe for more real-world production autopsies.",
       "eyebrow": "NEXT STEPS",
-      "headline": "BUILD. SOLVE. DEPLOY.",
+      "headline": "==BUILD.== ==SOLVE.== ==DEPLOY.==",
       "subline": "Architecture breakdowns, cloud engineering, and AI automation every week.",
       "meta": {
         "ghost": "IDEVAK",
-        "cta": "Subscribe",
-        "ctaSub": "youtube.com/@iDevak"
+        "cta": "SUBSCRIBE",
+        "ctaSub": "youtube.com/@iDevak",
+        "twitter": "x.com/iDevakk"
+      },
+      "mascot": {
+        "expression": "happy",
+        "position": "bottom-right",
+        "bubble": "Subscribe for weekly deep dives!"
       }
     }
-  ]
+  ],
+  "aspect": "9:16"
 }

@@ -50,7 +50,7 @@ const framesDir = path.join(root, 'build', `${outLabel}_frames`);
 await fs.rm(framesDir, { recursive: true, force: true });
 await fs.mkdir(framesDir, { recursive: true });
 
-const fps = 30;
+const fps = Number(getArg('--fps', '30'));
 const totalFrames = Math.round(targetDuration * fps);
 
 console.log(`Rendering scenes [${outLabel}]: start=${startTime.toFixed(2)}s, duration=${targetDuration.toFixed(2)}s (${totalFrames} frames)`);

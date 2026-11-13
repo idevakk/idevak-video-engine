@@ -25,6 +25,8 @@
     "qa:sheets": "python scripts/qa_sheets.py",
     "sfx": "python engine/sfx_mixer.py",
     "render:hq": "npx --yes hyperframes@latest render --quality delivery --output renders/video.mp4",
+    "render:portrait": "node scripts/render_scene_preview.mjs --from s001 --to s022 --output build/all_scenes_9_16_demo.mp4",
+    "render:portrait:draft": "node scripts/render_scene_preview.mjs --from s001 --to s022 --fps 15 --output build/all_scenes_9_16_draft.mp4",
     "prerender": "npm run build",
     "prerender:hq": "npm run build"
   },

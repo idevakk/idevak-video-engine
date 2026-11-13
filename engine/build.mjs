@@ -1005,6 +1005,8 @@ const RENDER = {
     const imgSrc = s.meta?.image || MASCOT_IMAGES[expr] || "";
     const bubble = s.meta?.bubble || s.headline || "";
     const badge = s.meta?.badge || "iDevak // ANALYSIS";
+    const ghost = s.ghost || s.meta?.ghost || "VERDICT";
+    const telemetry = s.meta?.telemetry || "SYS_ACTIVE // 60 FPS";
     const stats = (s.meta?.stats || []).map(st => `
       <div class="mst-item">
         <span class="mst-lbl">${esc(st.label || "")}</span>
@@ -1014,6 +1016,7 @@ const RENDER = {
 
     return `
     <div class="mascot-stage">
+      <div class="mascot-ghost">${esc(ghost)}</div>
       <div class="mascot-left">
         <div class="mascot-hud-frame">
           <div class="mascot-hud-corner tl"></div>
@@ -1025,6 +1028,7 @@ const RENDER = {
 
           <img class="mascot-img" src="${imgSrc}" alt="${esc(expr)}" />
           <div class="mascot-hud-tag">${esc(badge)}</div>
+          <div class="mascot-hud-telemetry"><span class="mst-tel-pulse"></span><span>${esc(telemetry)}</span></div>
         </div>
       </div>
       <div class="mascot-right">
@@ -1042,6 +1046,7 @@ const RENDER = {
   outro(s) {
     const ghost = s.ghost || s.meta?.ghost || project.ghost || String(project.title || "").trim().split(/\s+/)[0].toUpperCase();
     const ctaK = s.meta?.cta || project.cta || "SUBSCRIBE";
+    const channel = s.meta?.channel;
     const ytHandle = s.meta?.ctaSub || "youtube.com/@iDevak";
     const xHandle = s.meta?.twitter || "x.com/iDevakk";
 

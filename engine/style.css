@@ -890,9 +890,10 @@ body{width:var(--composition-width,1920px);height:var(--composition-height,1080p
 @keyframes cldRingPulse{0%,100%{opacity:.3;transform:scale(.98)}50%{opacity:.8;transform:scale(1.04)}}
 
 /* ============================================================ mascot scene */
-.mascot-stage{display:grid;grid-template-columns:640px 1fr;gap:64px;height:100%;align-items:center}
+.mascot-stage{display:grid;grid-template-columns:580px 1fr;gap:56px;height:100%;align-items:center;position:relative}
+.mascot-ghost{position:absolute;font-size:360px;font-weight:900;letter-spacing:-.06em;color:transparent;-webkit-text-stroke:1px rgba(255,255,255,.03);line-height:.8;z-index:-1;text-transform:uppercase;pointer-events:none;user-select:none;right:48px;top:50%;transform:translateY(-50%)}
 .mascot-left{position:relative}
-.mascot-hud-frame{position:relative;width:620px;height:620px;border-radius:14px;overflow:hidden;border:1px solid var(--line);background:var(--panel);box-shadow:0 24px 60px rgba(0,0,0,.6)}
+.mascot-hud-frame{position:relative;width:580px;height:580px;border-radius:14px;overflow:hidden;border:1px solid var(--line);background:var(--panel);box-shadow:0 24px 60px rgba(0,0,0,.6)}
 .mascot-img{width:100%;height:100%;object-fit:cover;display:block}
 .mascot-hud-corner{position:absolute;width:18px;height:18px;border-color:var(--ac);pointer-events:none}
 .mascot-hud-corner.tl{top:8px;left:8px;border-top:2px solid;border-left:2px solid}
@@ -920,7 +921,7 @@ body{width:var(--composition-width,1920px);height:var(--composition-height,1080p
 .mst-val.is-hot{color:var(--ac);text-shadow:0 0 10px var(--ac)}
 
 /* vertical rhythm for new scene types */
-.sc-webref .sc-in,.sc-cloud .sc-in{display:flex;flex-direction:column;justify-content:center}
+.sc-webref .sc-in,.sc-cloud .sc-in,.sc-mascot .sc-in{display:flex;flex-direction:column;justify-content:center}
 
 /* ============================================================ retention subtitle rail */
 .retention-subtitles{position:absolute;left:0;right:0;bottom:36px;display:flex;justify-content:center;align-items:center;pointer-events:none;z-index:90}

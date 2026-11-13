@@ -751,6 +751,39 @@
     },
     {
       "id": "s021",
+      "type": "mascot",
+      "act": "solution",
+      "accent": "#38bdf8",
+      "narration": "Always decorrelate your retry storms with full jitter and fast-fail circuit breakers. Your database will thank you.",
+      "eyebrow": "ARCHITECTURAL TAKEAWAY",
+      "headline": "Always Decorrelate Retries: ==Full Jitter Rule==",
+      "subline": "Prevent catastrophic thundering herd deadlocks before they reach downstream clusters.",
+      "meta": {
+        "ghost": "VERDICT",
+        "badge": "DEVAK // ARCHITECT VERDICT",
+        "expression": "cool",
+        "bubble": "Always decorrelate retry storms with ==full jitter==",
+        "stats": [
+          {
+            "label": "RETRY SURGE",
+            "val": "DISPERSED",
+            "hot": false
+          },
+          {
+            "label": "POOL LOCKS",
+            "val": "0ms",
+            "hot": false
+          },
+          {
+            "label": "AVAILABILITY",
+            "val": "99.99%",
+            "hot": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "s022",
       "type": "outro",
       "act": "solution",
       "narration": "If you build, solve, and deploy modern cloud software, subscribe for more real-world production autopsies.",

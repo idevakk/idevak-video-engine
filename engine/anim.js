@@ -1673,6 +1673,8 @@
     },
 
     mascot: function (el, s, at, dur) {
+      amb(el.querySelector(".mascot-ghost"), dur, at);
+      fade(el.querySelector(".eyebrow"), at, { y: 12, dur: 0.55 });
       var hud = el.querySelector(".mascot-hud-frame");
       if (hud) {
         tl.fromTo(hud, { x: -40, opacity: 0, scale: 0.92 }, { x: 0, opacity: 1, scale: 1, duration: 0.85, ease: E.expo }, at + 0.05);

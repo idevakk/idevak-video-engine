@@ -40,7 +40,7 @@
       "subline": "A single line of configuration. Millions of requests dropped.",
       "meta": {
         "chips": [
-          "● SEV-1 CRITICAL",
+          "\u25cf SEV-1 CRITICAL",
           "AWS US-EAST-1",
           "POSTMORTEM"
         ],
@@ -140,7 +140,7 @@
       "mascot": {
         "expression": "pointing",
         "position": "bottom-right",
-        "bubble": "03:14 AM — the exact moment the cascade began."
+        "bubble": "03:14 AM \u2014 the exact moment the cascade began."
       }
     },
     {
@@ -379,26 +379,26 @@
           {
             "t": "CloudFront Edge",
             "k": "INGRESS",
-            "icon": "🌐",
+            "icon": "\ud83c\udf10",
             "status": "HEALTHY",
             "latency": "p99 1.4ms",
             "rate": "42.8k req/s",
-            "s": "L7 Edge Shield · 0ms"
+            "s": "L7 Edge Shield \u00b7 0ms"
           },
           {
             "t": "Envoy Mesh",
             "k": "CIRCUIT PROXY",
-            "icon": "⚡",
+            "icon": "\u26a1",
             "status": "CIRCUIT OPEN",
             "latency": "p99 0.2ms",
             "rate": "Fast-Fail Shed 14%",
             "hot": true,
-            "s": "Fast-Fail · 0.2ms"
+            "s": "Fast-Fail \u00b7 0.2ms"
           },
           {
             "t": "Worker Cluster",
             "k": "COMPUTE",
-            "icon": "⚙️",
+            "icon": "\u2699\ufe0f",
             "status": "HEALTHY",
             "latency": "p99 4.8ms",
             "rate": "Jitter Decorr 100%",
@@ -407,7 +407,7 @@
           {
             "t": "Aurora Cluster",
             "k": "STORAGE",
-            "icon": "🗄️",
+            "icon": "\ud83d\uddc4\ufe0f",
             "status": "OPTIMAL",
             "latency": "p99 8.1ms",
             "rate": "Pool Cap 88/500",

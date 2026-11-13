@@ -1410,7 +1410,7 @@ body{width:var(--composition-width,1920px);height:var(--composition-height,1080p
   /* Matrix Scene: the 16-column grid is too narrow on a phone, so drop to 8. */
   .mx-grid {
     grid-template-columns: 1fr;
-    gap: 36px;
+    gap: 28px;
     height: auto;
     align-items: flex-start;
   }
@@ -1422,16 +1422,19 @@ body{width:var(--composition-width,1920px);height:var(--composition-height,1080p
     font-size: 20px;
     max-width: 100%;
   }
+  .mx-right {
+    width: 100%;
+    max-width: 580px;
+    margin: 0 auto;
+  }
   .mx-cells {
     grid-template-columns: repeat(8, 1fr);
-    gap: 7px;
+    gap: 8px;
   }
   .mx-count {
     position: static;
     margin-top: 18px;
-  }
-  .mx-title {
-    font-size: 44px;
+    text-align: right;
   }
 
   /* Webref Scene */

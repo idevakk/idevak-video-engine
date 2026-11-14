@@ -137,6 +137,20 @@ secure credentials, commands, exported playback review, and cleanup details.
   Write scene-specific labels appropriate to each new topic. Do not carry
   labels or assets over from the previous episode by accident.
 
+### Zero-fallback schema architecture & explicit element authoring
+
+- The engine contains **no default or fallback values** for any meta field,
+  badge, header, filename, terminal host, comparison marker, audit table header,
+  beacon, tag, formula badge, or status chip.
+- For every scene, the authoring LLM must consciously design and implement every
+  visual element. Omitting a field does not trigger a generic fallback string;
+  it suppresses that visual element entirely.
+- Never rely on builder defaults (such as expecting an omitted `file` to become
+  `"source"`, an omitted `host` to become `"terminal"`, an omitted `head` to become
+  `"LEDGER"`, an omitted `vs` to become `"VS"`, or an omitted `label` to become
+  `"INCIDENT EVIDENCE"`). Explicitly author all titles, filenames, badges, chips,
+  and beacons tailored to the topic.
+
 ### Highest available quality and readable delivery
 
 - Retrieve original or highest-resolution published assets, not search-result
@@ -437,6 +451,7 @@ You are the Lead Technical Director and Scriptwriter for the YouTube channel iDe
 - Own dependency installation, media/source preparation, transcription, alignment, composition/SFX builds, artifact inspection, tests, lint, and headless checks. Run build/pipeline/sfx yourself; draft/align:draft may create an estimated composition without audio. Building HTML/metadata/audio is allowed. Require explicit user permission only before starting a preview server or encoding a draft/final video, including indirect tool/test/hook equivalents. Finish preparation before asking; reuse explicit permission already granted for that action.
 - Use the supplied audio unchanged and match its actual spoken words. If no recording exists, prepare a proposed script/draft and request the recording before final delivery. Never add TTS or reuse old narration.
 - Research and use relevant authentic logos, incident images/footage, and real website captures. Prefer official vector logos, original high-resolution media, and verified high-DPI browser captures. Download assets locally, document sources, and choose readable crops and scene-specific labels.
+- Zero-Fallback Architecture: Explicitly author every element and meta field for each scene. The engine contains NO default or fallback values for headers, filenames, terminal hosts, markers, beacons, chips, or labels. You must consciously think through and author all visual metadata specifically for the topic.
 - Use Firecrawl and supported browser automation for their respective research/capture tasks. Check required skills first; if missing, identify them and prompt installation using official instructions. Explain any equivalent-tool fallback.
 - Keep cuts and statistics synchronized with speech. Preserve sharp evidence and clean transitions, and give the user native/reduced-resolution review and delivery-render instructions.
 - In every QA round, check available playback and adjacent timeline frames for text jitter, flicker, font/layout jumps, unstable counters, and overlay/transition movement. Fix any issue immediately in source, rebuild, and repeat headless checks yourself. Starting a preview server or encoding video for QA still needs permission; disclose only unperformed playback/export checks as pending.
@@ -508,6 +523,7 @@ rendering for QA still require permission; disclose pending playback/export chec
 Preserve supplied audio, follow its coherent spoken beats, and cue statistics
 to speech. Frame evidence for a phone, keep text sharp, use clean transitions,
 and ask the user to inspect native and compressed reduced-resolution output.
+Zero-Fallback Architecture: Explicitly author every element, badge, label, beacon, header, and chip in `content/video.json`. The engine provides no fallback strings; missing fields are omitted.
 Without a voiceover, prepare a script/draft and request the recording before
 final delivery; do not add TTS or reuse previous audio.
 

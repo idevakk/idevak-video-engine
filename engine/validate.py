@@ -273,6 +273,8 @@ def validate_scene(
 
     elif scene_type == "stat":
         sfield(meta, "revealOn", where, errors, max_len=100)
+        sfield(meta, "delta", where, errors, max_len=60)
+        sfield(meta, "deltaDir", where, errors)
         if not any(key in meta for key in ("value", "display", "stat")):
             errors.append(f"{where}.meta: needs value, display, or stat")
         if "value" in meta and not isinstance(meta["value"], (int, float, str)):
@@ -306,6 +308,7 @@ def validate_scene(
         sfield(meta, "day", where, errors, required=True, max_len=8)
         sfield(meta, "mon", where, errors, required=True, max_len=40)
         sfield(meta, "yr", where, errors, required=True, max_len=60)
+        sfield(meta, "ghost", where, errors, max_len=24)
 
     elif scene_type == "code":
         lines = listfield(meta, "lines", where, errors, required=True, lo=1, hi=10)
@@ -317,8 +320,10 @@ def validate_scene(
             for bkey in ("key", "bad"):
                 if bkey in item and not isinstance(item[bkey], bool):
                     errors.append(f"{where}.meta.lines[{k}].{bkey}: must be a boolean")
-        for key in ("file", "tag", "announce"):
-            sfield(meta, key, where, errors)
+        sfield(meta, "file", where, errors)
+        sfield(meta, "tag", where, errors)
+        sfield(meta, "announce", where, errors)
+        sfield(meta, "ghost", where, errors, max_len=24)
 
     elif scene_type == "diff":
         lines = listfield(meta, "lines", where, errors, required=True, lo=1, hi=12)
@@ -326,8 +331,10 @@ def validate_scene(
         for k, item in enumerate(items):
             if item.get("k") not in DIFF_KINDS:
                 errors.append(f"{where}.meta.lines[{k}].k: must be ctx, add, or del")
-        for key in ("file", "ver", "announce"):
-            sfield(meta, key, where, errors)
+        sfield(meta, "file", where, errors)
+        sfield(meta, "ver", where, errors)
+        sfield(meta, "announce", where, errors)
+        sfield(meta, "ghost", where, errors, max_len=24)
 
     elif scene_type == "flow":
         nodes = listfield(meta, "nodes", where, errors, required=True, lo=2, hi=4)
@@ -344,6 +351,8 @@ def validate_scene(
             if "bad" in item and not isinstance(item["bad"], bool):
                 errors.append(f"{where}.meta.rows[{k}].bad: must be a boolean")
         sfield(meta, "head", where, errors)
+        sfield(meta, "label", where, errors)
+        sfield(meta, "status", where, errors)
         sfield(meta, "stamp", where, errors)
         if "live" in meta and not isinstance(meta["live"], (str, bool)):
             errors.append(f"{where}.meta.live: must be a string or false")
@@ -369,8 +378,10 @@ def validate_scene(
             errors.append(f"{where}.meta.{count_key}: must be an integer")
         elif count is not None and not 0 <= count <= limit:
             errors.append(f"{where}.meta.{count_key}: {count} (max {limit})")
-        for key in ("segment", "pointer"):
-            sfield(meta, key, where, errors)
+        sfield(meta, "segment", where, errors)
+        sfield(meta, "pointer", where, errors)
+        sfield(meta, "legendOk", where, errors)
+        sfield(meta, "legendBad", where, errors)
 
     elif scene_type == "timeline":
         events = listfield(meta, "events", where, errors, required=True, lo=2, hi=6)
@@ -378,6 +389,7 @@ def validate_scene(
         for k, item in enumerate(items):
             if "hot" in item and not isinstance(item["hot"], bool):
                 errors.append(f"{where}.meta.events[{k}].hot: must be a boolean")
+        sfield(meta, "ghost", where, errors, max_len=24)
 
     elif scene_type == "terminal":
         lines = listfield(meta, "lines", where, errors, required=True, lo=1, hi=8)
@@ -386,6 +398,9 @@ def validate_scene(
             if item.get("k") is not None and item["k"] not in TERM_KINDS:
                 errors.append(f"{where}.meta.lines[{k}].k: must be cmd, out, or err")
         sfield(meta, "host", where, errors)
+        sfield(meta, "tag", where, errors)
+        sfield(meta, "announce", where, errors)
+        sfield(meta, "ghost", where, errors, max_len=24)
 
     elif scene_type == "compare":
         left = objectfield(meta, "left", where, errors, required=True)
@@ -397,6 +412,7 @@ def validate_scene(
                 pts = listfield(side, "pts", f"{where}.meta.{side_name}", errors, hi=4)
                 check_str_array(pts, f"{where}.meta.{side_name}.pts", errors)
         sfield(meta, "vs", where, errors)
+        sfield(meta, "mid", where, errors)
 
     elif scene_type == "stack":
         layers = listfield(meta, "layers", where, errors, required=True, lo=2, hi=6)
@@ -409,9 +425,12 @@ def validate_scene(
     elif scene_type == "quote":
         if not subline:
             warnings.append(f"{where}.subline: add an attribution for the quote")
+        sfield(meta, "initials", where, errors, max_len=6)
+        sfield(meta, "avatar", where, errors)
 
     elif scene_type == "matrix":
         ifield(meta, "cells", where, errors, lo=40, hi=400)
+        ifield(meta, "badCount", where, errors)
         for key in ("legendOk", "legendBad", "count"):
             sfield(meta, key, where, errors)
 
@@ -419,8 +438,10 @@ def validate_scene(
         channel = sfield(meta, "channel", where, errors)
         if not channel and not top_channel:
             warnings.append(f"{where}.meta.channel: missing; outro will have no channel line")
-        for key in ("cta", "ctaSub", "ghost"):
-            sfield(meta, key, where, errors)
+        sfield(meta, "cta", where, errors)
+        sfield(meta, "ctaSub", where, errors)
+        sfield(meta, "twitter", where, errors)
+        sfield(meta, "ghost", where, errors, max_len=24)
 
     elif scene_type == "webref":
         sfield(meta, "url", where, errors, required=True)
@@ -431,14 +452,32 @@ def validate_scene(
         sfield(meta, "calloutType", where, errors)
         sfield(meta, "crumb", where, errors)
         sfield(meta, "formula", where, errors)
+        sfield(meta, "formulaBadge", where, errors)
+        sfield(meta, "formulaLabel", where, errors)
         sfield(meta, "image", where, errors)
+        sfield(meta, "alt", where, errors)
+        sfield(meta, "position", where, errors)
+        sfield(meta, "ghost", where, errors, max_len=24)
         if "snippet" in meta and not isinstance(meta["snippet"], (str, list)):
             errors.append(f"{where}.meta.snippet: must be a string or list of strings")
 
     elif scene_type == "meme":
         sfield(meta, "text", where, errors)
+        sfield(meta, "caption", where, errors)
         sfield(meta, "subtext", where, errors)
+        sfield(meta, "sub", where, errors)
         sfield(meta, "reaction", where, errors)
+        sfield(meta, "badge", where, errors)
+        sfield(meta, "tag", where, errors)
+        sfield(meta, "category", where, errors)
+        sfield(meta, "file", where, errors)
+        sfield(meta, "timestamp", where, errors)
+        sfield(meta, "time", where, errors)
+        sfield(meta, "bubble", where, errors)
+        sfield(meta, "thought", where, errors)
+        sfield(meta, "stamp", where, errors)
+        sfield(meta, "reactionTag", where, errors)
+        sfield(meta, "ghost", where, errors, max_len=24)
         expr = sfield(meta, "expression", where, errors)
         if expr and expr not in MASCOT_EXPRESSIONS:
             warnings.append(f"{where}.meta.expression: {expr!r} (expected: {', '.join(sorted(MASCOT_EXPRESSIONS))})")
@@ -456,6 +495,10 @@ def validate_scene(
         if "edges" in meta:
             listfield(meta, "edges", where, errors, hi=6)
         sfield(meta, "flow", where, errors)
+        sfield(meta, "tag", where, errors)
+        sfield(meta, "matrixLabel", where, errors)
+        sfield(meta, "label", where, errors)
+        sfield(meta, "ghost", where, errors, max_len=24)
 
     elif scene_type == "mascot":
         expr = sfield(meta, "expression", where, errors)
@@ -464,6 +507,8 @@ def validate_scene(
         sfield(meta, "bubble", where, errors)
         sfield(meta, "badge", where, errors)
         sfield(meta, "image", where, errors)
+        sfield(meta, "ghost", where, errors, max_len=24)
+        sfield(meta, "telemetry", where, errors)
         if "stats" in meta:
             st_list = listfield(meta, "stats", where, errors, hi=4)
             items = check_items(st_list, f"{where}.meta.stats", errors, ("label", "val"))
@@ -475,6 +520,9 @@ def validate_scene(
         left = objectfield(meta, "left", where, errors, required=True)
         right = objectfield(meta, "right", where, errors, required=True)
         sfield(meta, "tag", where, errors)
+        sfield(meta, "label", where, errors)
+        sfield(meta, "connector", where, errors)
+        sfield(meta, "connLabel", where, errors)
         sfield(meta, "ghost", where, errors)
         if left:
             sfield(left, "title", f"{where}.meta.left", errors)

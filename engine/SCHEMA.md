@@ -37,9 +37,9 @@ rather than copying arbitrary transcription segment pairs.
 | `compositionId` | string | no | Letters, numbers, underscores, or hyphens. Used as `data-composition-id` and the GSAP registry key. Defaults to the slug. |
 | `audio` | string | no | Path relative to the repo root. Defaults to `content/voiceover.wav`. This exact file is transcribed and embedded in the composition. |
 | `channel` | string | no | Channel line used by the outro. |
-| `ghost` | string | no | Fallback ghost word for the cold open and outro. |
-| `cta` | string | no | Outro CTA label. Defaults to `Subscribe`. |
-| `ctaSub` | string | no | Outro CTA detail. Defaults to `More investigations`. |
+| `ghost` | string | no | Background ghost word for the cold open and outro. |
+| `cta` | string | no | Outro CTA button label (e.g. `Subscribe`). Only rendered when explicitly authored. |
+| `ctaSub` | string | no | Outro CTA detail / handle. Only rendered when explicitly authored. |
 | `defaultAccent` | string | no | `#rrggbb` fallback when neither the scene nor its act has an accent. |
 | `aspect` | string | no | `"16:9"` (default, 1920x1080) or `"9:16"` (1080x1920 portrait for YouTube Shorts, Reels, TikTok). When set to `"9:16"`, the engine automatically configures 1080x1920 resolution, mobile safe zones, single-column stacked grids, and vertical mascot positioning. |
 | `aspectRatio` | string | no | Alias for `aspect` (e.g. `"9:16"`). |
@@ -105,6 +105,16 @@ When an LLM or author specifies `"aspect": "9:16"`:
   above 45 words. If a beat is longer, split it into two scenes.
 - The first scene should be `cold` and the last should be `outro`. The validator
   warns otherwise.
+
+### Zero-Fallback Architecture
+
+The engine adheres to a strict **Zero-Fallback Architecture**. There are no default,
+placeholder, or fallback strings in the engine renderer (`engine/build.mjs`).
+- If a header, tag, filename, terminal host, comparison marker, audit table header,
+  beacon, formula badge, or status chip is omitted in `meta`, the corresponding visual
+  element is suppressed or omitted.
+- The LLM or human author must consciously think through and explicitly specify every
+  visual element and metadata property tailored to the technical topic.
 
 ## Scene types
 
@@ -173,16 +183,16 @@ A large title on the left, a single word mark on the right.
 
 | Meta field | Type | Notes |
 |---|---|---|
-| `mark` | string | Max 8 characters. Defaults to the first word of the headline. |
+| `mark` | string | Max 8 characters. Side badge in the editorial panel. Only rendered when explicitly authored. |
 | `rule` | boolean | Adds a vertical rule beside the mark. |
 | `image` | string | Local evidence image displayed in the right-hand panel. Use the publisher's existing redactions. |
-| `alt` | string | Description of the evidence image. Defaults to the headline. |
-| `label` | string | Authored heading for this scene, for example `EXPOSED TASK LOG` or `PRODUCT DEMO`. Choose wording for the video idea and asset. Defaults to `INCIDENT EVIDENCE` when omitted. |
+| `alt` | string | Description of the evidence image. |
+| `label` | string | Authored heading for this scene, for example `EXPOSED TASK LOG` or `PRODUCT DEMO`. Choose wording for the video idea and asset. Only rendered when explicitly authored. |
 | `caption` | string | Short context below the evidence image. |
-| `position` | string | Image object-position. Defaults to `center`. |
+| `position` | string | Image object-position (e.g. `center`, `top left`). Defaults to `center`. |
 | `video` | string | Local video in the evidence panel, muted. Framework-owned playback uses the scene timing. |
 | `poster` | string | Local video poster when `image` is absent. |
-| `mediaStart` | number | Source video offset in seconds, default `0`. Supply enough source footage for the scene. |
+| `mediaStart` | number | Source video offset in seconds. Supply enough source footage for the scene. |
 | `logos` | object[] | Official brand assets: `{ "src": "assets/logos/vendor.svg", "name": "Vendor", "background": "#f5f4ef" }`. Optional background gives dark marks sufficient contrast. Used when no image or video is set. |
 | `source` | string | Source credit along the bottom safe margin. Available on every scene type. |
 
@@ -294,9 +304,9 @@ A source excerpt in a window, with a large callout below.
 | Meta field | Type | Notes |
 |---|---|---|
 | `lines` | object[] | 1-10 items. Each item needs `t`; optional `k`, `key`, and `bad`. |
-| `file` | string | Window title. Defaults to `source`. |
-| `tag` | string | Small accent label in the window bar. |
-| `announce` | string | Large callout. Falls back to the headline. |
+| `file` | string | Window title. Only rendered when explicitly authored. |
+| `tag` | string | Small accent label in the window bar. Only rendered when explicitly authored. |
+| `announce` | string | Large callout at bottom of window. Only rendered when explicitly authored. |
 
 Line `k` values: `code`, `hot`, `dim`, `str`, `com`, `fn`, `kw`, `key`, `err`, `bad`,
 `out`. `key: true` or `k: "hot"` highlights the line. `bad: true` or `k: "err"` / `k: "bad"` highlights a critical error/bug with red alerting and impact sound.
@@ -330,9 +340,10 @@ A patch with context, additions, and deletions.
 |---|---|---|
 | `lines` | object[] | 1-12 items. Each item needs `k` and `t`. |
 | `k` | string | `ctx`, `add`, or `del`. |
-| `file` | string | Header file name. Defaults to `source`. |
+| `file` | string | Header file name. Only rendered when explicitly authored. |
 | `ver` | string | Version label on the right. |
-| `announce` | string | Large callout. Falls back to the headline. |
+| `tag` | string | Header tag badge. Only rendered when explicitly authored. |
+| `announce` | string | Large callout footbar. Only rendered when explicitly authored. |
 
 ### flow
 
@@ -389,13 +400,10 @@ A compact table of findings on the left and the argument on the right.
 | Meta field | Type | Notes |
 |---|---|---|
 | `rows` | object[] | 1-6 items. Each item needs `k` and `v`; optional `bad`. |
-| `head` | string | Table heading. Defaults to `LEDGER`. |
-| `live` | string or false | Live label. Defaults to `LIVE`; `false` hides it. |
+| `head` | string | Table heading. Only rendered when explicitly authored (`label` also accepted). |
+| `live` | string or false | Live label. Only rendered when explicitly authored (`status` also accepted). `false` hides it. |
 | `stamp` | string | Optional stamp below the rows. |
 | `points` | string[] | 0-4 bullets on the right. |
-
-`label` and `status` are accepted as aliases for `head` and `live`. The
-`AUDIT RECORD` / `VERIFIED` fallback only applies when neither is set.
 
 ### memory
 
@@ -425,11 +433,12 @@ A cell grid with a pointer, a count, and a legend.
 | Meta field | Type | Notes |
 |---|---|---|
 | `cells` | object[] | Required, 4-16. Each `{ "addr": string, "live"?: boolean, "bad"?: boolean }`. The first cell marked `bad` gets the corruption pulse. |
-| `segment` | string | Grid label. Defaults to `HEAP BUFFER`. |
+| `segment` | string | Grid label. Only rendered when explicitly authored. |
 | `allocated` | integer | Count shown in the header and animated up from zero. `liveCount` also accepted. |
-| `pointer` | string | Pointer label. Defaults to `CORRUPT`. |
-
-The legend is fixed chrome (`VALID` / `CORRUPTED`), not authored per scene.
+| `pointer` | string | Pointer label. Only rendered when explicitly authored. |
+| `delta` | string | Optional delta tag (e.g. `+12.4%`). |
+| `deltaDir` | string | Optional delta direction (`up` or `down`). |
+| `ghost` | string | Optional background ghost word. |
 
 ### timeline
 
@@ -482,8 +491,11 @@ A shell window with commands, output, and errors.
 | Meta field | Type | Notes |
 |---|---|---|
 | `lines` | object[] | 1-8 items. Each item needs `t`; optional `k`. |
-| `k` | string | `cmd`, `out`, or `err`. Defaults to `out`. |
-| `host` | string | Window title. Defaults to `terminal`. |
+| `k` | string | `cmd`, `out`, or `err`. |
+| `host` | string | Window title bar. Only rendered when explicitly authored. |
+| `tag` | string | Accent badge in the window bar. Only rendered when explicitly authored. |
+| `announce` | string | Callout footer bar. Only rendered when explicitly authored. |
+| `prompt` | string | Shell prompt prefix (e.g. `$` or `#`). |
 
 ### compare
 
@@ -516,7 +528,7 @@ Two columns with a versus marker.
 |---|---|---|
 | `left` | object | Required. `k` and `t` required; `pts` is 0-4 strings. |
 | `right` | object | Required. Same shape as `left`. |
-| `vs` | string | Center marker. Defaults to `VS`. |
+| `vs` | string | Center versus marker. Only rendered when explicitly authored. |
 
 ### stack
 
@@ -581,9 +593,10 @@ A dense grid that reads as a population or a scan.
 
 | Meta field | Type | Notes |
 |---|---|---|
-| `cells` | integer | 40-400. Defaults to 160. |
-| `legendOk` | string | Defaults to `ok`. |
-| `legendBad` | string | Defaults to `flagged`. |
+| `cells` | integer | 40-400. Grid cell count. |
+| `legendOk` | string | Legend label for normal cells. Only rendered when explicitly authored. |
+| `legendBad` | string | Legend label for flagged cells. Only rendered when explicitly authored. |
+| `matrixLabel` | string | Header badge for the grid. Only rendered when explicitly authored. |
 | `count` | string | Caption under the grid. |
 
 ### outro
@@ -690,14 +703,14 @@ A browser and documentation reference window with an address bar, SSL lock, docu
 |---|---|---|
 | `url` | string | Required. Web address displayed in the browser bar. |
 | `badge` | string | Optional category badge (e.g. `OFFICIAL DOCS`, `RFC-9110`, `CVE ADVISORY`). |
-| `title` | string | Optional document title. Defaults to scene headline. |
+| `title` | string | Optional document title. Only rendered when explicitly authored. |
 | `snippet` | string \| string[] | Excerpt paragraphs from the documentation. |
 | `highlight` | string | Key substring to highlight with high-contrast accent border. |
 | `callout` | string | Highlighted alert box text. |
-| `calloutType` | string | `NOTE`, `IMPORTANT`, or `WARNING`. Defaults to `IMPORTANT`. |
+| `calloutType` | string | `NOTE`, `IMPORTANT`, or `WARNING`. Sets alert styling when callout is present. |
 | `image` | string | Optional path to real screenshot image. If set, replaces the rendered HTML doc. |
-| `alt` | string | Screenshot description. Defaults to the document title. |
-| `position` | string | Screenshot crop anchor, default `top center`. Screenshots fit a bounded viewport to keep the headline and credit in frame. |
+| `alt` | string | Screenshot description. |
+| `position` | string | Screenshot crop anchor (e.g. `top center`). Screenshots fit a bounded viewport to keep the headline and credit in frame. |
 
 ### meme
 
@@ -725,7 +738,9 @@ A fast-paced, high-impact dev reaction card with comic recoil shake, glitch swee
 | `text` | string | Bold meme reaction caption. |
 | `subtext` | string | Subtitle or sarcastic commentary. |
 | `reaction` | string | Tag line (e.g. `SKILL ISSUE`, `PAIN`, `WAIT WHAT`, `404 LOGIC`). |
-| `expression` | string | Mascot expression: `neutral`, `talking`, `thinking`, `shocked`, `cool`, `happy`, `angry`, `sad`, `facepalm`, `pointing`, `panic`, `skeptical`. Defaults to `shocked`. |
+| `formulaBadge` | string | Formula badge label (e.g. `FULL JITTER`). Only rendered when explicitly authored. |
+| `formulaLabel` | string | Formula descriptor (e.g. `DECORRELATION FORMULA`). Only rendered when explicitly authored. |
+| `expression` | string | Mascot expression: `neutral`, `talking`, `thinking`, `shocked`, `cool`, `happy`, `angry`, `sad`, `facepalm`, `pointing`, `panic`, `skeptical`. |
 | `image` | string | Optional custom meme image path. Defaults to iDevak mascot with chosen expression. |
 | `punch` | boolean | Enables instant Fireship-style camera recoil punch zoom. |
 
@@ -832,7 +847,8 @@ Dual-pane forensic investigation layout: live terminal/shell on the left and tar
 |---|---|---|
 | `left` | object | Required. `{ "title": "...", "badge": "...", "lines": [ { "t": "...", "k": "cmd" } ] }` |
 | `right` | object | Required. `{ "title": "...", "status": "COMPROMISED", "pts": ["..."] }` |
-| `tag` | string | Header tag badge. Defaults to `INCIDENT INVESTIGATION`. |
+| `tag` | string | Header tag badge. Only rendered when explicitly authored. |
+| `connector` | string | Center chip label between panes. Only rendered when explicitly authored. |
 
 ## Universal Mascot Overlay
 

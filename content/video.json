@@ -209,7 +209,8 @@
           {
             "t": "    await retryImmediate(); // BUG: zero backoff!",
             "k": "bad",
-            "bad": true
+            "bad": true,
+            "beacon": "ZERO BACKOFF"
           },
           {
             "t": "  }",
@@ -253,12 +254,14 @@
           {
             "t": "    await retryImmediate(); // BUG: zero backoff!",
             "k": "del",
-            "del": true
+            "del": true,
+            "tag": "REMOVED"
           },
           {
             "t": "    await backoffWithJitter(attempt); // FIX: full jitter",
             "k": "add",
-            "add": true
+            "add": true,
+            "tag": "FIX APPLIED"
           },
           {
             "t": "  }",
@@ -297,15 +300,18 @@
           },
           {
             "t": "api-gateway-7f8d   0/1   CrashLoopBackOff   12m",
-            "k": "err"
+            "k": "err",
+            "tag": "FAILED"
           },
           {
             "t": "db-pool-worker-34  0/1   OOMKilled          4m",
-            "k": "err"
+            "k": "err",
+            "tag": "FAILED"
           },
           {
             "t": "[CRITICAL] Connection pool limit 500 exceeded: DEADLOCK",
-            "k": "err"
+            "k": "err",
+            "tag": "FAILED"
           }
         ]
       },
@@ -337,7 +343,9 @@
         "highlight": "thundering herd collapse",
         "callout": "Always decorate exponential backoff with full jitter to decorrelate client retry bursts.",
         "calloutType": "MANDATORY SPEC",
-        "formula": "t_sleep = rand(0, min(cap, base * 2 ** attempt))"
+        "formula": "t_sleep = rand(0, min(cap, base * 2 ** attempt))",
+        "formulaBadge": "FULL JITTER",
+        "formulaLabel": "DECORRELATION FORMULA"
       },
       "mascot": {
         "expression": "pointing",
@@ -357,6 +365,7 @@
       "meta": {
         "ghost": "TOPOLOGY",
         "tag": "CLOUD MESH TOPOLOGY",
+        "matrixLabel": "TOPOLOGY MATRIX",
         "flow": "CloudFront L7 -> Envoy Circuit Breaker -> Worker Pool -> Sharded Aurora",
         "edges": [
           {
@@ -433,6 +442,8 @@
       "meta": {
         "ghost": "AUTOPSY",
         "tag": "LIVE CORRELATION TRACE",
+        "label": "DUAL-PANE FORENSIC INVESTIGATION",
+        "connector": "RETRY BURST",
         "left": {
           "title": "CLIENT RETRY STORM",
           "badge": "REPLAY / 50K",

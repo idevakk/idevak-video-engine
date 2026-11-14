@@ -306,7 +306,11 @@ apt-get update
 apt-get install -y --no-install-recommends python3 python3-venv ffmpeg
 """
     if args.job == "transcribe":
-        return setup + "\n" + "\n".join([
+        env_lines = []
+        if os.environ.get("DEEPGRAM_API_KEY"):
+            env_lines.append(f"export DEEPGRAM_API_KEY={shlex.quote(os.environ['DEEPGRAM_API_KEY'])}")
+        prefix = ("\n".join(env_lines) + "\n") if env_lines else ""
+        return setup + "\n" + prefix + "\n".join([
             "python3 -m venv /tmp/transcribe-env",
             "/tmp/transcribe-env/bin/python -m pip install faster-whisper",
             f"cd {REMOTE}",

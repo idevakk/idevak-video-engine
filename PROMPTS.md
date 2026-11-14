@@ -137,6 +137,20 @@ secure credentials, commands, exported playback review, and cleanup details.
   Write scene-specific labels appropriate to each new topic. Do not carry
   labels or assets over from the previous episode by accident.
 
+### Zero-fallback schema architecture & explicit element authoring
+
+- The engine contains **no default or fallback values** for any meta field,
+  badge, header, filename, terminal host, comparison marker, audit table header,
+  beacon, tag, formula badge, or status chip.
+- For every scene, the authoring LLM must consciously design and implement every
+  visual element. Omitting a field does not trigger a generic fallback string;
+  it suppresses that visual element entirely.
+- Never rely on builder defaults (such as expecting an omitted `file` to become
+  `"source"`, an omitted `host` to become `"terminal"`, an omitted `head` to become
+  `"LEDGER"`, an omitted `vs` to become `"VS"`, or an omitted `label` to become
+  `"INCIDENT EVIDENCE"`). Explicitly author all titles, filenames, badges, chips,
+  and beacons tailored to the topic.
+
 ### Highest available quality and readable delivery
 
 - Retrieve original or highest-resolution published assets, not search-result
@@ -307,7 +321,390 @@ What is this beat about?
 
 ---
 
-## 4. Scene Type Reference & Meta Specs
+## 4. Complete 22-Archetype Reference & Zero-Fallback Blueprints
+
+Every scene in `content/video.json` must be one of the 22 supported archetypes. Under the **Zero-Fallback Architecture**, the engine renderer contains no default or fallback strings: every header, badge, beacon, status, tag, filename, and terminal host must be explicitly authored.
+
+---
+
+### `cold` (Opening Title Card Hook)
+*Use for Scene 1 only. Establishes the video topic, paradox, or dollar figure immediately.*
+```json
+{
+  "type": "cold",
+  "narration": "A critical zero-day just bypassed every IAM credential in AWS.",
+  "eyebrow": "SECURITY AUTOPSY",
+  "headline": "The Silent Privilege Escalation",
+  "subline": "How a single wildcard policy compromised 400 production accounts.",
+  "meta": {
+    "chips": ["CVE-2026-3841", "AWS IAM", "CRITICAL"],
+    "ghost": "EXPLOIT"
+  }
+}
+```
+
+---
+
+### `hero` (Primary Visual Evidence Panel)
+*Use when displaying real screenshots, captured diagrams, or vector vendor logos.*
+```json
+{
+  "type": "hero",
+  "narration": "The vulnerability lived in the core session validator, hidden behind two layers of mTLS.",
+  "eyebrow": "PRIMARY EVIDENCE",
+  "headline": "The Unauthenticated Root Proxy",
+  "subline": "Every internal microservice accepted requests forwarded by the edge envoy.",
+  "meta": {
+    "mark": "ZERO DAY",
+    "rule": true,
+    "label": "FORENSIC LOGS",
+    "caption": "Captured from production edge envoy traffic at 03:14 UTC",
+    "image": "assets/evidence/proxy-trace.png",
+    "source": "US-CERT Alert TA26-041A"
+  }
+}
+```
+
+---
+
+### `statement` (High-Impact Editorial Claim)
+*Use for pivotal realizations, act breaks, or hard engineering truths.*
+```json
+{
+  "type": "statement",
+  "narration": "Security through obscurity is not an architecture; it is an unhedged debt.",
+  "eyebrow": "CORE REALIZATION",
+  "headline": "Obscurity is Not Architecture",
+  "subline": "When internal networks assume implicit trust, one perimeter breach wins the game.",
+  "variant": 1,
+  "meta": {
+    "ghost": "DEBT"
+  }
+}
+```
+
+---
+
+### `stat` (Animated Numerical Counter)
+*Use for shocking metrics, latency figures, or financial dollar impacts.*
+```json
+{
+  "type": "stat",
+  "narration": "Within ninety seconds, the attacker executed over four hundred thousand unauthorized API calls.",
+  "eyebrow": "BLAST RADIUS",
+  "headline": "Burst Velocity",
+  "subline": "Peak request volume recorded before the rate limiter kicked in.",
+  "meta": {
+    "value": 412000,
+    "prefix": "",
+    "suffix": " REQS",
+    "sep": true,
+    "revealOn": "four hundred thousand"
+  }
+}
+```
+
+---
+
+### `dateline` (Document / Disclosure Date)
+*Use for CVE release dates, security embargo dates, or historical milestones.*
+```json
+{
+  "type": "dateline",
+  "narration": "On October 14, 2026, the security team received the first external disclosure report.",
+  "eyebrow": "INCIDENT TIMELINE",
+  "headline": "The Coordinated Disclosure",
+  "subline": "Zero public patches were available when the advisory went live.",
+  "meta": {
+    "day": "14",
+    "mon": "OCTOBER",
+    "yr": "2026",
+    "badge": "DISCLOSURE",
+    "tag": "DAY ZERO"
+  }
+}
+```
+
+---
+
+### `code` (Source Code Window with Highlighting)
+*Use to dissect a specific bug, vulnerable method, or insecure configuration.*
+```json
+{
+  "type": "code",
+  "narration": "Look closely at line forty-two: memcpy blindly trusts the user-supplied packet length without validation.",
+  "eyebrow": "SOURCE EVIDENCE",
+  "headline": "The Unbounded Buffer Copy",
+  "subline": "handler.c - Zero bounds verification on untrusted socket input.",
+  "meta": {
+    "file": "src/net/handler.c",
+    "tag": "C99 // BUFFER",
+    "announce": "Zero bounds check on user length",
+    "lines": [
+      { "t": "uint16_t len = ntohs(hdr->payload_len);", "k": "code" },
+      { "t": "if (len == 0) return ERR_EMPTY;", "k": "code" },
+      { "t": "memcpy(stack_buf, payload, len); // CRITICAL OVERFLOW", "k": "hot", "key": true, "bad": true },
+      { "t": "process_packet(stack_buf);", "k": "code" }
+    ]
+  }
+}
+```
+
+---
+
+### `diff` (Git Commit / Patch View)
+*Use to showcase the exact fix, security patch, or architectural refactor.*
+```json
+{
+  "type": "diff",
+  "narration": "The hotfix was only three lines: enforce a maximum packet size check before copying into memory.",
+  "eyebrow": "THE PATCH",
+  "headline": "The Guard Clause",
+  "subline": "Commit 4f82a1 - Restricting payload size to MAX_BUFFER_SIZE.",
+  "meta": {
+    "file": "src/net/handler.c",
+    "ver": "v2.1.3 -> v2.1.4",
+    "tag": "SECURITY FIX",
+    "announce": "Bound check enforced before memory write",
+    "lines": [
+      { "k": "ctx", "t": "uint16_t len = ntohs(hdr->payload_len);" },
+      { "k": "del", "t": "- memcpy(stack_buf, payload, len);" },
+      { "k": "add", "t": "+ if (len > MAX_BUFFER_SIZE) return ERR_OVERFLOW;" },
+      { "k": "add", "t": "+ memcpy(stack_buf, payload, len);" }
+    ]
+  }
+}
+```
+
+---
+
+### `flow` (Sequential Causal Chain)
+*Use for left-to-right causal diagrams, packet lifecycle, or request paths.*
+```json
+{
+  "type": "flow",
+  "narration": "The packet flows from the edge ingress into the authorization filter, where malformed headers bypass auth before reaching backend compute.",
+  "eyebrow": "DATA TRANSMISSION",
+  "headline": "The Exploit Pipeline",
+  "subline": "How forged headers navigated the proxy mesh unchecked.",
+  "meta": {
+    "beacon": "EXPLOIT VECTOR",
+    "nodes": [
+      { "k": "INGRESS", "t": "Envoy Edge", "s": "PORT 443" },
+      { "k": "FILTER", "t": "Header Auth", "s": "BYPASSED", "bad": true, "hot": true },
+      { "k": "INTERNAL", "t": "API Gateway", "s": "TRUSTED" },
+      { "k": "CORE", "t": "App Worker", "s": "COMPROMISED", "bad": true }
+    ]
+  }
+}
+```
+
+---
+
+### `ledger` (Forensic Audit Table)
+*Use to evaluate multiple findings, CVE severity rankings, or defense breakdowns.*
+```json
+{
+  "type": "ledger",
+  "narration": "The postmortem revealed a cascade of security oversights across four independent layers.",
+  "eyebrow": "FORENSIC AUDIT",
+  "headline": "Root Cause Audit",
+  "subline": "Multiple defensive barriers failed simultaneously during the incident.",
+  "meta": {
+    "head": "DEFENSE MATRIX",
+    "live": "VERIFIED",
+    "stamp": "AUDIT COMPLETE",
+    "rows": [
+      { "k": "BOUNDARY", "v": "Public Subnet", "bad": true },
+      { "k": "AUTH", "v": "Wildcard IAM", "bad": true },
+      { "k": "LOGGING", "v": "CloudTrail Dropped", "bad": true },
+      { "k": "CIRCUIT BREAKER", "v": "Triggered at 90s" }
+    ],
+    "points": [
+      "Zero network segmentation",
+      "IAM permissions unhedged",
+      "Ingress firewall misconfigured"
+    ]
+  }
+}
+```
+
+---
+
+### `memory` (Heap & Slot Allocation Grid)
+*Use for low-level memory bugs, buffer overflows, use-after-free, or heap corruptions.*
+```json
+{
+  "type": "memory",
+  "narration": "The dangling pointer remained valid long after the original buffer was freed, allowing arbitrary memory writes.",
+  "eyebrow": "KERNEL MEMORY",
+  "headline": "Use After Free",
+  "subline": "Heap slot allocation collision under concurrent connection load.",
+  "meta": {
+    "segment": "HEAP ARENA 0x04",
+    "pointer": "DANGLING ADDR",
+    "allocated": 6,
+    "delta": "+38.2%",
+    "deltaDir": "up",
+    "ghost": "CORRUPT",
+    "cells": [
+      { "addr": "0x0041a0", "live": true },
+      { "addr": "0x0041b8", "live": true },
+      { "addr": "0x0041d0", "bad": true },
+      { "addr": "0x0041e8", "bad": true },
+      { "addr": "0x004200", "live": true },
+      { "addr": "0x004218", "live": true }
+    ]
+  }
+}
+```
+
+---
+
+### `timeline` (Chronological Incident Sequence)
+*Use to trace war room minutes, outage progressions, or escalation sequences.*
+```json
+{
+  "type": "timeline",
+  "narration": "From the first anomaly detection to full production isolation, the entire incident unfolded in under twenty minutes.",
+  "eyebrow": "TIME TO RESOLUTION",
+  "headline": "The Incident Clock",
+  "subline": "Key escalation timestamps recorded by the SRE war room.",
+  "meta": {
+    "events": [
+      { "t": "16:42 UTC", "s": "Latency Alert Triggered" },
+      { "t": "16:47 UTC", "s": "OOM Killer Terminating Pods", "hot": true },
+      { "t": "16:53 UTC", "s": "Traffic Diverted to Fallback" },
+      { "t": "17:01 UTC", "s": "Core Database Recovered" }
+    ]
+  }
+}
+```
+
+---
+
+### `terminal` (CLI Shell Execution & Logs)
+*Use for real shell commands, reproduction scripts, curl traces, or crash logs.*
+```json
+{
+  "type": "terminal",
+  "narration": "Running curl against the internal metadata endpoint returns root AWS credentials in plain text.",
+  "eyebrow": "TERMINAL EVIDENCE",
+  "headline": "Querying Instance Metadata",
+  "subline": "IMDSv1 allows unauthenticated SSRF to harvest temporary role tokens.",
+  "meta": {
+    "host": "bastion-prod",
+    "prompt": "$",
+    "tag": "SSRF REPRO",
+    "announce": "IMDSv1 returns full session credentials",
+    "lines": [
+      { "k": "cmd", "t": "curl -s http://169.254.169.254/latest/meta-data/iam/security-credentials/" },
+      { "k": "out", "t": "ProductionAppRole" },
+      { "k": "cmd", "t": "curl -s http://169.254.169.254/latest/meta-data/iam/security-credentials/ProductionAppRole | jq .AccessKeyId" },
+      { "k": "out", "t": "\"ASIAIOSFODNN7EXAMPLE\"" },
+      { "k": "err", "t": "[!] EXPOSED: Credential harvest successful" }
+    ]
+  }
+}
+```
+
+---
+
+### `compare` (Side-by-Side Architectural Contrast)
+*Use to compare legacy vs modern patterns, competing tools, or before/after paradigms.*
+```json
+{
+  "type": "compare",
+  "narration": "IMDS version one allows simple GET requests, while version two requires a session token with strict TTL and hop limit.",
+  "eyebrow": "ARCHITECTURE DRIFT",
+  "headline": "IMDSv1 vs IMDSv2",
+  "subline": "The security difference between plain text SSRF and defense in depth.",
+  "meta": {
+    "vs": "VS",
+    "left": {
+      "k": "IMDSv1 (LEGACY)",
+      "t": "Zero Token Header Required",
+      "pts": [
+        "Vulnerable to plain SSRF",
+        "No hop count protection",
+        "Trivially harvested by web apps"
+      ]
+    },
+    "right": {
+      "k": "IMDSv2 (MODERN)",
+      "t": "Session Token Mandated",
+      "pts": [
+        "PUT token handshake first",
+        "X-Forwarded-For blocked",
+        "IP hop limit restricted to 1"
+      ]
+    }
+  }
+}
+```
+
+---
+
+### `stack` (Vertical System Architecture Layers)
+*Use for OS/Kernel/Runtime/App layers, OSI network model, or container runtimes.*
+```json
+{
+  "type": "stack",
+  "narration": "Every layer trusted the one below it, so when the kernel memory allocator failed, the whole container engine collapsed.",
+  "eyebrow": "SYSTEM TOPOLOGY",
+  "headline": "The Dependency Cascade",
+  "subline": "How a bottom-layer panic broke the entire application stack.",
+  "meta": {
+    "layers": [
+      { "t": "EDGE INGRESS", "s": "Cloudflare / CDN" },
+      { "t": "API GATEWAY", "s": "Nginx Reverse Proxy" },
+      { "t": "APPLICATION", "s": "Node.js Microservices" },
+      { "t": "RUNTIME", "s": "Docker / containerd", "hot": true },
+      { "t": "KERNEL OS", "s": "Linux 6.8 eBPF Panic", "bad": true }
+    ]
+  }
+}
+```
+
+---
+
+### `quote` (Pull Quote & Creator Attribution)
+*Use for famous engineering axioms, postmortem verdicts, or creator rules.*
+```json
+{
+  "type": "quote",
+  "narration": "As Werner Vogels famously said: Everything fails, all the time.",
+  "eyebrow": "CORE PRINCIPLE",
+  "headline": "\"Everything fails, all the time.\"",
+  "subline": "Werner Vogels, Amazon CTO",
+  "meta": {
+    "initials": "WV"
+  }
+}
+```
+
+---
+
+### `matrix` (Population / Request Telemetry Scan Grid)
+*Use for fleet scans, cluster health, distributed node corruption, or request samples.*
+```json
+{
+  "type": "matrix",
+  "narration": "Out of two hundred and forty active production nodes, exactly six were corrupted by the malicious payload.",
+  "eyebrow": "CLUSTER SCAN",
+  "headline": "Targeted Node Infection",
+  "subline": "Telemetry scan of the Kubernetes worker fleet during the exploit burst.",
+  "meta": {
+    "cells": 240,
+    "legendOk": "HEALTHY",
+    "legendBad": "INFECTED",
+    "matrixLabel": "FLEET TELEMETRY",
+    "count": "240 NODES SCANNED // 6 CORRUPTED"
+  }
+}
+```
+
+---
 
 ### `webref` (Browser & Documentation Spotlight)
 *Use when citing official docs, RFCs, GitHub PRs, or CVE advisories.*
@@ -333,6 +730,8 @@ What is this beat about?
 }
 ```
 
+---
+
 ### `meme` (High-Impact Dev Reaction)
 *Use for sarcastic developer reality checks, production blunders, or unexpected turns.*
 ```json
@@ -346,11 +745,15 @@ What is this beat about?
     "text": "PUSHED TO MAIN ON FRIDAY",
     "subtext": "CI/CD was just a suggestion anyway",
     "reaction": "SKILL ISSUE",
+    "formulaBadge": "FULL JITTER",
+    "formulaLabel": "DECORRELATION FORMULA",
     "expression": "shocked",
     "punch": true
   }
 }
 ```
+
+---
 
 ### `cloud` (Cloud Architecture & Systems Topology)
 *Use for AWS, GCP, Kubernetes, Docker, and distributed microservices pipelines.*
@@ -363,6 +766,8 @@ What is this beat about?
   "subline": "Sub-millisecond latency when cached; catastrophic cold starts when cold.",
   "meta": {
     "flow": "EDGE -> ROUTER -> LAMBDA -> CACHE -> DB",
+    "shed": "RATE SHED ACTIVE",
+    "beacon": "DISTRIBUTED MESH",
     "nodes": [
       { "k": "EDGE", "t": "Cloudflare", "icon": "⚡", "status": "200 OK" },
       { "k": "GATEWAY", "t": "HTTP API", "icon": "🚪", "status": "HEALTHY" },
@@ -373,6 +778,8 @@ What is this beat about?
   }
 }
 ```
+
+---
 
 ### `mascot` (Mascot Spotlight Scene)
 *Use when Devak delivers an architectural rule, security recommendation, or executive takeaway.*
@@ -396,24 +803,87 @@ What is this beat about?
 }
 ```
 
-### Universal Mascot Overlay on Any Scene
-*Add an expressive Devak reaction in the corner of ANY standard scene:*
+---
+
+### `split` (Dual-Pane Forensic Shell + Impact)
+*Use to correlate CLI exploit execution directly against target server crash or memory leak.*
+```json
+{
+  "type": "split",
+  "narration": "As the attacker injected the payload in the terminal, the downstream payment worker crashed instantly with a segmentation fault.",
+  "eyebrow": "CORRELATION VIEW",
+  "headline": "Payload Injection & Server Impact",
+  "subline": "Simultaneous forensic capture of exploit execution and target node panic.",
+  "meta": {
+    "tag": "FORENSIC DUAL-PANE",
+    "connector": "CORRELATED IMPACT",
+    "left": {
+      "title": "EXPLOIT TERMINAL",
+      "badge": "ATTACK VECTOR",
+      "lines": [
+        { "t": "python3 exploit.py --target 10.0.4.12", "k": "cmd" },
+        { "t": "[*] Crafting malformed ASN.1 certificate...", "k": "out" },
+        { "t": "[+] Packet delivered to port 8443", "k": "out" }
+      ]
+    },
+    "right": {
+      "title": "PAYMENT SERVICE",
+      "status": "CRASHED // SIGSEGV",
+      "pts": [
+        "Null pointer dereference in openssl.so",
+        "Worker thread terminated abruptly",
+        "Connection pool drained 1,024 sockets"
+      ]
+    }
+  }
+}
+```
+
+---
+
+### `outro` (Closing CTA & Channel Subscription)
+*Use for the final video scene only.*
+```json
+{
+  "type": "outro",
+  "narration": "Subscribe to iDevak for deep-dive cloud engineering autopsies, system internals, and production postmortems.",
+  "eyebrow": "DEEP DIVES",
+  "headline": "Build. Solve. Deploy.",
+  "subline": "Technical breakdowns with real RFCs, diffs, and zero superficial fluff.",
+  "meta": {
+    "channel": "youtube.com/channel/UCEbQwm7oWRb1HjfGHMs7AzA",
+    "cta": "SUBSCRIBE",
+    "ctaSub": "More Cloud & DevOps Autopsies",
+    "ghost": "IDEVAK",
+    "twitter": "x.com/iDevakk"
+  }
+}
+```
+
+---
+
+### Universal Mascot Overlay & Timeline on Any Scene
+*Add an expressive Devak reaction overlay to ANY scene with mid-scene emotion transitions:*
 ```json
 {
   "type": "code",
-  "headline": "The Unchecked Buffer",
-  "narration": "Look at line 84: memcpy is called with the user-supplied length parameter directly.",
+  "headline": "The Hardcoded Root Password",
+  "narration": "Looking closely at line 42, the developers literally left the password as admin123.",
   "mascot": {
-    "expression": "shocked",
-    "bubble": "Wait, did they really call memcpy without checking bounds?!",
-    "position": "bottom-right"
+    "expression": "thinking",
+    "bubble": "Wait, let's inspect the credentials...",
+    "position": "bottom-right",
+    "timeline": [
+      { "at": 1.8, "expression": "shocked", "bubble": "They really left admin123 in production?!" }
+    ]
   },
   "meta": {
+    "file": "config.js",
+    "tag": "AUTH",
     "lines": [
-      { "t": "int len = req->content_length;", "k": "code" },
-      { "t": "memcpy(dest_buf, req->body, len); // NO BOUNDS CHECK", "k": "hot", "key": true }
-    ],
-    "file": "handler.c"
+      { "t": "const DB_USER = 'root';", "k": "code" },
+      { "t": "const DB_PASS = 'admin123'; // DO NOT COMMIT", "k": "hot", "key": true, "bad": true }
+    ]
   }
 }
 ```
@@ -437,6 +907,7 @@ You are the Lead Technical Director and Scriptwriter for the YouTube channel iDe
 - Own dependency installation, media/source preparation, transcription, alignment, composition/SFX builds, artifact inspection, tests, lint, and headless checks. Run build/pipeline/sfx yourself; draft/align:draft may create an estimated composition without audio. Building HTML/metadata/audio is allowed. Require explicit user permission only before starting a preview server or encoding a draft/final video, including indirect tool/test/hook equivalents. Finish preparation before asking; reuse explicit permission already granted for that action.
 - Use the supplied audio unchanged and match its actual spoken words. If no recording exists, prepare a proposed script/draft and request the recording before final delivery. Never add TTS or reuse old narration.
 - Research and use relevant authentic logos, incident images/footage, and real website captures. Prefer official vector logos, original high-resolution media, and verified high-DPI browser captures. Download assets locally, document sources, and choose readable crops and scene-specific labels.
+- Zero-Fallback Architecture: Explicitly author every element and meta field for each scene. The engine contains NO default or fallback values for headers, filenames, terminal hosts, markers, beacons, chips, or labels. You must consciously think through and author all visual metadata specifically for the topic.
 - Use Firecrawl and supported browser automation for their respective research/capture tasks. Check required skills first; if missing, identify them and prompt installation using official instructions. Explain any equivalent-tool fallback.
 - Keep cuts and statistics synchronized with speech. Preserve sharp evidence and clean transitions, and give the user native/reduced-resolution review and delivery-render instructions.
 - In every QA round, check available playback and adjacent timeline frames for text jitter, flicker, font/layout jumps, unstable counters, and overlay/transition movement. Fix any issue immediately in source, rebuild, and repeat headless checks yourself. Starting a preview server or encoding video for QA still needs permission; disclose only unperformed playback/export checks as pending.
@@ -508,6 +979,7 @@ rendering for QA still require permission; disclose pending playback/export chec
 Preserve supplied audio, follow its coherent spoken beats, and cue statistics
 to speech. Frame evidence for a phone, keep text sharp, use clean transitions,
 and ask the user to inspect native and compressed reduced-resolution output.
+Zero-Fallback Architecture: Explicitly author every element, badge, label, beacon, header, and chip in `content/video.json`. The engine provides no fallback strings; missing fields are omitted.
 Without a voiceover, prepare a script/draft and request the recording before
 final delivery; do not add TTS or reuse previous audio.
 

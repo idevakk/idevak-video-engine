@@ -227,17 +227,17 @@ const eyebrow = (s) => (s.eyebrow ? `<div class="eyebrow"><span class="eyebrow-d
 
 const RENDER = {
   cold(s) {
-    const ghost = s.ghost || s.meta?.ghost || project.ghost || String(project.title || "VIDEO").trim().split(/\s+/)[0].toUpperCase();
+    const ghost = s.meta?.ghost || s.ghost || "";
     return `
     <div class="cold-wrap">
-      <div class="cold-ghost" data-layout-allow-overflow>${esc(ghost)}</div>
+      ${ghost ? `<div class="cold-ghost" data-layout-allow-overflow>${esc(ghost)}</div>` : ""}
       <div class="cold-rule"></div>
       ${s.eyebrow ? `<div class="cold-eyebrow">${esc(s.eyebrow)}</div>` : ""}
       <h1 class="cold-title">${splitWords(s.headline, s)}</h1>
-      <div class="cold-sub">${esc(s.subline || "")}</div>
+      ${s.subline ? `<div class="cold-sub">${esc(s.subline)}</div>` : ""}
       <div class="cold-meta">
         ${(s.meta?.chips || []).map((c, k) => {
-          const text = typeof c === "object" ? c.t || c.text || "" : String(c);
+          const text = typeof c === "object" ? (c.t ?? c.text ?? "") : String(c);
           const isBad = (typeof c === "object" && (c.bad || c.hot || c.status === "bad")) || /SEV|CRITICAL|FAIL|OUTAGE|0%/.test(text);
           const hasDot = text.startsWith("●") || isBad;
           const cleanText = text.replace(/^●\s*/, "");
@@ -250,8 +250,8 @@ const RENDER = {
   },
 
   hero(s) {
-    const mark = s.meta?.mark || String(s.headline || "").trim().split(/\s+/)[0].toUpperCase();
-    const markSize = Math.min(128, Math.floor(400 / Math.max(1, [...mark].length * 0.8)));
+    const mark = s.meta?.mark || "";
+    const markSize = mark ? Math.min(128, Math.floor(400 / Math.max(1, [...mark].length * 0.8))) : 64;
     return `
     <div class="hero-grid">
       <div class="hero-left">
@@ -260,7 +260,7 @@ const RENDER = {
         ${s.subline ? `<p class="hero-sub">${esc(s.subline)}</p>` : ""}
       </div>
       <div class="hero-right">
-        ${s.meta?.image || s.meta?.video ? `<div class="evidence-frame"><div class="evidence-label">${esc(s.meta?.label || "INCIDENT EVIDENCE")}</div><div class="evidence-viewport"><img class="evidence-image" src="${esc(s.meta.image || s.meta.poster || "")}" alt="${esc(s.meta.alt || s.headline)}" style="object-position:${esc(s.meta.position || "center")}${s.meta.video ? ";visibility:hidden" : ""}" /></div>${s.meta.caption ? `<div class="evidence-caption">${esc(s.meta.caption)}</div>` : ""}</div>` : s.meta?.logos ? `<div class="brand-grid">${s.meta.logos.map(logo => `<div class="brand-item"><img src="${esc(logo.src)}" alt="${esc(logo.name)}" style="background:${/^#[0-9a-f]{6}$/i.test(logo.background || "") ? logo.background : "transparent"}" /><span>${esc(logo.name)}</span></div>`).join("")}</div>` : `<div class="hero-mark" style="--hero-mark-size:${markSize}px">${esc(mark)}</div>`}
+        ${s.meta?.image || s.meta?.video ? `<div class="evidence-frame">${s.meta?.label ? `<div class="evidence-label">${esc(s.meta.label)}</div>` : ""}<div class="evidence-viewport"><img class="evidence-image" src="${esc(s.meta.image || s.meta.poster || "")}" alt="${esc(s.meta?.alt || "")}" style="${s.meta?.position ? `object-position:${esc(s.meta.position)};` : ""}${s.meta?.video ? "visibility:hidden" : ""}" /></div>${s.meta?.caption ? `<div class="evidence-caption">${esc(s.meta.caption)}</div>` : ""}</div>` : s.meta?.logos ? `<div class="brand-grid">${s.meta.logos.map(logo => `<div class="brand-item"><img src="${esc(logo.src)}" alt="${esc(logo.name)}" style="background:${/^#[0-9a-f]{6}$/i.test(logo.background || "") ? logo.background : "transparent"}" /><span>${esc(logo.name)}</span></div>`).join("")}</div>` : (mark ? `<div class="hero-mark" style="--hero-mark-size:${markSize}px">${esc(mark)}</div>` : "")}
         ${s.meta?.rule ? `<div class="hero-vrule"><span class="hero-vrule-dot"></span></div>` : ""}
       </div>
     </div>
@@ -285,11 +285,11 @@ const RENDER = {
 
   stat(s) {
     const st = s.meta?.stat || {};
-    const value = s.meta?.display || String(s.meta?.value ?? s.headline);
+    const value = s.meta?.display ?? (s.meta?.value != null ? String(s.meta.value) : "");
     const suffix = s.meta?.suffix || "";
     const prefix = s.meta?.prefix || "";
-    const delta = s.meta?.delta || "-100% COLLAPSE";
-    const deltaDir = (s.meta?.deltaDir || "down") === "up" ? "delta-up" : "delta-down";
+    const delta = s.meta?.delta || "";
+    const deltaDir = (s.meta?.deltaDir || (delta.startsWith("+") ? "up" : "down")) === "up" ? "delta-up" : "delta-down";
     const deltaArrow = deltaDir === "delta-up" ? "▲" : "▼";
 
     return `
@@ -313,11 +313,10 @@ const RENDER = {
   },
 
   dateline(s) {
-    const date = s.meta?.date || {};
-    const day = date.day || s.meta?.day || "";
-    const month = date.month || s.meta?.mon || "";
-    const year = date.year || s.meta?.yr || "";
-    const ghost = s.meta?.ghost || year.split(/\s+/)[0] || day || "UTC";
+    const day = s.meta?.day || "";
+    const month = s.meta?.mon || "";
+    const year = s.meta?.yr || "";
+    const ghost = s.meta?.ghost || "";
 
     const timeMatch = year.match(/^(.*?)(\b(\d{1,2}):(\d{2}):(\d{2})\b)(.*)$/);
     let yrContent = esc(year);
@@ -356,16 +355,16 @@ const RENDER = {
     }
 
     return `
-    <div class="dl-ghost">${esc(ghost)}</div>
+    ${ghost ? `<div class="dl-ghost">${esc(ghost)}</div>` : ""}
     <div class="dl-grid">
       <div class="dl-date">
         <div class="dl-laser-line">
           <span class="dl-laser-bar"></span>
           <span class="dl-laser-dot"></span>
         </div>
-        <div class="dl-day">${esc(day)}</div>
-        <div class="dl-mon">${esc(month)}</div>
-        <div class="dl-yr">${yrContent}</div>
+        ${day ? `<div class="dl-day">${esc(day)}</div>` : ""}
+        ${month ? `<div class="dl-mon">${esc(month)}</div>` : ""}
+        ${yrContent ? `<div class="dl-yr">${yrContent}</div>` : ""}
         ${chronoMeterHtml}
       </div>
       <div class="dl-right">
@@ -378,7 +377,7 @@ const RENDER = {
   },
 
   code(s) {
-    const ghost = s.ghost || s.meta?.ghost || "";
+    const ghost = s.meta?.ghost || s.ghost || "";
     const rawLines = s.meta?.lines || [];
     const lines = rawLines.map((rawL, k) => {
       const l = typeof rawL === "string" ? { t: rawL } : (rawL || {});
@@ -393,14 +392,15 @@ const RENDER = {
         rawText = `==${rawText}==`;
       }
       const content = colorizeCode(rawText);
-      const beacon = isBad
-        ? `<span class="cl-bad-beacon"><span class="cl-bad-beacon-dot"></span><span>▶ ZERO BACKOFF</span><span class="cl-bad-cursor"></span></span>`
+      const beaconMsg = l.beacon || l.msg || "";
+      const beacon = (isBad && beaconMsg)
+        ? `<span class="cl-bad-beacon"><span class="cl-bad-beacon-dot"></span><span>▶ ${esc(beaconMsg)}</span><span class="cl-bad-cursor"></span></span>`
         : "";
       return `<div class="${cls}" data-k="${k}"><span class="cl-n">${l.n ?? k + 1}</span><span class="cl-c">${content}${beacon}</span></div>`;
     });
-    const file = s.meta?.file || "source";
+    const file = s.meta?.file || "";
     const tag = s.meta?.tag || "";
-    const callout = s.meta?.announce || s.subline || "";
+    const callout = s.meta?.announce || "";
     const foot = callout
       ? `<div class="code-foot"><div class="code-callout">${splitWords(callout, s)}</div></div>`
       : "";
@@ -412,7 +412,7 @@ const RENDER = {
       <div class="code-bar">
         <div style="display:flex;align-items:center;gap:14px">
           <div class="mac-dots"><span></span><span></span><span></span></div>
-          <span class="code-file">${esc(file)}</span>
+          ${file ? `<span class="code-file">${esc(file)}</span>` : ""}
         </div>
         ${tag ? `<span class="code-tag">${esc(tag)}</span>` : ""}
       </div>
@@ -423,7 +423,7 @@ const RENDER = {
   },
 
   diff(s) {
-    const ghost = s.ghost || s.meta?.ghost || "";
+    const ghost = s.meta?.ghost || s.ghost || "";
     const rawLines = s.meta?.lines || [];
     const lines = rawLines.map((rawL, k) => {
       let l = typeof rawL === "string"
@@ -435,14 +435,13 @@ const RENDER = {
       const sig = kind === "add" ? "+" : kind === "del" ? "-" : " ";
       let text = l.t ?? l.text ?? l.c ?? "";
       const strike = kind === "del" ? `<span class="df-strike"></span>` : "";
-      const tag = kind === "del"
-        ? `<span class="df-tag df-tag-del">REMOVED</span>`
-        : kind === "add"
-          ? `<span class="df-tag df-tag-add">FIX APPLIED</span>`
-          : "";
+      const tagLabel = l.tag || "";
+      const tag = tagLabel
+        ? `<span class="df-tag df-tag-${kind}">${esc(tagLabel)}</span>`
+        : "";
       return `<div class="df-line df-${kind}" data-k="${k}"><span class="df-sig">${sig}</span><span class="df-t"><span class="df-code-wrap"><span class="df-code-text">${colorizeCode(text)}</span>${strike}</span>${tag}</span></div>`;
     });
-    const file = s.meta?.file || "source";
+    const file = s.meta?.file || "";
     const ver = s.meta?.ver || "";
     const verBadge = ver
       ? `<div class="df-ver-wrap">
@@ -455,7 +454,7 @@ const RENDER = {
           </div>
         </div>`
       : "";
-    const callout = s.meta?.announce || s.subline || "";
+    const callout = s.meta?.announce || "";
     const foot = callout
       ? `<div class="diff-foot"><div class="diff-callout">${splitWords(callout, s)}</div></div>`
       : "";
@@ -467,7 +466,7 @@ const RENDER = {
       <div class="diff-head">
         <div style="display:flex;align-items:center;gap:14px">
           <div class="mac-dots"><span></span><span></span><span></span></div>
-          <span class="df-file">${esc(file)}</span>
+          ${file ? `<span class="df-file">${esc(file)}</span>` : ""}
         </div>
         ${verBadge}
       </div>
@@ -487,8 +486,8 @@ const RENDER = {
           .map(
             (n, k) => `${k ? '<div class="flow-link"><svg viewBox="0 0 120 24" preserveAspectRatio="none"><path class="fl-p" d="M0 12 H104"/><path class="fl-a" d="M96 5 L110 12 L96 19"/><circle class="fl-packet" cx="0" cy="12" r="3.5" fill="var(--ac)"/></svg></div>' : ""}
           <div class="flow-node ${n.hot ? "is-hot" : ""} ${n.bad ? "is-bad" : ""}" data-k="${k}">
-            <div class="fn-k">${esc(n.k || "")}</div>
-            <div class="fn-t">${esc(n.t || n.title || n.name || "")}</div>
+            ${n.k ? `<div class="fn-k">${esc(n.k)}</div>` : ""}
+            <div class="fn-t">${esc(n.t || "")}</div>
             ${n.s ? `<div class="fn-s">${esc(n.s)}</div>` : ""}
           </div>`,
           )
@@ -504,20 +503,20 @@ const RENDER = {
     const rows = s.meta?.rows || [];
     const points = s.meta?.points || [];
     const stamp = s.meta?.stamp || "";
-    const label = s.meta?.head || s.meta?.label || "AUDIT RECORD";
-    const status = s.meta?.live || s.meta?.status || "VERIFIED";
+    const label = s.meta?.head || s.meta?.label || "";
+    const status = s.meta?.live || s.meta?.status || "";
     return `
     <div class="lg-grid">
       <div class="lg-left">
         <div class="lg-card">
-          <div class="lg-head">
-            <span>${esc(label)}</span>
-            <span class="lg-live">${esc(status)}</span>
-          </div>
+          ${label || status ? `<div class="lg-head">
+            ${label ? `<span>${esc(label)}</span>` : ""}
+            ${status ? `<span class="lg-live">${esc(status)}</span>` : ""}
+          </div>` : ""}
           <div class="lg-rows">
             ${rows
               .map(
-                (r, k) => `<div class="lg-row" data-k="${k}"><span class="lg-k">${esc(r.k)}</span><span class="lg-v ${r.bad ? "is-bad" : ""}">${esc(r.v)}</span></div>`,
+                (r, k) => `<div class="lg-row" data-k="${k}"><span class="lg-k">${esc(r.k || "")}</span><span class="lg-v ${r.bad ? "is-bad" : ""}">${esc(r.v || "")}</span></div>`,
               )
               .join("")}
           </div>
@@ -538,25 +537,31 @@ const RENDER = {
       const isBad = c.state === "bad" || c.bad;
       const isLive = c.state === "live" || c.live;
       const cls = ["mc", isBad ? "is-bad" : "", isLive ? "is-live" : ""].filter(Boolean).join(" ");
-      return `<div class="${cls}" data-k="${k}"><span class="mc-i">${esc(c.addr || String(k).padStart(2, "0"))}</span><div class="mc-b"></div></div>`;
+      return `<div class="${cls}" data-k="${k}"><span class="mc-i">${esc(c.addr || "")}</span><div class="mc-b"></div></div>`;
     });
     const count = s.meta?.liveCount ?? s.meta?.allocated ?? 0;
+    const segment = s.meta?.segment || "";
+    const pointer = s.meta?.pointer || "";
+    const legendOk = s.meta?.legendOk || "";
+    const legendBad = s.meta?.legendBad || "";
     return `
     ${eyebrow(s)}
     <div class="mem-shell">
       <div class="mem-head">
-        <span class="mem-name">${esc(s.meta?.segment || "HEAP BUFFER")}</span>
+        ${segment ? `<span class="mem-name">${esc(segment)}</span>` : ""}
         <span class="mem-count">LIVE ALLOCATIONS <b class="mem-n" data-n="${count}">${count}</b></span>
       </div>
       <div class="mem-cells">${cells.join("")}</div>
+      ${pointer ? `
       <div class="mem-ptr">
         <svg viewBox="0 0 240 60"><path d="M 12 10 L 80 50 L 220 50" class="mpar"/></svg>
-        <span>${esc(s.meta?.pointer || "CORRUPT")}</span>
-      </div>
+        <span>${esc(pointer)}</span>
+      </div>` : ""}
+      ${legendOk || legendBad ? `
       <div class="mem-legend">
-        <span class="mgl ok">VALID</span>
-        <span class="mgl bad">CORRUPTED</span>
-      </div>
+        ${legendOk ? `<span class="mgl ok">${esc(legendOk)}</span>` : ""}
+        ${legendBad ? `<span class="mgl bad">${esc(legendBad)}</span>` : ""}
+      </div>` : ""}
     </div>
     <div class="mem-side">
       <h2 class="mem-title">${splitWords(s.headline, s)}</h2>
@@ -566,7 +571,7 @@ const RENDER = {
 
   timeline(s) {
     const events = s.meta?.events || [];
-    const ghost = s.meta?.ghost || "CASCADE";
+    const ghost = s.meta?.ghost || "";
     const N = events.length;
 
     function parseTimeSec(tStr) {
@@ -609,14 +614,14 @@ const RENDER = {
           <div class="tl-dot"></div>
         </div>
         <div class="tl-card">
-          <div class="tl-t"><span class="tl-t-text">${esc(e.t)}</span>${e.hot ? `<span class="tl-hot-badge">CRITICAL</span>` : ""}</div>
-          <div class="tl-s">${esc(e.s || "")}</div>
+          <div class="tl-t"><span class="tl-t-text">${esc(e.t)}</span>${e.badge ? `<span class="tl-hot-badge">${esc(e.badge)}</span>` : (e.hot ? `<span class="tl-hot-badge">CRITICAL</span>` : "")}</div>
+          ${e.s ? `<div class="tl-s">${esc(e.s)}</div>` : ""}
         </div>
       </div>`;
     }).join("");
 
     return `
-    <div class="tl-ghost">${esc(ghost)}</div>
+    ${ghost ? `<div class="tl-ghost">${esc(ghost)}</div>` : ""}
     ${eyebrow(s)}
     <h2 class="tl-head">${splitWords(s.headline, s)}</h2>
     ${s.subline ? `<div class="tl-sub">${esc(s.subline)}</div>` : ""}
@@ -629,7 +634,7 @@ const RENDER = {
   },
 
   terminal(s) {
-    const ghost = s.ghost || s.meta?.ghost || "";
+    const ghost = s.meta?.ghost || s.ghost || "";
     const rawLines = s.meta?.lines || [];
     const lines = rawLines.map((l, k) => {
       const kind = l.kind || l.k || (l.cmd ? "cmd" : l.err ? "err" : l.bad ? "bad" : l.ok ? "ok" : "out");
@@ -642,12 +647,13 @@ const RENDER = {
       if (l.hl || renderedText.includes("==")) {
         renderedText = renderedText.replace(/==(.*?)==/g, (_, inner) => `<span class="hl-marker is-live-hl" data-hl="${esc(inner)}"><span class="hl-ink"></span><span class="hl-text">${inner}</span></span>`);
       }
-      const tag = (kind === "err" || kind === "bad") ? `<span class="tm-line-tag">FAILED</span>` : "";
+      const tagText = l.tag || "";
+      const tag = tagText ? `<span class="tm-line-tag">${esc(tagText)}</span>` : "";
       return `<div class="tm-line tm-${kind}" data-k="${k}"><span class="tm-p">${pfx}</span><span class="tm-t">${renderedText}${tag}</span></div>`;
     });
-    const host = s.meta?.host || "terminal@idevak";
+    const host = s.meta?.host || "";
     const tag = s.meta?.tag || "";
-    const callout = s.meta?.announce || s.subline || "";
+    const callout = s.meta?.announce || "";
     const foot = callout
       ? `<div class="tm-foot"><div class="tm-callout">${splitWords(callout, s)}</div></div>`
       : "";
@@ -661,7 +667,7 @@ const RENDER = {
       <div class="tm-bar">
         <div style="display:flex;align-items:center;gap:14px">
           <div class="mac-dots"><span></span><span></span><span></span></div>
-          <span class="tm-host">${esc(host)}</span>
+          ${host ? `<span class="tm-host">${esc(host)}</span>` : ""}
         </div>
         <div style="display:flex;align-items:center;gap:12px">
           ${tag ? `<span class="tm-tag">${esc(tag)}</span>` : ""}
@@ -679,7 +685,7 @@ const RENDER = {
   compare(s) {
     const left = s.meta?.left || {};
     const right = s.meta?.right || {};
-    const mid = s.meta?.mid || s.meta?.vs || "VS";
+    const mid = s.meta?.mid || s.meta?.vs || "";
     const points = (side) => (Array.isArray(side.pts) ? side.pts : [side.p || ""])
       .filter(Boolean).map(p => `<div class="cmp-p">${esc(p)}</div>`).join("");
     const longMid = mid.length > 3;
@@ -688,13 +694,13 @@ const RENDER = {
     ${eyebrow(s)}
     <div class="cmp-stage">
       <div class="cmp-col cmp-left">
-        <div class="cmp-k">${esc(left.k || "BEFORE")}</div>
+        ${left.k ? `<div class="cmp-k">${esc(left.k)}</div>` : ""}
         <div class="cmp-t">${esc(left.t || "")}</div>
         ${points(left)}
       </div>
-      <div class="cmp-mid"><div class="cmp-diamond"><span class="cmp-vs ${isArrow ? "is-arrow" : ""} ${longMid ? "is-long" : ""}">${esc(mid)}</span></div></div>
+      ${mid ? `<div class="cmp-mid"><div class="cmp-diamond"><span class="cmp-vs ${isArrow ? "is-arrow" : ""} ${longMid ? "is-long" : ""}">${esc(mid)}</span></div></div>` : ""}
       <div class="cmp-col cmp-right">
-        <div class="cmp-k">${esc(right.k || "AFTER")}</div>
+        ${right.k ? `<div class="cmp-k">${esc(right.k)}</div>` : ""}
         <div class="cmp-t">${esc(right.t || "")}</div>
         ${points(right)}
       </div>
@@ -707,29 +713,29 @@ const RENDER = {
     const layers = s.meta?.layers || [];
     const count = layers.length;
     const layerItems = layers.map((l, k) => {
-      const idxStr = String(count - k).padStart(2, "0");
-      let fullText = String(l.t || "");
-      let tier = "";
-      let name = fullText;
-      let detail = "";
-      
-      const colonIdx = fullText.indexOf(":");
-      if (colonIdx !== -1) {
-        name = fullText.slice(0, colonIdx).trim();
-        detail = fullText.slice(colonIdx + 1).trim();
+      const idxStr = l.idx != null ? String(l.idx) : String(count - k).padStart(2, "0");
+      let name = l.name || l.t || "";
+      let detail = l.detail || l.s || "";
+      let tier = l.tier || "";
+      if (!l.name && !l.detail && typeof l.t === "string") {
+        const colonIdx = l.t.indexOf(":");
+        if (colonIdx !== -1) {
+          name = l.t.slice(0, colonIdx).trim();
+          detail = l.t.slice(colonIdx + 1).trim();
+        }
+        const tierMatch = name.match(/^(L\d+)\s*(.*)/i);
+        if (tierMatch) {
+          tier = tierMatch[1];
+          name = tierMatch[2];
+        }
       }
-      const tierMatch = name.match(/^(L\d+)\s*(.*)/i);
-      if (tierMatch) {
-        tier = tierMatch[1];
-        name = tierMatch[2];
-      }
-      const metric = l.s || "";
+      const metric = l.metric || l.s || "";
       const statusCls = l.bad ? "is-bad" : (l.hot ? "is-hot" : "is-norm");
 
       return `
       <div class="stk-layer ${statusCls}" data-k="${k}">
         <div class="stk-tier-wrap">
-          <span class="stk-num">${idxStr}</span>
+          <span class="stk-num">${esc(idxStr)}</span>
           ${tier ? `<span class="stk-tier-pill">${esc(tier)}</span>` : ""}
         </div>
         <div class="stk-info">
@@ -764,7 +770,7 @@ const RENDER = {
 
   quote(s) {
     const avatar = s.meta?.avatar;
-    const authorInitials = s.meta?.initials || (s.subline ? s.subline.split(/[/,-]/)[0].trim().split(/\s+/).slice(0, 2).map(w => w[0]).join("").toUpperCase() : "");
+    const authorInitials = s.meta?.initials || "";
     const badgeHtml = avatar 
       ? `<div class="q-avatar"><img src="${esc(avatar)}" alt="author" /><span class="q-avatar-ring"></span></div>` 
       : authorInitials 
@@ -788,19 +794,7 @@ const RENDER = {
 
   matrix(s) {
     const totalCells = Math.min(64, Math.max(16, s.meta?.cells || 64));
-    let badCount = s.meta?.badCount;
-    if (badCount == null && s.meta?.count) {
-      const m = String(s.meta.count).match(/(\d+)\s*\/\s*(\d+)/);
-      if (m) badCount = parseInt(m[1], 10);
-    }
-    if (badCount == null && s.meta?.ratio != null) {
-      badCount = Math.round(s.meta.ratio * totalCells);
-    }
-    if (badCount == null) {
-      const text = `${s.headline || ""} ${s.subline || ""}`;
-      const m = text.match(/(\d+)%/);
-      badCount = m ? Math.round((parseInt(m[1], 10) / 100) * totalCells) : Math.round(totalCells * 0.5);
-    }
+    let badCount = s.meta?.badCount != null ? Number(s.meta.badCount) : 0;
     badCount = Math.min(totalCells, Math.max(0, badCount));
     const okCount = totalCells - badCount;
 
@@ -827,7 +821,9 @@ const RENDER = {
       return `<span class="mx-c" data-k="${k}" data-bad="${isBad ? "1" : "0"}"></span>`;
     }).join("");
 
-    const displayCount = s.meta?.count || `${badCount} / ${totalCells} NODES DOWN`;
+    const displayCount = s.meta?.count || "";
+    const legendOk = s.meta?.legendOk || "";
+    const legendBad = s.meta?.legendBad || "";
 
     return `
     <div class="mx-grid">
@@ -835,30 +831,33 @@ const RENDER = {
         ${eyebrow(s)}
         <h2 class="mx-title">${splitWords(s.headline, s)}</h2>
         ${s.subline ? `<p class="mx-sub">${esc(s.subline)}</p>` : ""}
+        ${legendOk || legendBad ? `
         <div class="mx-legend">
-          <span><i class="mx-sw ok"></i>${esc(s.meta?.legendOk || "RECOVERED")}</span>
-          <span><i class="mx-sw bad"></i>${esc(s.meta?.legendBad || "DEADLOCKED")}</span>
-        </div>
+          ${legendOk ? `<span><i class="mx-sw ok"></i>${esc(legendOk)}</span>` : ""}
+          ${legendBad ? `<span><i class="mx-sw bad"></i>${esc(legendBad)}</span>` : ""}
+        </div>` : ""}
       </div>
       <div class="mx-right">
         <div class="mx-cells" data-total="${totalCells}" data-bad="${badCount}">${cells}</div>
-        <div class="mx-count" data-total="${totalCells}" data-target="${badCount}">${esc(displayCount)}</div>
+        ${displayCount ? `<div class="mx-count" data-total="${totalCells}" data-target="${badCount}">${esc(displayCount)}</div>` : ""}
       </div>
     </div>`;
   },
 
   webref(s) {
-    const ghost = s.ghost || s.meta?.ghost || "";
-    const url = s.meta?.url || "https://docs.aws.amazon.com/";
-    const badge = s.meta?.badge || "OFFICIAL DOCUMENTATION";
-    const docTitle = s.meta?.title || s.headline;
+    const ghost = s.meta?.ghost || s.ghost || "";
+    const url = s.meta?.url || "";
+    const badge = s.meta?.badge || "";
+    const docTitle = s.meta?.title || "";
     const rawSnippet = s.meta?.snippet;
-    const snippet = Array.isArray(rawSnippet) ? rawSnippet : [rawSnippet || s.subline || ""];
+    const snippet = Array.isArray(rawSnippet) ? rawSnippet : (rawSnippet ? [rawSnippet] : []);
     const highlight = s.meta?.highlight || "";
     const callout = s.meta?.callout || "";
-    const calloutType = s.meta?.calloutType || "IMPORTANT";
-    const crumb = s.meta?.crumb || "DOCS / REFERENCE / SPEC";
+    const calloutType = s.meta?.calloutType || "";
+    const crumb = s.meta?.crumb || "";
     const formula = s.meta?.formula || "";
+    const formulaBadge = s.meta?.formulaBadge || "";
+    const formulaLabel = s.meta?.formulaLabel || "";
     const customImg = s.meta?.image;
 
     return `
@@ -870,30 +869,30 @@ const RENDER = {
         <div class="web-dots"><span></span><span></span><span></span></div>
         <div class="web-url-box">
           <svg class="web-lock" viewBox="0 0 24 24"><path fill="currentColor" d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
-          <span class="web-url">${esc(url)}</span>
+          ${url ? `<span class="web-url">${esc(url)}</span>` : ""}
         </div>
-        <div class="web-badge">${esc(badge)}</div>
+        ${badge ? `<div class="web-badge">${esc(badge)}</div>` : ""}
       </div>
       <div class="web-body">
         <div class="web-viewport">
           <div class="web-doc-scroll">
-            ${customImg ? `<div class="web-screenshot-wrap"><img class="web-screenshot" src="${esc(customImg)}" alt="${esc(s.meta?.alt || docTitle)}" style="object-position:${esc(s.meta?.position || "top center")}" /></div>` : `
+            ${customImg ? `<div class="web-screenshot-wrap"><img class="web-screenshot" src="${esc(customImg)}" alt="${esc(s.meta?.alt || docTitle || "")}" style="${s.meta?.position ? `object-position:${esc(s.meta.position)};` : ""}" /></div>` : `
             <div class="web-doc-header">
-              <div class="web-doc-crumb">${esc(crumb)}</div>
-              <div class="web-doc-title">${esc(docTitle)}</div>
+              ${crumb ? `<div class="web-doc-crumb">${esc(crumb)}</div>` : ""}
+              ${docTitle ? `<div class="web-doc-title">${esc(docTitle)}</div>` : ""}
             </div>
             <div class="web-doc-content">
               ${snippet.map(sn => `<p class="web-p ${highlight && sn.includes(highlight) ? "has-hl" : ""}">${splitWords(sn, s)}</p>`).join("")}
               ${callout ? `
-              <div class="web-callout callout-${calloutType.toLowerCase().replace(/[^a-z0-9_-]/g, "")}">
+              <div class="web-callout ${calloutType ? `callout-${calloutType.toLowerCase().replace(/[^a-z0-9_-]/g, "")}` : ""}">
                 <div class="web-callout-top">
-                  <span class="web-callout-tag">${esc(calloutType)}</span>
-                  ${formula ? `<span class="web-callout-algo-badge">FULL JITTER</span>` : ""}
+                  ${calloutType ? `<span class="web-callout-tag">${esc(calloutType)}</span>` : ""}
+                  ${formulaBadge ? `<span class="web-callout-algo-badge">${esc(formulaBadge)}</span>` : ""}
                 </div>
                 <div class="web-callout-text">${splitWords(callout, s)}</div>
                 ${formula ? `
                 <div class="web-formula-chip">
-                  <span class="wfc-label">DECORRELATION FORMULA</span>
+                  ${formulaLabel ? `<span class="wfc-label">${esc(formulaLabel)}</span>` : ""}
                   <code class="wfc-code">${esc(formula)}</code>
                 </div>` : ""}
               </div>` : ""}
@@ -911,40 +910,41 @@ const RENDER = {
   },
 
   meme(s) {
-    const ghost = s.ghost || s.meta?.ghost || "WAIT WHAT";
-    const caption = s.meta?.caption || s.meta?.text || s.headline || "";
-    const badge = s.meta?.badge || s.meta?.reaction || "SYSTEM PANIC";
-    const sub = s.meta?.subtext || s.meta?.sub || s.subline || "";
-    const expr = s.meta?.expression || "facepalm";
-    const image = s.meta?.image || MASCOT_IMAGES[expr] || MASCOT_IMAGES["shocked"] || "";
-    const file = s.meta?.file || "hotfix_prod_v2_FINAL.sh";
+    const ghost = s.meta?.ghost || s.ghost || "";
+    const caption = s.meta?.caption || s.meta?.text || "";
+    const badge = s.meta?.badge || s.meta?.reaction || "";
+    const sub = s.meta?.subtext || s.meta?.sub || "";
+    const expr = s.meta?.expression || "";
+    const image = s.meta?.image || (expr && MASCOT_IMAGES[expr]) || "";
+    const file = s.meta?.file || "";
     const bubble = s.meta?.bubble || s.meta?.thought || "";
     const stamp = s.meta?.stamp || s.meta?.reactionTag || "";
-    const timestamp = s.meta?.time || s.meta?.timestamp || "REC ● 16:59:58 (FRIDAY)";
+    const timestamp = s.meta?.time || s.meta?.timestamp || "";
+    const tag = s.meta?.tag || s.meta?.category || "";
 
     return `
     <div class="meme-stage">
-      <div class="meme-ghost">${esc(ghost)}</div>
+      ${ghost ? `<div class="meme-ghost">${esc(ghost)}</div>` : ""}
       ${eyebrow(s)}
-      <div class="meme-badge"><span>INCIDENT_REPORT</span><b>${esc(badge)}</b></div>
+      ${badge || tag ? `<div class="meme-badge">${tag ? `<span>${esc(tag)}</span>` : ""}<b>${esc(badge)}</b></div>` : ""}
       <div class="meme-card">
         <div class="meme-media-chassis">
           <div class="meme-titlebar">
             <div class="mac-dots"><span></span><span></span><span></span></div>
-            <span class="meme-filename">${esc(file)}</span>
+            ${file ? `<span class="meme-filename">${esc(file)}</span>` : ""}
             <span class="meme-rec-tag"><span class="meme-rec-dot"></span>REC</span>
           </div>
           <div class="meme-media-wrap">
-            <img class="meme-img" src="${image}" alt="reaction" />
+            ${image ? `<img class="meme-img" src="${image}" alt="reaction" />` : ""}
             <div class="meme-scanlines"></div>
             <div class="meme-glitch-bar"></div>
             ${bubble ? `<div class="meme-bubble"><span class="meme-bubble-text">${esc(bubble)}</span><span class="meme-bubble-tail"></span></div>` : ""}
             ${stamp ? `<div class="meme-stamp"><span class="meme-stamp-inner">${esc(stamp)}</span></div>` : ""}
-            <div class="meme-timestamp">${esc(timestamp)}</div>
+            ${timestamp ? `<div class="meme-timestamp">${esc(timestamp)}</div>` : ""}
           </div>
         </div>
         <div class="meme-right">
-          <h2 class="meme-caption">${splitWords(caption, s)}</h2>
+          ${caption ? `<h2 class="meme-caption">${splitWords(caption, s)}</h2>` : ""}
           ${sub ? `<p class="meme-sub">${esc(sub)}</p>` : ""}
         </div>
       </div>
@@ -952,33 +952,42 @@ const RENDER = {
   },
 
   cloud(s) {
-    const ghost = s.ghost || s.meta?.ghost || "";
+    const ghost = s.meta?.ghost || s.ghost || "";
     const rawNodes = s.meta?.nodes || [];
     const nodes = rawNodes.map(n => typeof n === "string" ? { t: n } : (n || {}));
     const edges = s.meta?.edges || [];
-    const tag = s.meta?.tag || "CLOUD ARCHITECTURE";
+    const tag = s.meta?.tag || "";
+    const matrixLabel = s.meta?.matrixLabel || s.meta?.label || "";
     return `
     <div class="cloud-stage">
       ${ghost ? `<div class="cloud-ghost" data-layout-allow-overflow>${esc(ghost)}</div>` : ""}
       ${eyebrow(s)}
       ${s.headline ? `<h2 class="cloud-head-title">${splitWords(s.headline, s)}</h2>` : ""}
       <div class="cloud-canvas">
+        ${tag || matrixLabel ? `
         <div class="cloud-header">
-          <span class="cloud-tag">${esc(tag)}</span>
-          <span class="cloud-flow-label">TOPOLOGY MATRIX</span>
-        </div>
+          ${tag ? `<span class="cloud-tag">${esc(tag)}</span>` : ""}
+          ${matrixLabel ? `<span class="cloud-flow-label">${esc(matrixLabel)}</span>` : ""}
+        </div>` : ""}
         ${s.meta?.flow ? `<div class="cloud-flow">${esc(s.meta.flow)}</div>` : ""}
         <div class="cloud-nodes">
           ${nodes.map((n, k) => {
             const edge = edges[k - 1] || {};
             const isHotProxy = Boolean(n.hot);
+            const proto = edge.proto || "";
+            const lat = edge.lat || "";
+            const nodeKind = n.kind || n.k || "";
+            const nodeIcon = n.icon || "";
+            const nodeStatus = n.status || "";
+            const beaconMsg = n.beacon || n.shed || "";
             return `
             ${k > 0 ? `
               <div class="cloud-edge" data-edge="${k}">
+                ${proto || lat ? `
                 <div class="cloud-edge-chip">
-                  <span class="cec-proto">${esc(edge.proto || "mTLS")}</span>
-                  <span class="cec-lat">${esc(edge.lat || "0.5ms")}</span>
-                </div>
+                  ${proto ? `<span class="cec-proto">${esc(proto)}</span>` : ""}
+                  ${lat ? `<span class="cec-lat">${esc(lat)}</span>` : ""}
+                </div>` : ""}
                 <svg viewBox="0 0 100 24" class="cld-edge-svg">
                   <path d="M0 12 H90" class="cld-path"/>
                   <polygon points="90 8, 98 12, 90 16" class="cld-arrow"/>
@@ -987,14 +996,14 @@ const RENDER = {
                 ${k === 2 ? `<div class="cld-shed-stream"><circle class="cld-packet-shed" cx="50" cy="12" r="3" fill="#fbbf24"/></div>` : ""}
               </div>` : ""}
             <div class="cloud-node ${n.hot ? "is-hot" : ""} ${n.bad ? "is-bad" : ""}">
-              <span class="cld-badge">${esc(n.kind || n.k || "NODE")}</span>
+              ${nodeKind ? `<span class="cld-badge">${esc(nodeKind)}</span>` : ""}
               <div class="cld-icon-box">
-                <span class="cld-icon">${esc(n.icon || "☁")}</span>
+                ${nodeIcon ? `<span class="cld-icon">${esc(nodeIcon)}</span>` : ""}
                 ${isHotProxy ? `<div class="cld-shield-ring"></div>` : ""}
               </div>
               <div class="cld-title">${esc(n.name || n.title || n.t || "")}</div>
-              <div class="cld-status ${n.bad ? "is-bad" : "is-ok"}"><span class="cld-dot"></span>${esc(n.status || "HEALTHY")}</div>
-              ${isHotProxy ? `<div class="cld-breaker-beacon"><span class="cbb-icon">⚡</span><span>FAST-FAIL SHED</span></div>` : ""}
+              ${nodeStatus ? `<div class="cld-status ${n.bad ? "is-bad" : "is-ok"}"><span class="cld-dot"></span>${esc(nodeStatus)}</div>` : ""}
+              ${beaconMsg ? `<div class="cld-breaker-beacon"><span class="cbb-icon">⚡</span><span>${esc(beaconMsg)}</span></div>` : ""}
               ${n.latency || n.rate ? `
                 <div class="cld-telem">
                   ${n.latency ? `<span class="cld-telem-pill cld-lat"><span class="cld-ping-dot"></span>${esc(n.latency)}</span>` : ""}
@@ -1012,12 +1021,12 @@ const RENDER = {
   },
 
   mascot(s) {
-    const expr = s.meta?.expression || "neutral";
-    const imgSrc = s.meta?.image || MASCOT_IMAGES[expr] || "";
-    const bubble = s.meta?.bubble || s.headline || "";
-    const badge = s.meta?.badge || "iDevak // ANALYSIS";
-    const ghost = s.ghost || s.meta?.ghost || "VERDICT";
-    const telemetry = s.meta?.telemetry || "SYS_ACTIVE // 60 FPS";
+    const expr = s.meta?.expression || "";
+    const imgSrc = s.meta?.image || (expr && MASCOT_IMAGES[expr]) || "";
+    const bubble = s.meta?.bubble || "";
+    const badge = s.meta?.badge || "";
+    const ghost = s.meta?.ghost || s.ghost || "";
+    const telemetry = s.meta?.telemetry || "";
     const stats = (s.meta?.stats || []).map(st => `
       <div class="mst-item">
         <span class="mst-lbl">${esc(st.label || "")}</span>
@@ -1027,7 +1036,7 @@ const RENDER = {
 
     return `
     <div class="mascot-stage">
-      <div class="mascot-ghost">${esc(ghost)}</div>
+      ${ghost ? `<div class="mascot-ghost">${esc(ghost)}</div>` : ""}
       <div class="mascot-left">
         <div class="mascot-hud-frame">
           <div class="mascot-emitter"></div>
@@ -1038,63 +1047,70 @@ const RENDER = {
           <div class="mascot-scanline"></div>
           <div class="mascot-hud-glare"></div>
 
-          <img class="mascot-img" src="${imgSrc}" alt="${esc(expr)}" />
-          <div class="mascot-hud-tag">${esc(badge)}</div>
-          <div class="mascot-hud-telemetry"><span class="mst-tel-pulse"></span><span class="m-ov-eq"><span class="m-ov-eq-bar"></span><span class="m-ov-eq-bar"></span><span class="m-ov-eq-bar"></span><span class="m-ov-eq-bar"></span></span><span>${esc(telemetry)}</span></div>
+          ${imgSrc ? `<img class="mascot-img" src="${imgSrc}" alt="${esc(expr)}" />` : ""}
+          ${badge ? `<div class="mascot-hud-tag">${esc(badge)}</div>` : ""}
+          ${telemetry ? `<div class="mascot-hud-telemetry"><span class="mst-tel-pulse"></span><span class="m-ov-eq"><span class="m-ov-eq-bar"></span><span class="m-ov-eq-bar"></span><span class="m-ov-eq-bar"></span><span class="m-ov-eq-bar"></span></span><span>${esc(telemetry)}</span></div>` : ""}
         </div>
       </div>
       <div class="mascot-right">
         ${eyebrow(s)}
+        ${bubble ? `
         <div class="mascot-bubble-box">
           <div class="mascot-bubble-arrow"></div>
           <h2 class="mascot-bubble-text">${splitWords(bubble, s)}</h2>
           ${s.subline ? `<div class="mascot-sub">${esc(s.subline)}</div>` : ""}
-        </div>
+        </div>` : (s.headline ? `<h2 class="mascot-bubble-text">${splitWords(s.headline, s)}</h2>` : "")}
         ${stats ? `<div class="mascot-stats-grid">${stats}</div>` : ""}
       </div>
     </div>`;
   },
 
   outro(s) {
-    const ghost = s.ghost || s.meta?.ghost || project.ghost || String(project.title || "").trim().split(/\s+/)[0].toUpperCase();
-    const ctaK = s.meta?.cta || project.cta || "SUBSCRIBE";
-    const channel = s.meta?.channel;
-    const ytHandle = s.meta?.ctaSub || "youtube.com/@iDevak";
-    const xHandle = s.meta?.twitter || "x.com/iDevakk";
+    const ghost = s.meta?.ghost || s.ghost || project.ghost || "";
+    const ctaK = s.meta?.cta || project.cta || "";
+    const ytHandle = s.meta?.ctaSub || s.meta?.channel || project.channel || "";
+    const xHandle = s.meta?.twitter || project.twitter || "";
 
     return `
     <div class="out-wrap">
-      <div class="out-ghost">${esc(ghost)}<span class="out-ghost-laser"></span></div>
+      ${ghost ? `<div class="out-ghost">${esc(ghost)}<span class="out-ghost-laser"></span></div>` : ""}
       ${eyebrow(s)}
       <h2 class="out-title">${splitWords(s.headline, s)}</h2>
-      <div class="out-sub">${esc(s.subline || "")}</div>
+      ${s.subline ? `<div class="out-sub">${esc(s.subline)}</div>` : ""}
+      ${ctaK || ytHandle || xHandle ? `
       <div class="out-action-row">
+        ${ctaK ? `
         <div class="out-btn-pill">
           <span class="out-btn-play"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></span>
           <span class="out-btn-label">${esc(ctaK)}</span>
           <span class="out-btn-glow"></span>
-        </div>
+        </div>` : ""}
+        ${ytHandle || xHandle ? `
         <div class="out-socials">
+          ${ytHandle ? `
           <div class="out-social-badge yt">
             <svg class="out-soc-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
             <span class="out-soc-text">${esc(ytHandle)}</span>
-          </div>
+          </div>` : ""}
+          ${xHandle ? `
           <div class="out-social-badge tw">
             <svg class="out-soc-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
             <span class="out-soc-text">${esc(xHandle)}</span>
-          </div>
-        </div>
-      </div>
+          </div>` : ""}
+        </div>` : ""}
+      </div>` : ""}
     </div>`;
   },
 
   split(s) {
-    const ghost = s.ghost || s.meta?.ghost || "";
+    const ghost = s.meta?.ghost || s.ghost || "";
     const left = s.meta?.left || {};
     const right = s.meta?.right || {};
-    const tag = s.meta?.tag || "INCIDENT INVESTIGATION";
-    const leftTitle = left.title || "ATTACK VECTOR";
-    const leftBadge = left.badge || "SHELL";
+    const tag = s.meta?.tag || "";
+    const label = s.meta?.label || "";
+    const connLabel = s.meta?.connector || s.meta?.connLabel || "";
+    const leftTitle = left.title || "";
+    const leftBadge = left.badge || "";
     const leftLines = (left.lines || []).map((rawL, k) => {
       const l = typeof rawL === "string" ? { t: rawL } : (rawL || {});
       const kind = l.k || (l.cmd ? "cmd" : l.err ? "err" : "out");
@@ -1102,8 +1118,8 @@ const RENDER = {
       return `<div class="sp-line sp-${kind}" data-k="${k}"><span class="sp-pfx">${pfx}</span><span class="sp-t">${colorizeCode(l.t || l.cmd || "")}</span></div>`;
     });
 
-    const rightTitle = right.title || "TARGET IMPACT";
-    const rightStatus = right.status || "COMPROMISED";
+    const rightTitle = right.title || "";
+    const rightStatus = right.status || "";
     const isBad = !right.ok && (right.bad || /compromised|breached|corrupted|vulnerable|fail|deadlock/i.test(rightStatus));
     const rightPts = (right.pts || []).map((p, k) => `
       <div class="sp-pt" data-k="${k}">
@@ -1117,39 +1133,43 @@ const RENDER = {
       ${ghost ? `<div class="split-ghost" data-layout-allow-overflow>${esc(ghost)}</div>` : ""}
       ${eyebrow(s)}
       ${s.headline ? `<h2 class="split-head-title">${splitWords(s.headline, s)}</h2>` : ""}
+      ${tag || label ? `
       <div class="split-header">
-        <span class="split-tag">${esc(tag)}</span>
-        <span class="split-label">DUAL-PANE FORENSIC INVESTIGATION</span>
-      </div>
+        ${tag ? `<span class="split-tag">${esc(tag)}</span>` : ""}
+        ${label ? `<span class="split-label">${esc(label)}</span>` : ""}
+      </div>` : ""}
       <div class="split-grid">
         <div class="split-pane split-left">
+          ${leftTitle || leftBadge ? `
           <div class="split-pane-bar">
             <div style="display:flex;align-items:center;gap:12px">
               <div class="mac-dots"><span></span><span></span><span></span></div>
-              <span class="split-pane-title">${esc(leftTitle)}</span>
+              ${leftTitle ? `<span class="split-pane-title">${esc(leftTitle)}</span>` : ""}
             </div>
-            <span class="split-pane-badge">${esc(leftBadge)}</span>
-          </div>
+            ${leftBadge ? `<span class="split-pane-badge">${esc(leftBadge)}</span>` : ""}
+          </div>` : ""}
           <div class="split-pane-body split-term-body">
             ${leftLines.join("")}
           </div>
         </div>
+        ${connLabel ? `
         <div class="split-connector">
           <div class="split-conn-chip">
             <span class="scc-icon">⚡</span>
-            <span>RETRY BURST</span>
+            <span>${esc(connLabel)}</span>
           </div>
           <svg viewBox="0 0 100 24" class="split-conn-svg">
             <line x1="2" y1="12" x2="86" y2="12" class="sp-conn-line"/>
             <polygon points="84 7, 96 12, 84 17" class="sp-conn-head"/>
             <circle class="sp-conn-pkt" cx="2" cy="12" r="3.5"/>
           </svg>
-        </div>
+        </div>` : ""}
         <div class="split-pane split-right ${isBad ? "is-bad" : "is-ok"}">
+          ${rightTitle || rightStatus ? `
           <div class="split-pane-bar">
-            <span class="split-pane-title">${esc(rightTitle)}</span>
-            <span class="split-status-badge ${isBad ? "is-bad" : "is-ok"}">${esc(rightStatus)}</span>
-          </div>
+            ${rightTitle ? `<span class="split-pane-title">${esc(rightTitle)}</span>` : ""}
+            ${rightStatus ? `<span class="split-status-badge ${isBad ? "is-bad" : "is-ok"}">${esc(rightStatus)}</span>` : ""}
+          </div>` : ""}
           <div class="split-pane-body split-diag-body">
             ${rightPts}
           </div>

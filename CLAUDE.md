@@ -11,7 +11,9 @@ sandbox, with 15-minute inactivity cleanup as a fallback. Preview servers and
 local encoding still need separate permission. Install the missing Daytona
 skill/SDK using the commands in that guide; do not change global instructions.
 Keep Node, FFmpeg, Playwright, and Chromium in the sandboxes for this workflow.
-The host only needs Python/SDK/credentials/network/storage. Inspect downloaded
+The host only needs Python/SDK/credentials/network/storage. Prompt for missing
+`DAYTONA_API_KEY` and `DEEPGRAM_API_KEY` (for transcription) using private
+secret input (`request_secret`); never ask in plain chat. Inspect downloaded
 preparation reports and frames; fix source and repeat preparation before render.
 
 ## Short version

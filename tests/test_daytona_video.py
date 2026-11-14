@@ -372,6 +372,13 @@ class DaytonaVideoTests(unittest.TestCase):
         with self.assertRaises(TimeoutError):
             helper.run_remote(self.sandbox, "sleep 10", helper.time.monotonic() - 1)
 
+    def test_transcription_requires_deepgram_api_key_when_client_is_none(self):
+        self.audio_fixture()
+        with patch.dict(helper.os.environ, {"DAYTONA_API_KEY": "fake"}, clear=True):
+            with patch.object(helper.sys.modules["daytona"], "Daytona", Mock, create=True):
+                with self.assertRaisesRegex(RuntimeError, "Set DEEPGRAM_API_KEY securely"):
+                    helper.execute(self.args("transcribe"), self.root, client=None)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -36,11 +36,13 @@ python -m pip install daytona
 transfer tests locally against a fake sandbox and needs the Daytona SDK
 installed.
 
-Use the host's private secret input for a missing `DAYTONA_API_KEY`; never ask
-for it in ordinary chat or put it in source, logs, or uploaded files. Obtain a
-key from https://app.daytona.io/dashboard/keys. The helper reads the environment;
-it does not load `.env` files. Confirm authenticated API access, then use the
-toolchain check when setting up a new environment:
+Use the host's private secret input for a missing `DAYTONA_API_KEY`, and for a
+missing `DEEPGRAM_API_KEY` when running transcription; never ask for them in
+ordinary chat or put them in source, logs, or uploaded files. Obtain a Daytona
+key from https://app.daytona.io/dashboard/keys and a Deepgram key from
+https://console.deepgram.com. The helper reads the environment; it does not load
+`.env` files. Confirm authenticated API access, then use the toolchain check
+when setting up a new environment:
 
 ```bash
 python scripts/daytona_video.py check

@@ -310,13 +310,15 @@ apt-get install -y --no-install-recommends python3 python3-venv ffmpeg
         if os.environ.get("DEEPGRAM_API_KEY"):
             env_lines.append(f"export DEEPGRAM_API_KEY={shlex.quote(os.environ['DEEPGRAM_API_KEY'])}")
         prefix = ("\n".join(env_lines) + "\n") if env_lines else ""
+        extra_flags = ["--no-deepgram"] if getattr(args, "no_deepgram", False) else []
+        cmd = ["/tmp/transcribe-env/bin/python", "engine/transcribe.py", audio,
+               "build/vo.json", "--model", args.model, "--language", args.language,
+               "--device", "cpu"] + extra_flags
         return setup + "\n" + prefix + "\n".join([
             "python3 -m venv /tmp/transcribe-env",
             "/tmp/transcribe-env/bin/python -m pip install faster-whisper",
             f"cd {REMOTE}",
-            shlex.join(["/tmp/transcribe-env/bin/python", "engine/transcribe.py", audio,
-                        "build/vo.json", "--model", args.model, "--language", args.language,
-                        "--device", "cpu"]),
+            shlex.join(cmd),
         ])
     if args.job == "check":
         return setup + "\n" + "\n".join([
@@ -374,6 +376,8 @@ def execute(args, root: Path = ROOT, client=None) -> None:
             raise RuntimeError("Missing Daytona SDK. Run: python -m pip install daytona") from None
         if not os.environ.get("DAYTONA_API_KEY"):
             raise RuntimeError("Set DAYTONA_API_KEY securely before running the helper")
+        if args.job == "transcribe" and not getattr(args, "no_deepgram", False) and not os.environ.get("DEEPGRAM_API_KEY"):
+            raise RuntimeError("Set DEEPGRAM_API_KEY securely before running Daytona transcription (or pass --no-deepgram)")
         client = Daytona()
     from daytona import CreateSandboxFromImageParams, Resources
     from daytona.common.errors import DaytonaNotFoundError
@@ -518,6 +522,8 @@ def main() -> None:
                         help="native-resolution QA still format (default: high-quality jpg; png is lossless)")
     parser.add_argument("--include", action="append", default=[], metavar="PATH",
                         help="additional repo-relative media file/directory; repeatable")
+    parser.add_argument("--no-deepgram", action="store_true",
+                        help="skip Deepgram and use local CPU faster-whisper inside Daytona")
     args = parser.parse_args()
     signal.signal(signal.SIGTERM, lambda *_: sys.exit("Terminated"))
     try:

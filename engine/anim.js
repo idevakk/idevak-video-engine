@@ -562,7 +562,9 @@
 
       tl.fromTo(el.querySelector(".stat-main"), { y: 46, opacity: 0 }, { y: 0, opacity: 1, duration: cued ? 0.35 : 1, ease: E.expo }, revealAt);
       
-      var fromVal = s.meta?.from != null ? s.meta.from : parseFloat(s.meta?.value || "99.9");
+      var trend = num ? (num.getAttribute("data-trend") || "neutral") : "neutral";
+      var rawFrom = num ? num.getAttribute("data-from") : null;
+      var fromVal = rawFrom != null && rawFrom !== "" ? parseFloat(rawFrom) : (s.meta?.from != null ? s.meta.from : parseFloat(s.meta?.value || "0"));
       countUp(num, countAt, { duration: countDur, from: fromVal });
       queueSFX("thud", countAt, { vol: 1.1 });
 
@@ -573,14 +575,28 @@
         queueSFX("tick", tickTime, { vol: 0.85 });
       }
 
-      /* Alert transition at count completion */
+      /* Dynamic state transition at count completion */
       var alertAt = countAt + countDur * 0.8;
+      var prefix = el.querySelector(".stat-prefix");
+      var bead = el.querySelector(".stat-ruler-bead");
+
       tl.call(function () {
-        if (num) num.classList.add("is-alert");
-        if (suffix) suffix.classList.add("is-alert");
-        if (rulerFill) rulerFill.classList.add("is-alert");
+        var cls = "is-" + trend;
+        var targetNodes = [num, suffix, prefix, rulerFill, bead].filter(Boolean);
+        targetNodes.forEach(function (n) {
+          n.classList.remove("is-up", "is-down", "is-alert", "is-neutral");
+          n.classList.add(cls);
+          if (trend === "down") n.classList.add("is-alert");
+        });
       }, null, alertAt);
-      queueSFX("glitch", alertAt, { vol: 0.65 });
+
+      if (trend === "down") {
+        queueSFX("glitch", alertAt, { vol: 0.65 });
+      } else if (trend === "up") {
+        queueSFX("flare", alertAt, { vol: 0.85 });
+      } else {
+        queueSFX("tick", alertAt, { vol: 0.75 });
+      }
 
       /* Delta badge spring stamp */
       var deltaBadge = el.querySelector(".stat-delta");

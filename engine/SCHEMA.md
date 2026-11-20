@@ -252,7 +252,20 @@ A large number that counts up from `from` to `to`.
 | `nocount` | boolean | Disable the count-up. |
 | `prefix` | string | Text before the number. |
 | `suffix` | string | Text after the number, for example `%`. |
+| `trend` | string | Explicit trend color: `"up"` (green), `"down"` (red alert), or `"neutral"` (dynamic accent e.g. blue/cyan or amber). Auto-detected if omitted. |
+| `delta` | string | Comparative telemetry badge (e.g. `"+42%"`, `"-18ms"`, `"2X ACTIVE COMPUTE"`). |
+| `deltaDir` | string | Direction indicator for delta: `"up"` (green ▲), `"down"` (red ▼), or `"neutral"` (dynamic accent ―). Auto-detected from delta prefix (+/-) or trend. |
+| `alert` / `bad` | boolean | Forces red alert styling and glitch impact SFX. |
+| `good` | boolean | Forces green positive styling and optical flare SFX. |
+| `invert` | boolean | Inverts dynamic color direction (e.g. for latency/memory drop where decrease is green/good). |
 | `stat` | object | Advanced form: `{ "to": 73, "dec": 0, "sep": false, "from": 0, "nocount": false }`. |
+
+#### Dynamic Color Coding Behavior
+
+The `stat` scene dynamically color-codes the primary counter, suffix, prefix, laser ruler line & traveling bead, and delta telemetry badge:
+* **Increasing / Raising (`up`)**: Glows vivid green (`#4ade80`), delta badge shows `▲`, and completes with optical flare ping SFX. Triggered when `to > from`, `delta` has `+`/`▲`, `deltaDir: "up"`, or `trend: "up"`.
+* **Decreasing / Falling (`down`)**: Glows alert red (`#ff3b5c`), delta badge shows `▼`, and completes with glitch audio impact. Triggered when `to < from`, `delta` has `-`/`▼`, `deltaDir: "down"`, `bad: true`, `alert: true`, or `trend: "down"`.
+* **Normal / Static (`neutral`)**: Glows with the scene or act dynamic accent `var(--ac)` (e.g. cyan/blue `#38bdf8`, amber `#f5a524`, or custom hex), delta badge shows `―`, and completes with a crisp mechanical tick. Triggered when `nocount: true`, `from == to` (or no count change), or `trend: "neutral"`.
 
 The aligner writes a normalized `meta.stat` and `meta.display` into
 `build/scenes.json`, so the builder always has both.

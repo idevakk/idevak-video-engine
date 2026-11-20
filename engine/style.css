@@ -236,13 +236,27 @@ body{width:var(--composition-width,1920px);height:var(--composition-height,1080p
   -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
 .stat-main{display:flex;align-items:baseline;gap:20px}
 .stat-number{font-size:300px;font-weight:800;letter-spacing:-.065em;line-height:.84;color:var(--ink);font-variant-numeric:tabular-nums;text-shadow:0 30px 90px rgba(0,0,0,.6);transition:color .3s ease,text-shadow .3s ease}
-.stat-number.is-alert{color:#ff3b5c;text-shadow:0 0 50px rgba(255,59,92,0.8), 0 0 100px rgba(255,59,92,0.4)}
-.stat-prefix,.stat-suffix{font-size:84px;font-weight:700;color:var(--ac);letter-spacing:-.03em;transition:color .3s ease}
-.stat-suffix.is-alert{color:#ff3b5c;text-shadow:0 0 30px rgba(255,59,92,0.8)}
 
-.stat-delta{display:inline-flex;align-items:center;gap:10px;padding:8px 20px;border-radius:8px;font-family:var(--mono);font-size:16px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;margin-left:14px;align-self:center;box-shadow:0 0 24px rgba(255,59,92,0.4);border:1px solid rgba(255,59,92,0.6);background:color-mix(in srgb,#ff3b5c 18%,transparent);color:#ff3b5c}
+/* Dynamic color coding: Down / Alert (Red) */
+.stat-number.is-down,.stat-number.is-alert{color:#ff3b5c;text-shadow:0 0 50px rgba(255,59,92,0.8), 0 0 100px rgba(255,59,92,0.4)}
+.stat-suffix.is-down,.stat-suffix.is-alert,.stat-prefix.is-down,.stat-prefix.is-alert{color:#ff3b5c;text-shadow:0 0 30px rgba(255,59,92,0.8)}
+
+/* Dynamic color coding: Up / Increasing (Green) */
+.stat-number.is-up{color:#4ade80;text-shadow:0 0 50px rgba(74,222,128,0.8), 0 0 100px rgba(74,222,128,0.4)}
+.stat-suffix.is-up,.stat-prefix.is-up{color:#4ade80;text-shadow:0 0 30px rgba(74,222,128,0.8)}
+
+/* Dynamic color coding: Neutral / Normal (Dynamic Accent, e.g. cyan/blue or amber) */
+.stat-number.is-neutral{color:var(--ac);text-shadow:0 0 50px color-mix(in srgb,var(--ac) 80%,transparent), 0 0 100px color-mix(in srgb,var(--ac) 40%,transparent)}
+.stat-suffix.is-neutral,.stat-prefix.is-neutral{color:var(--ac);text-shadow:0 0 30px color-mix(in srgb,var(--ac) 80%,transparent)}
+
+.stat-prefix,.stat-suffix{font-size:84px;font-weight:700;color:var(--ac);letter-spacing:-.03em;transition:color .3s ease,text-shadow .3s ease}
+
+/* Delta pill badges */
+.stat-delta{display:inline-flex;align-items:center;gap:10px;padding:8px 20px;border-radius:8px;font-family:var(--mono);font-size:16px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;margin-left:14px;align-self:center;box-shadow:0 0 24px rgba(255,59,92,0.4);border:1px solid rgba(255,59,92,0.6);background:color-mix(in srgb,#ff3b5c 18%,transparent);color:#ff3b5c;transition:color .3s ease,border-color .3s ease,background .3s ease,box-shadow .3s ease}
 .stat-delta-arrow{font-size:14px}
 .stat-delta.delta-up{color:#4ade80;border-color:rgba(74,222,128,0.6);background:color-mix(in srgb,#4ade80 18%,transparent);box-shadow:0 0 24px rgba(74,222,128,0.4)}
+.stat-delta.delta-down{color:#ff3b5c;border-color:rgba(255,59,92,0.6);background:color-mix(in srgb,#ff3b5c 18%,transparent);box-shadow:0 0 24px rgba(255,59,92,0.4)}
+.stat-delta.delta-neutral{color:var(--ac);border-color:color-mix(in srgb,var(--ac) 60%,transparent);background:color-mix(in srgb,var(--ac) 18%,transparent);box-shadow:0 0 24px color-mix(in srgb,var(--ac) 40%,transparent)}
 
 .stat-label{margin-top:34px;font-size:46px;font-weight:700;letter-spacing:-.02em;max-width:1180px;line-height:1.15}
 .stat-sub{margin-top:18px;font-size:28px;color:var(--dim);font-weight:450;max-width:1080px;line-height:1.4}
@@ -250,9 +264,15 @@ body{width:var(--composition-width,1920px);height:var(--composition-height,1080p
 .stat-ruler i{position:absolute;bottom:0;width:1px;height:16px;background:rgba(255,255,255,.22)}
 .stat-ruler i:nth-of-type(1){left:0}.stat-ruler i:nth-of-type(2){left:25%}.stat-ruler i:nth-of-type(3){left:50%}
 .stat-ruler i:nth-of-type(4){left:75%}.stat-ruler i:nth-of-type(5){left:100%}
-.stat-ruler-fill{position:absolute;left:0;bottom:-1px;height:2px;width:100%;background:var(--ac);transform-origin:left;box-shadow:0 0 16px var(--ac)}
-.stat-ruler-fill.is-alert{background:#ff3b5c;box-shadow:0 0 20px #ff3b5c}
-.stat-ruler-bead{position:absolute;left:0;bottom:-4px;width:8px;height:8px;border-radius:50%;background:#ff3b5c;box-shadow:0 0 14px 2px #ff3b5c;pointer-events:none}
+.stat-ruler-fill{position:absolute;left:0;bottom:-1px;height:2px;width:100%;background:var(--ac);transform-origin:left;box-shadow:0 0 16px var(--ac);transition:background .3s ease,box-shadow .3s ease}
+.stat-ruler-fill.is-up{background:#4ade80;box-shadow:0 0 20px #4ade80}
+.stat-ruler-fill.is-down,.stat-ruler-fill.is-alert{background:#ff3b5c;box-shadow:0 0 20px #ff3b5c}
+.stat-ruler-fill.is-neutral{background:var(--ac);box-shadow:0 0 20px var(--ac)}
+
+.stat-ruler-bead{position:absolute;left:0;bottom:-4px;width:8px;height:8px;border-radius:50%;background:var(--ac);box-shadow:0 0 14px 2px var(--ac);pointer-events:none;transition:background .3s ease,box-shadow .3s ease}
+.stat-ruler-bead.is-up{background:#4ade80;box-shadow:0 0 14px 2px #4ade80}
+.stat-ruler-bead.is-down,.stat-ruler-bead.is-alert{background:#ff3b5c;box-shadow:0 0 14px 2px #ff3b5c}
+.stat-ruler-bead.is-neutral{background:var(--ac);box-shadow:0 0 14px 2px var(--ac)}
 
 /* ============================================================ dateline */
 .dl-ghost{position:absolute;left:80px;top:160px;font-size:480px;font-weight:900;

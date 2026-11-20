@@ -289,25 +289,89 @@ const RENDER = {
     const suffix = s.meta?.suffix || "";
     const prefix = s.meta?.prefix || "";
     const delta = s.meta?.delta || "";
-    const deltaDir = (s.meta?.deltaDir || (delta.startsWith("+") ? "up" : "down")) === "up" ? "delta-up" : "delta-down";
-    const deltaArrow = deltaDir === "delta-up" ? "▲" : "▼";
+    const deltaDirRaw = s.meta?.deltaDir;
+    const isAlert = Boolean(s.meta?.alert || s.meta?.bad);
+    const isGood = Boolean(s.meta?.good);
+    const isInvert = Boolean(s.meta?.invert);
+    const trendRaw = s.meta?.trend || s.meta?.direction || s.meta?.status || "";
+    const isNoCount = Boolean(s.meta?.nocount ?? st.nocount);
+    const decVal = s.meta?.dec ?? st.dec ?? 0;
+    const sepVal = s.meta?.sep ?? st.sep ?? false;
+    const _revealOn = s.meta?.revealOn;
+
+    // Determine numerical change if count is dynamic
+    const toNum = typeof st.to === "number" ? st.to : parseFloat(st.to != null ? st.to : (s.meta?.value ?? "0"));
+    const fromVal = s.meta?.from != null ? s.meta.from : (st.from != null ? st.from : null);
+    const fromNum = fromVal != null ? (typeof fromVal === "number" ? fromVal : parseFloat(fromVal || "0")) : null;
+
+    // Calculate trend: 'up' (raising/increasing), 'down' (decreasing/falling), or 'neutral' (static/normal)
+    let trend = "neutral";
+    if (trendRaw) {
+      const t = String(trendRaw).toLowerCase();
+      if (t === "up" || t === "raise" || t === "raising" || t === "increase" || t === "good" || t === "ok") trend = "up";
+      else if (t === "down" || t === "fall" || t === "falling" || t === "decrease" || t === "bad" || t === "alert") trend = "down";
+      else trend = "neutral";
+    } else if (isAlert) {
+      trend = "down";
+    } else if (isGood) {
+      trend = "up";
+    } else if (deltaDirRaw) {
+      trend = String(deltaDirRaw).toLowerCase() === "up" ? "up" : String(deltaDirRaw).toLowerCase() === "down" ? "down" : "neutral";
+    } else if (delta.startsWith("+") || delta.startsWith("▲")) {
+      trend = "up";
+    } else if (delta.startsWith("-") || delta.startsWith("▼")) {
+      trend = "down";
+    } else if (!isNoCount && fromNum != null && !isNaN(toNum) && !isNaN(fromNum) && toNum !== fromNum) {
+      trend = toNum > fromNum ? "up" : "down";
+    }
+
+    if (isInvert) {
+      if (trend === "up") trend = "down";
+      else if (trend === "down") trend = "up";
+    }
+
+    // Determine delta direction and class
+    let deltaDir = "neutral";
+    if (deltaDirRaw) {
+      deltaDir = String(deltaDirRaw).toLowerCase() === "up" ? "up" : String(deltaDirRaw).toLowerCase() === "down" ? "down" : "neutral";
+    } else if (delta.startsWith("+") || delta.startsWith("▲")) {
+      deltaDir = "up";
+    } else if (delta.startsWith("-") || delta.startsWith("▼")) {
+      deltaDir = "down";
+    } else if (delta.startsWith("=") || delta.startsWith("~")) {
+      deltaDir = "neutral";
+    } else {
+      deltaDir = trend;
+    }
+    if (isInvert && !deltaDirRaw) {
+      if (deltaDir === "up") deltaDir = "down";
+      else if (deltaDir === "down") deltaDir = "up";
+    }
+
+    const deltaCls = deltaDir === "up" ? "delta-up" : deltaDir === "down" ? "delta-down" : "delta-neutral";
+    const deltaArrow = deltaDir === "up" ? "▲" : deltaDir === "down" ? "▼" : "―";
+
+    // Immediate initial class for static values or when count has no change
+    const isStatic = isNoCount || fromNum == null || fromNum === toNum;
+    const initialCls = isStatic ? ` is-${trend}${trend === "down" ? " is-alert" : ""}` : "";
+    const beadCls = ` is-${trend}${trend === "down" ? " is-alert" : ""}`;
 
     return `
-    <div class="stat-stage">
+    <div class="stat-stage" data-trend="${trend}">
       <div class="stat-ghost">${esc(value)}</div>
       ${eyebrow(s)}
       <div class="stat-main">
-        ${prefix ? `<span class="stat-prefix">${esc(prefix)}</span>` : ""}
-        <span class="stat-number" data-to="${esc(String(st.to ?? 0))}" data-dec="${st.dec || 0}" data-sep="${st.sep ? 1 : 0}" data-nocount="${st.nocount ? 1 : 0}"><span class="stat-reserve" aria-hidden="true">${esc(value)}</span><span class="stat-value">${esc(value)}</span></span>
-        ${suffix ? `<span class="stat-suffix">${esc(suffix)}</span>` : ""}
-        ${delta ? `<div class="stat-delta ${deltaDir}"><span class="stat-delta-arrow">${deltaArrow}</span><span>${esc(delta)}</span></div>` : ""}
+        ${prefix ? `<span class="stat-prefix${initialCls}">${esc(prefix)}</span>` : ""}
+        <span class="stat-number${initialCls}" data-to="${esc(String(st.to ?? toNum))}" data-from="${esc(String(fromVal ?? toNum))}" data-trend="${trend}" data-dec="${decVal}" data-sep="${sepVal ? 1 : 0}" data-nocount="${isNoCount ? 1 : 0}"><span class="stat-reserve" aria-hidden="true">${esc(value)}</span><span class="stat-value">${esc(value)}</span></span>
+        ${suffix ? `<span class="stat-suffix${initialCls}">${esc(suffix)}</span>` : ""}
+        ${delta ? `<div class="stat-delta ${deltaCls}"><span class="stat-delta-arrow">${deltaArrow}</span><span>${esc(delta)}</span></div>` : ""}
       </div>
       <div class="stat-label">${splitWords(s.headline, s)}</div>
       ${s.subline ? `<div class="stat-sub">${esc(s.subline)}</div>` : ""}
       <div class="stat-ruler">
         <i></i><i></i><i></i><i></i><i></i>
-        <div class="stat-ruler-fill"></div>
-        <div class="stat-ruler-bead"></div>
+        <div class="stat-ruler-fill${initialCls}"></div>
+        <div class="stat-ruler-bead${beadCls}"></div>
       </div>
     </div>`;
   },

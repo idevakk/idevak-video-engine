@@ -275,6 +275,11 @@ def validate_scene(
         sfield(meta, "revealOn", where, errors, max_len=100)
         sfield(meta, "delta", where, errors, max_len=60)
         sfield(meta, "deltaDir", where, errors)
+        for key in ("trend", "direction", "status"):
+            sfield(meta, key, where, errors)
+        for key in ("alert", "bad", "good", "invert"):
+            if key in meta and not isinstance(meta[key], bool):
+                errors.append(f"{where}.meta.{key}: must be a boolean")
         if not any(key in meta for key in ("value", "display", "stat")):
             errors.append(f"{where}.meta: needs value, display, or stat")
         if "value" in meta and not isinstance(meta["value"], (int, float, str)):

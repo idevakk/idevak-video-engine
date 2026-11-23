@@ -1307,8 +1307,10 @@
       var mid = el.querySelector(".cmp-mid");
 
       tl.fromTo(left, { x: -48, opacity: 0 }, { x: 0, opacity: 0.72, duration: 0.75, ease: E.expo }, at + 0.02);
-      tl.fromTo(mid, { scale: 0, opacity: 0, rotate: -60 }, { scale: 1, opacity: 1, rotate: 0, duration: 0.55, ease: E.soft }, at + 0.22);
-      queueSFX("click", at + 0.25, { vol: 0.7 });
+      if (mid) {
+        tl.fromTo(mid, { scale: 0, opacity: 0, rotate: -60 }, { scale: 1, opacity: 1, rotate: 0, duration: 0.55, ease: E.soft }, at + 0.22);
+        queueSFX("click", at + 0.25, { vol: 0.7 });
+      }
 
       var slamTime = at + 0.32;
       tl.fromTo(right, { y: 36, opacity: 0, scale: 1.04 }, { y: 0, opacity: 1, scale: 1, duration: 0.65, ease: E.springSubtle }, slamTime);

@@ -252,11 +252,22 @@ const RENDER = {
   hero(s) {
     const mark = s.meta?.mark || "";
     const markSize = mark ? Math.min(128, Math.floor(400 / Math.max(1, [...mark].length * 0.8))) : 64;
+    const hasEvidence = Boolean(s.meta?.image || s.meta?.video || s.meta?.logos);
+    const headLen = (s.headline || "").length;
+    let sizeCls = "";
+    if (hasEvidence) {
+      if (headLen > 50) sizeCls = " hero-title-xs";
+      else if (headLen > 30) sizeCls = " hero-title-sm";
+    } else {
+      if (headLen > 75) sizeCls = " hero-title-xs";
+      else if (headLen > 55) sizeCls = " hero-title-sm";
+      else if (headLen > 35) sizeCls = " hero-title-md";
+    }
     return `
     <div class="hero-grid">
       <div class="hero-left">
         ${eyebrow(s)}
-        <h2 class="hero-title">${splitWords(s.headline, s)}</h2>
+        <h2 class="hero-title${sizeCls}">${splitWords(s.headline, s)}</h2>
         ${s.subline ? `<p class="hero-sub">${esc(s.subline)}</p>` : ""}
       </div>
       <div class="hero-right">
@@ -756,7 +767,7 @@ const RENDER = {
     const isArrow = /^(?:->+|-->+|=>+|==>+|→|⇒|>|&gt;|&rarr;|-&gt;)$/i.test(mid.trim());
     return `
     ${eyebrow(s)}
-    <div class="cmp-stage">
+    <div class="cmp-stage${mid ? " has-mid" : " no-mid"}">
       <div class="cmp-col cmp-left">
         ${left.k ? `<div class="cmp-k">${esc(left.k)}</div>` : ""}
         <div class="cmp-t">${esc(left.t || "")}</div>
@@ -888,12 +899,17 @@ const RENDER = {
     const displayCount = s.meta?.count || "";
     const legendOk = s.meta?.legendOk || "";
     const legendBad = s.meta?.legendBad || "";
+    const headLen = (s.headline || "").length;
+    let sizeCls = "";
+    if (headLen > 60) sizeCls = " mx-title-xs";
+    else if (headLen > 40) sizeCls = " mx-title-sm";
+    else if (headLen > 25) sizeCls = " mx-title-md";
 
     return `
     <div class="mx-grid">
       <div class="mx-left">
         ${eyebrow(s)}
-        <h2 class="mx-title">${splitWords(s.headline, s)}</h2>
+        <h2 class="mx-title${sizeCls}">${splitWords(s.headline, s)}</h2>
         ${s.subline ? `<p class="mx-sub">${esc(s.subline)}</p>` : ""}
         ${legendOk || legendBad ? `
         <div class="mx-legend">

@@ -35,7 +35,7 @@ Given a bare topic title or brief:
    - Official engineering postmortems and incident reports (Cloudflare, AWS, GitHub, Meta, CrowdStrike, Google SRE).
    - IETF RFC specifications, NIST NVD CVE advisories (CVSS scores, CWE IDs), and GitHub pull requests/commit diffs.
    - Linux kernel mailing lists, C/Rust/Go source files, and authentic CLI/terminal crash traces.
-2. **Compile the Incident Fact Sheet**: Extract exact UTC timestamps, outage durations, file names, memory addresses, syscalls, CLI flags, HTTP status codes, quantifiable damages, and local media candidates (official SVG vendor logos, primary advisory URLs for `webref`, incident screenshots for `hero`), logging provenance in `assets/SOURCES.md`.
+2. **Compile the Incident Fact Sheet**: Extract exact UTC timestamps, outage durations, file names, memory addresses, syscalls, CLI flags, HTTP status codes, quantifiable damages, and local media candidates (official SVG vendor logos retrieved online via `python scripts/fetch_logo.py <brand>` [SVGL API -> FaviconDL API -> Firecrawl/web search; never invent mock logos with an LLM], primary advisory URLs for `webref`, incident screenshots for `hero`), logging provenance in `assets/SOURCES.md`.
 
 ---
 

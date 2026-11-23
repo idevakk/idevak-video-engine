@@ -46,8 +46,15 @@ if missing using the exact commands in `docs/DAYTONA.md`. This policy is repo-lo
    this; do not force-add them.
 7. Use plain hyphens in repo docs and commit messages. Do not use em dashes.
 8. Source authentic logos, relevant incident images and footage, and real website
-   captures by default. Follow the skill checks, sourcing, native-resolution,
-   provenance, and playback review requirements in `PROMPTS.md` section 0.
+   captures by default. Never let an LLM attempt to build, synthesize, or invent
+   a logo on its own (no inline SVGs, approximate canvas shapes, CSS drawings,
+   emoji hacks, or text substitutions). Always find and download the real official
+   logo online using the automated waterfall via `python scripts/fetch_logo.py <brand>`:
+   (1) SVGL API (`https://api.svgl.app?search=<brand>`), (2) FaviconDL API
+   (`https://favicondl.com/api/extract?url=<domain>`), or (3) Firecrawl / web
+   search if neither service provides the real logo. Follow the skill checks,
+   sourcing, native-resolution, provenance, and playback review requirements in
+   `PROMPTS.md` section 0.
 9. Plan contextual SFX and mascot direction for each new video using
    `PROMPTS.md` section 0. Use supported expressions and the existing baked SFX
    path, synchronize reactions and sounds to speech, preserve evidence
@@ -343,7 +350,9 @@ The old 24-minute test rendered from a 180-scene file.
 - When final audio is available, transcription and alignment are complete with
   a high match percentage and no no-match or weak-match warnings.
 - Relevant authentic assets are local, credited, and inspected at native size
-  against their planned display footprint. Source limitations are disclosed.
+  against their planned display footprint. All brand logos are genuine external assets
+  retrieved online (via `scripts/fetch_logo.py` or official press kits), not LLM-fabricated
+  approximations. Source limitations are disclosed.
 - Contextual SFX and mascot direction are authored using the supported engine
   paths, expressions, and positions, with clear evidence and narration in mind.
 - The agent has built the composition and SFX, inspected generated files and

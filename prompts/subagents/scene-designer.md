@@ -85,9 +85,14 @@ If a scene feels weak, flat, or ill-fitted to the narration, migrate to a higher
 - Position `mascot` overlays (`"bottom-right"` or `"bottom-left"`) in open negative space so they never occlude code, terminal output, logos, or source credits.
 
 ## Authentic Media Sourcing & Provenance (`assets/SOURCES.md`)
-- Use Firecrawl and supported browser automation to source official SVG/vector vendor logos (`assets/logos/`), primary advisories, incident screenshots, and high-DPI website captures.
-- Never replace an available official logo with plain text, an emoji, or an AI-generated imitation. Use `meta.logos` with an appropriate contrasting `background` (e.g., `"#f5f4ef"`) when dark logos need contrast.
-- Download all referenced assets locally—renders must never depend on remote URLs.
+- **NEVER attempt to build, synthesize, or draw logos on your own**: Under no circumstances may an LLM write inline SVGs from scratch, construct CSS shapes, or substitute emojis/plain text for real brand logos.
+- **Automated Logo Sourcing Pipeline**:
+  Run `python scripts/fetch_logo.py <brand>` to automatically retrieve and cache genuine brand assets to `assets/logos/<slug>.<ext>`:
+  1. **SVGL API** (`https://api.svgl.app?search=<brand>`): Primary source for clean vector SVGs.
+  2. **FaviconDL API** (`https://favicondl.com/api/extract?url=<domain>`): Secondary source for official site icons and vector favicons.
+  3. **Firecrawl / Web Search**: Fallback if SVGL and FaviconDL do not yield the logo. Search and download the genuine vector/image from official brand resources.
+- Use `meta.logos` with an appropriate contrasting `background` (e.g., `"#f5f4ef"`) when dark logos need contrast against the dark background.
+- Download all referenced assets locally - renders must never depend on remote URLs.
 - Log every asset in `assets/SOURCES.md` with its source URL, publisher, description, native dimensions, capture method/footage range, and attribution (`meta.source`).
 
 ## Validation & Remediation Protocol

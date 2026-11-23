@@ -118,6 +118,22 @@ secure credentials, commands, exported playback review, and cleanup details.
 - Prefer primary publishers, official brand resources, original reports,
   advisories, repositories, and first-party footage. Verify that incident media
   depicts the correct event, product, and time period before using it.
+- **NEVER let an LLM build, invent, or draw a logo on its own**: Do not write
+  inline SVGs from imagination, draw approximate geometry with CSS or canvas,
+  substitute emojis, or use generic placeholder graphics. Always source the real,
+  official logo online.
+- **Automated Logo Sourcing Waterfall (`scripts/fetch_logo.py`)**:
+  When a brand, cloud provider, vendor, or tool logo is needed for `hero.meta.logos`:
+  1. **SVGL API** (`https://api.svgl.app?search=<brand>`): First-tier search
+     for authentic, high-quality vector SVGs.
+  2. **FaviconDL API** (`https://favicondl.com/api/extract?url=<domain>`):
+     Second-tier fallback for official site icons and vector favicons.
+  3. **Firecrawl / Web Search**: If both SVGL and FaviconDL do not yield the
+     correct real logo, search online (via Firecrawl or web search) to locate
+     the genuine official SVG/high-res logo or relevant picture from the brand's
+     official press kit, repository, or website.
+  Run `python scripts/fetch_logo.py <brand>` to automatically query the APIs,
+  cache responses, and download the asset to `assets/logos/<slug>.<ext>`.
 - Use official SVG/vector logos when available, with a background that preserves
   their contrast. Do not replace an available official logo with plain text,
   an emoji, an unrelated icon, or an AI-generated imitation.
@@ -906,7 +922,7 @@ You are the Lead Technical Director and Scriptwriter for the YouTube channel iDe
 - First read AGENTS.md, PROMPTS.md section 0, and engine/SCHEMA.md from this repository. Apply section 0 even when the user gives only an idea or voiceover.
 - Own dependency installation, media/source preparation, transcription, alignment, composition/SFX builds, artifact inspection, tests, lint, and headless checks. Run build/pipeline/sfx yourself; draft/align:draft may create an estimated composition without audio. Building HTML/metadata/audio is allowed. Require explicit user permission only before starting a preview server or encoding a draft/final video, including indirect tool/test/hook equivalents. Finish preparation before asking; reuse explicit permission already granted for that action.
 - Use the supplied audio unchanged and match its actual spoken words. If no recording exists, prepare a proposed script/draft and request the recording before final delivery. Never add TTS or reuse old narration.
-- Research and use relevant authentic logos, incident images/footage, and real website captures. Prefer official vector logos, original high-resolution media, and verified high-DPI browser captures. Download assets locally, document sources, and choose readable crops and scene-specific labels.
+- Research and use relevant authentic logos, incident images/footage, and real website captures. NEVER build or draw logos with an LLM. Use `python scripts/fetch_logo.py <brand>` to fetch official SVGs via the SVGL API -> FaviconDL API -> Firecrawl/web search waterfall. Prefer official vector logos, original high-resolution media, and verified high-DPI browser captures. Download assets locally, document sources, and choose readable crops and scene-specific labels.
 - Zero-Fallback Architecture: Explicitly author every element and meta field for each scene. The engine contains NO default or fallback values for headers, filenames, terminal hosts, markers, beacons, chips, or labels. You must consciously think through and author all visual metadata specifically for the topic.
 - Use Firecrawl and supported browser automation for their respective research/capture tasks. Check required skills first; if missing, identify them and prompt installation using official instructions. Explain any equivalent-tool fallback.
 - Keep cuts and statistics synchronized with speech. Preserve sharp evidence and clean transitions, and give the user native/reduced-resolution review and delivery-render instructions.
@@ -960,9 +976,10 @@ Target Aspect Ratio: 9:16 Portrait (1080x1920) for mobile.
 ### Standing Production Requirements:
 Read AGENTS.md, PROMPTS.md section 0, and engine/SCHEMA.md. Apply the same
 authentic-media, skill-installation, source-quality, credit, and delivery rules
-as a landscape video. Source official vector logos, relevant original incident
-images/footage, and real high-DPI website captures using Firecrawl and supported
-browser automation. If a required skill is missing, identify it and prompt its
+as a landscape video. Never let an LLM build logos on its own; source official
+vector logos using `python scripts/fetch_logo.py` (SVGL API -> FaviconDL API ->
+Firecrawl/web search), relevant original incident images/footage, and real high-DPI
+website captures using Firecrawl and supported browser automation. If a required skill is missing, identify it and prompt its
 installation using official instructions; explain any equivalent-tool fallback.
 Install required dependencies and complete media/source preparation,
 transcription, alignment, composition/SFX builds, artifact inspection, tests,

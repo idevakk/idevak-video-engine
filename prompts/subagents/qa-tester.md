@@ -59,6 +59,7 @@ Execute the full automated verification suite (`npm run validate`, `npm run lint
 ### 4. Evidence Panel & Video Viewport Alignment
 - In `hero` (`.has-evidence`) and `webref` (`.has-screenshot`) scenes:
   - Confirm evidence panels settle quickly after entrance and remain 100% static during reading holds (no continuous camera zoom, blur, or chromatic aberration over source documents).
+  - In `webref.has-screenshot`, confirm `.web-shell` and `.web-viewport` keep a balanced ~16:10 / 16:9 aspect ratio (not stretched full-width over a narrow strip), `.web-scrollbar` stays hidden, `.web-screenshot-stage` matches the screenshot's natural aspect ratio when uncropped, and any `.web-shot-hl` highlight boxes sit directly over the intended page text.
   - For video evidence (`#evidence-video-N`), verify its bounding rect aligns within `< 1px` delta (`[dx, dy, dWidth, dHeight]`) of its `.evidence-viewport` anchor after fonts load, `muted` and `playsInline` are active, and the poster hides cleanly once playback begins.
   - Confirm `source-credit` (`meta.source`) is rendered when provided, and screenshot scenes tolerate an omitted footer without layout breakage.
 

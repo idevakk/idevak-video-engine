@@ -1489,43 +1489,73 @@
       if (docHeader) {
         tl.fromTo(docHeader, { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.45, ease: E.soft }, at + 0.28);
       }
+      var isShot = el.classList.contains("has-screenshot");
       var ps = q(el, ".web-p");
       if (ps.length) {
         tl.fromTo(ps, { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.55, stagger: 0.12, ease: E.soft }, at + 0.38);
       }
       var callout = el.querySelector(".web-callout");
       if (callout) {
-        tl.fromTo(callout, { opacity: 0, scale: 0.95, x: -12 }, { opacity: 1, scale: 1, x: 0, duration: 0.6, ease: E.soft }, at + 0.58);
+        if (isShot) {
+          tl.fromTo(callout, { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.5, ease: E.soft }, at + 0.65);
+        } else {
+          tl.fromTo(callout, { opacity: 0, scale: 0.95, x: -12 }, { opacity: 1, scale: 1, x: 0, duration: 0.6, ease: E.soft }, at + 0.58);
+        }
         queueSFX("unmask", at + 0.58, { vol: 0.75 });
       }
 
-      // Smooth document scroll & scrollbar thumb motion
+      // Smooth document scroll & scrollbar thumb motion (text-emulated mode only)
       var scrollWrap = el.querySelector(".web-doc-scroll");
       var thumb = el.querySelector(".web-scroll-thumb");
-      if (scrollWrap) {
+      if (scrollWrap && !isShot) {
         tl.fromTo(scrollWrap, { y: 0 }, { y: -36, duration: 1.1, ease: "power2.inOut" }, at + 0.85);
       }
-      if (thumb) {
+      if (thumb && !isShot) {
         tl.fromTo(thumb, { y: 0 }, { y: 46, duration: 1.1, ease: "power2.inOut" }, at + 0.85);
+      }
+
+      var shotHls = q(el, ".web-shot-hl");
+      if (shotHls.length) {
+        var shotFills = q(el, ".web-shot-hl-fill");
+        var shotTags = q(el, ".web-shot-hl-tag");
+        tl.fromTo(shotHls, { opacity: 0 }, { opacity: 1, duration: 0.15, stagger: 0.14, ease: "none" }, at + 0.92);
+        if (shotFills.length) {
+          tl.fromTo(shotFills,
+            { scaleX: 0, transformOrigin: "left center" },
+            { scaleX: 1, duration: 0.45, stagger: 0.14, ease: E.expo },
+            at + 0.95
+          );
+        }
+        if (shotTags.length) {
+          tl.fromTo(shotTags,
+            { opacity: 0, y: 6 },
+            { opacity: 1, y: 0, duration: 0.35, stagger: 0.14, ease: E.soft },
+            at + 1.05
+          );
+        }
+        if (!callout) queueSFX("unmask", at + 0.95, { vol: 0.8 });
       }
 
       var cursorWrap = el.querySelector(".web-cursor-wrap");
       var cursor = el.querySelector(".web-cursor");
       var ripple = el.querySelector(".web-click-ripple");
       if (cursorWrap) {
-        tl.fromTo(cursorWrap, { opacity: 0, x: 150, y: 100 }, { opacity: 1, x: 0, y: 0, duration: 0.9, ease: "power2.out" }, at + 0.45);
+        var clickAt = isShot ? at + 0.92 : at + 1.25;
+        var moveFrom = isShot ? { opacity: 0, x: 110, y: 80 } : { opacity: 0, x: 150, y: 100 };
+        var moveDur = isShot ? 0.55 : 0.9;
+        tl.fromTo(cursorWrap, moveFrom, { opacity: 1, x: 0, y: 0, duration: moveDur, ease: "power2.out" }, at + 0.35);
         if (cursor) {
-          tl.to(cursor, { scale: 0.75, duration: 0.12, ease: "power2.inOut", yoyo: true, repeat: 1 }, at + 1.25);
+          tl.to(cursor, { scale: 0.75, duration: 0.12, ease: "power2.inOut", yoyo: true, repeat: 1 }, clickAt);
         }
         if (ripple) {
           tl.fromTo(ripple,
             { scale: 0.5, opacity: 0.95 },
             { scale: 3.2, opacity: 0, duration: 0.45, ease: "power2.out" },
-            at + 1.25
+            clickAt
           );
         }
-        queueSFX("click", at + 1.25, { vol: 0.9 });
-        if (callout) {
+        queueSFX("click", clickAt, { vol: 0.9 });
+        if (callout && !isShot) {
           tl.to(callout, {
             borderColor: ac(s),
             boxShadow: "0 0 50px rgba(56,189,248,0.5), inset 0 0 25px rgba(56,189,248,0.2)",
@@ -1538,7 +1568,7 @@
         if (mOv) {
           var avatar = mOv.querySelector(".m-ov-avatar");
           if (avatar) {
-            tl.to(avatar, { rotate: 3, duration: 0.2, yoyo: true, repeat: 1, ease: E.springSubtle }, at + 1.3);
+            tl.to(avatar, { rotate: 3, duration: 0.2, yoyo: true, repeat: 1, ease: E.springSubtle }, clickAt + 0.05);
           }
         }
       }

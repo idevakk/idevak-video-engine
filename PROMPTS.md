@@ -141,9 +141,16 @@ secure credentials, commands, exported playback review, and cleanup details.
   of the real public report or product can be used and labeled as a source-page
   walkthrough. Do not portray that recording, generic B-roll, a diagram, or a
   reconstruction as footage of the incident itself.
-- Capture the real website in a browser after fonts and images load. Frame the
-  relevant headline, finding, or interface instead of shrinking an entire long
-  page into an unreadable panel. Do not fabricate screenshots or research logs.
+- Capture the real website in a browser after fonts and images load. For
+  `webref` scenes, default to capturing a real website screenshot (and exact
+  `highlightRects` coordinates when highlighting specific text) via
+  `node scripts/capture_webref.mjs --url <url> --out assets/webref/<id>.png --highlight "<exact quote>"`
+  instead of copy-pasting reference text into `snippet` to fake a browser. Frame
+  the relevant headline, finding, or interface instead of shrinking an entire
+  long page into an unreadable panel. Do not fabricate screenshots or research
+  logs. Only use the text-emulated `webref` mode (`snippet`/`highlight`/`callout`
+  without `image`) when explicitly instructed not to capture real screenshots or
+  when a live capture is blocked (and disclose the limitation).
 - Download final media locally so renders do not depend on remote availability.
   Record each asset's source URL, publisher, description, native dimensions,
   capture method or footage range, and any usage/credit requirements in
@@ -723,7 +730,7 @@ Every scene in `content/video.json` must be one of the 22 supported archetypes. 
 ---
 
 ### `webref` (Browser & Documentation Spotlight)
-*Use when citing official docs, RFCs, GitHub PRs, or CVE advisories.*
+*Use when citing official docs, RFCs, GitHub PRs/issues, papers, or CVE advisories. Default to capturing a real website screenshot (`meta.image`) plus accurate `meta.highlightRects` via `node scripts/capture_webref.mjs` instead of copy-pasting reference text to emulate a browser.*
 ```json
 {
   "type": "webref",
@@ -734,17 +741,16 @@ Every scene in `content/video.json` must be one of the 22 supported archetypes. 
   "meta": {
     "url": "datatracker.ietf.org/doc/html/rfc6749#section-4.1",
     "badge": "IETF RFC SPEC",
-    "title": "RFC 6749: The OAuth 2.0 Authorization Framework",
-    "snippet": [
-      "The client MUST NOT expose its client secret to the user-agent or any public environment.",
-      "Any token request originating from an untrusted origin will allow token interception."
+    "image": "assets/webref/rfc6749-s4.png",
+    "alt": "IETF RFC 6749 Section 4.1 specification page",
+    "highlightRects": [
+      { "x": 18.4, "y": 38.2, "w": 61.5, "h": 3.8, "label": "MUST NOT EXPOSE" }
     ],
-    "highlight": "client MUST NOT expose its client secret",
-    "callout": "Leaving secrets in frontend client code compromises the entire authentication tree.",
-    "calloutType": "IMPORTANT"
+    "source": "Source: IETF RFC 6749"
   }
 }
 ```
+*Only when explicitly instructed not to use real screenshots (or when capture is blocked), fall back to the concise text-emulated `snippet` + `highlight` + `callout` format (no `meta.image`).*
 
 ---
 

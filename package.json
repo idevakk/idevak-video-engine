@@ -27,6 +27,7 @@
     "qa:frames": "node scripts/qa_frames.mjs",
     "qa:sheets": "python scripts/qa_sheets.py",
     "fetch:logo": "python scripts/fetch_logo.py",
+    "capture:webref": "node scripts/capture_webref.mjs",
     "sfx": "python engine/sfx_mixer.py",
     "render:hq": "npx --yes hyperframes@latest render --quality delivery --output renders/video.mp4",
     "render:portrait": "node scripts/render_scene_preview.mjs --from s001 --to s022 --output build/all_scenes_9_16_demo.mp4",

@@ -459,12 +459,29 @@ def validate_scene(
         sfield(meta, "formula", where, errors)
         sfield(meta, "formulaBadge", where, errors)
         sfield(meta, "formulaLabel", where, errors)
-        sfield(meta, "image", where, errors)
+        img = sfield(meta, "image", where, errors)
+        if isinstance(img, str) and img and not img.startswith(("http://", "https://", "data:")) and not (ROOT / img).is_file():
+            errors.append(f"{where}.meta.image: local media not found: {img}")
         sfield(meta, "alt", where, errors)
         sfield(meta, "position", where, errors)
         sfield(meta, "ghost", where, errors, max_len=24)
         if "snippet" in meta and not isinstance(meta["snippet"], (str, list)):
             errors.append(f"{where}.meta.snippet: must be a string or list of strings")
+        if "highlightRects" in meta:
+            rects = listfield(meta, "highlightRects", where, errors, lo=1, hi=12)
+            for k, rect in enumerate(rects):
+                rwhere = f"{where}.meta.highlightRects[{k}]"
+                if not isinstance(rect, dict):
+                    errors.append(f"{rwhere}: must be an object")
+                    continue
+                for coord in ("x", "y", "w", "h"):
+                    val = rect.get(coord)
+                    if isinstance(val, bool) or not isinstance(val, (int, float)):
+                        errors.append(f"{rwhere}.{coord}: must be a number (0-100)")
+                    elif val < 0 or val > 100:
+                        errors.append(f"{rwhere}.{coord}: {val} out of 0..100 range")
+                if "label" in rect and rect["label"] is not None:
+                    sfield(rect, "label", rwhere, errors, max_len=60)
 
     elif scene_type == "meme":
         sfield(meta, "text", where, errors)

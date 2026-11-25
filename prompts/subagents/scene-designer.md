@@ -29,7 +29,7 @@ You are the **Scene Designer (`scene-designer`)**, the Visual Layout Designer, M
    - `stack`: Layered system architecture (`meta.layers` [2-6 items with `t`, `s`, `hot`, `bad`]).
    - `quote`: Pull quote (`headline` up to 180 chars, `subline` as required attribution, `meta.initials`, `meta.avatar`).
    - `matrix`: Population/request scan grid (`meta.cells` [40-400], `legendOk`, `legendBad`, `matrixLabel`, `count`).
-   - `webref`: Browser & official doc spotlight (`meta.url` [required], `badge`, `title`, `snippet`, `highlight`, `callout`, `calloutType` [`NOTE`, `IMPORTANT`, `WARNING`], or real screenshot `image`, `alt`, `position`).
+   - `webref`: Browser & official doc spotlight (`meta.url` [required], `badge`, default real website screenshot `image` + `alt` + exact `highlightRects` captured via `node scripts/capture_webref.mjs`, optional `callout`/`calloutType`, `position`; only use text-emulated `title`, `snippet`, `highlight`, `callout` without `image` when explicitly instructed not to capture screenshots).
    - `meme`: High-impact dev reaction (`meta.text`/`caption`, `subtext`/`sub`, `reaction`/`badge`, `formulaBadge`, `formulaLabel`, `expression`, `image`, `punch: true`).
    - `cloud`: Cloud topology diagram with animated data packets (`meta.flow`, `meta.shed`, `meta.beacon`, `meta.nodes` [2-6 items with `t`, `k`, `s`, `icon`, `status`, `hot`, `bad`]).
    - `mascot`: Dedicated Devak spotlight breakdown (`meta.expression`, `bubble`, `badge`, `stats` [up to 4 `{ label, val, hot }` chips]).

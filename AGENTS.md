@@ -52,9 +52,14 @@ if missing using the exact commands in `docs/DAYTONA.md`. This policy is repo-lo
    logo online using the automated waterfall via `python scripts/fetch_logo.py <brand>`:
    (1) SVGL API (`https://api.svgl.app?search=<brand>`), (2) FaviconDL API
    (`https://favicondl.com/api/extract?url=<domain>`), or (3) Firecrawl / web
-   search if neither service provides the real logo. Follow the skill checks,
-   sourcing, native-resolution, provenance, and playback review requirements in
-   `PROMPTS.md` section 0.
+   search if neither service provides the real logo. For `webref` scenes,
+   default to capturing real website screenshots (and exact `highlightRects`
+   text coordinates) via `node scripts/capture_webref.mjs --url <url> --out assets/webref/<id>.png --highlight "<exact quote>"`
+   instead of copy-pasting reference text to emulate a browser; use the
+   text-emulated `snippet`/`callout` mode only when explicitly told not to
+   capture screenshots (or if a capture is blocked and disclosed). Follow the
+   skill checks, sourcing, native-resolution, provenance, and playback review
+   requirements in `PROMPTS.md` section 0.
 9. Plan contextual SFX and mascot direction for each new video using
    `PROMPTS.md` section 0. Use supported expressions and the existing baked SFX
    path, synchronize reactions and sounds to speech, preserve evidence

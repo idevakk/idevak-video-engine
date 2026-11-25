@@ -688,7 +688,9 @@ deliberately changing the engine.
 
 ### webref
 
-A browser and documentation reference window with an address bar, SSL lock, document breadcrumbs, callout highlights, and simulated cursor.
+A browser and documentation reference window with an address bar, SSL lock, centered ~16:10/16:9 screenshot viewport with animated highlight boxes (`highlightRects`) and cursor focus, or a text-emulated documentation view with breadcrumbs, callout highlights, and simulated cursor when real screenshots are explicitly disabled.
+
+Default to real captured website screenshots (`image`, plus `highlightRects` from `node scripts/capture_webref.mjs`) rather than copy-pasting text into `snippet`. Use the text-emulated mode (`snippet`, `highlight`, `callout` without `image`) only when explicitly instructed not to capture screenshots or when capture is blocked.
 
 ```json
 {
@@ -700,14 +702,12 @@ A browser and documentation reference window with an address bar, SSL lock, docu
   "meta": {
     "url": "docs.aws.amazon.com/lambda/latest/dg/configuration-concurrency.html",
     "badge": "AWS ARCHITECTURE DOCS",
-    "title": "Configuring provisioned concurrency for Lambda",
-    "snippet": [
-      "Allocating execution environments ahead of time prevents initialization latency during traffic spikes.",
-      "Failure to specify an upper bound can exhaust VPC subnet elastic network interfaces within seconds."
+    "image": "assets/webref/lambda-concurrency.png",
+    "alt": "AWS Lambda provisioned concurrency documentation page",
+    "highlightRects": [
+      { "x": 14.2, "y": 42.5, "w": 68.4, "h": 4.2, "label": "KEY CONSTRAINT" }
     ],
-    "highlight": "exhaust VPC subnet elastic network interfaces",
-    "callout": "Subnet IP exhaustion causes all downstream Lambda invocations to fail immediately with Status 500.",
-    "calloutType": "WARNING"
+    "source": "Source: AWS Lambda Developer Guide"
   }
 }
 ```
@@ -716,14 +716,20 @@ A browser and documentation reference window with an address bar, SSL lock, docu
 |---|---|---|
 | `url` | string | Required. Web address displayed in the browser bar. |
 | `badge` | string | Optional category badge (e.g. `OFFICIAL DOCS`, `RFC-9110`, `CVE ADVISORY`). |
-| `title` | string | Optional document title. Only rendered when explicitly authored. |
-| `snippet` | string \| string[] | Excerpt paragraphs from the documentation. |
-| `highlight` | string | Key substring to highlight with high-contrast accent border. |
-| `callout` | string | Highlighted alert box text. |
-| `calloutType` | string | `NOTE`, `IMPORTANT`, or `WARNING`. Sets alert styling when callout is present. |
-| `image` | string | Optional path to real screenshot image. If set, replaces the rendered HTML doc. |
+| `image` | string | Default primary evidence mode: local path to real captured screenshot (capture via `node scripts/capture_webref.mjs`). Fits a centered ~16:9/16:10 browser viewport at native aspect ratio. |
+| `highlightRects` | array | Optional array (1-12 items) of `{ x, y, w, h, label? }` normalized percentage coordinates (`0..100`) over `image` to animate a highlighter sweep and cursor click on exact page text. Produced automatically by `scripts/capture_webref.mjs --highlight "..."`. |
 | `alt` | string | Screenshot description. |
-| `position` | string | Screenshot crop anchor (e.g. `top center`). Screenshots fit a bounded viewport to keep the headline and credit in frame. |
+| `position` | string | Optional screenshot crop anchor (e.g. `top center`) for `object-fit: cover` cropping. Omit when using `highlightRects` so coordinates stay 1:1 with the image. |
+| `title` | string | Optional document title (text-emulated mode only). Only rendered when explicitly authored. |
+| `snippet` | string \| string[] | Text-emulated mode only (use only when screenshots are explicitly omitted). Excerpt paragraphs from the documentation. |
+| `highlight` | string | Text-emulated mode only. Key substring to highlight inside `snippet`. |
+| `callout` | string | Highlighted alert box text (works in both text-emulated mode and as a floating callout banner in screenshot mode). |
+| `calloutType` | string | `NOTE`, `IMPORTANT`, or `WARNING`. Sets alert styling when `callout` is present. |
+| `crumb` | string | Text-emulated mode only. Document breadcrumb trail. |
+| `formula` | string | Text-emulated mode only. Formula code inside callout chip. |
+| `formulaBadge` | string | Text-emulated mode only. Formula badge label. |
+| `formulaLabel` | string | Text-emulated mode only. Formula descriptor. |
+| `ghost` | string | Optional background ghost word (max 24 chars). |
 
 ### meme
 

@@ -1,6 +1,7 @@
 // Build the HyperFrames composition from build/scenes.json + build/project.json.
 // Deterministic: all animation state is baked into one paused GSAP timeline.
 import fs from "node:fs/promises";
+import { readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { createRequire } from "node:module";
@@ -34,6 +35,56 @@ const require = createRequire(import.meta.url);
 const gsapJS = await fs.readFile(require.resolve("gsap/dist/gsap.min.js"), "utf8");
 
 const tok = (s) => esc(s).replace(/\n/g, "<br>");
+
+function readImageDimensions(relPath) {
+  if (!relPath || /^(?:https?:|data:)/i.test(relPath)) return null;
+  try {
+    const buf = readFileSync(path.resolve(ROOT, relPath));
+    // PNG
+    if (buf.length >= 24 && buf.readUInt32BE(0) === 0x89504e47 && buf.readUInt32BE(4) === 0x0d0a1a0a) {
+      return { width: buf.readUInt32BE(16), height: buf.readUInt32BE(20) };
+    }
+    // GIF
+    if (buf.length >= 10 && (buf.toString("ascii", 0, 6) === "GIF87a" || buf.toString("ascii", 0, 6) === "GIF89a")) {
+      return { width: buf.readUInt16LE(6), height: buf.readUInt16LE(8) };
+    }
+    // WebP
+    if (buf.length >= 30 && buf.toString("ascii", 0, 4) === "RIFF" && buf.toString("ascii", 8, 12) === "WEBP") {
+      const chunk = buf.toString("ascii", 12, 16);
+      if (chunk === "VP8 " && buf.length >= 30) {
+        return { width: buf.readUInt16LE(26) & 0x3fff, height: buf.readUInt16LE(28) & 0x3fff };
+      }
+      if (chunk === "VP8L" && buf.length >= 25) {
+        const bits = buf.readUInt32LE(21);
+        return { width: (bits & 0x3fff) + 1, height: ((bits >> 14) & 0x3fff) + 1 };
+      }
+      if (chunk === "VP8X" && buf.length >= 30) {
+        const w = (buf[24] | (buf[25] << 8) | (buf[26] << 16)) + 1;
+        const h = (buf[27] | (buf[28] << 8) | (buf[29] << 16)) + 1;
+        return { width: w, height: h };
+      }
+    }
+    // JPEG
+    if (buf.length >= 4 && buf[0] === 0xff && buf[1] === 0xd8) {
+      let i = 2;
+      while (i + 9 < buf.length) {
+        if (buf[i] !== 0xff) { i++; continue; }
+        const marker = buf[i + 1];
+        if (marker === 0xd8 || marker === 0xd9 || marker === 0x00) { i += 2; continue; }
+        if ((marker >= 0xc0 && marker <= 0xc3) || (marker >= 0xc5 && marker <= 0xc7) ||
+            (marker >= 0xc9 && marker <= 0xcb) || (marker >= 0xcd && marker <= 0xcf)) {
+          return { width: buf.readUInt16BE(i + 7), height: buf.readUInt16BE(i + 5) };
+        }
+        const segLen = buf.readUInt16BE(i + 2);
+        if (segLen < 2) break;
+        i += 2 + segLen;
+      }
+    }
+  } catch {
+    return null;
+  }
+  return null;
+}
 
 // ---------------------------------------------------------------- syntax highlighting
 const CODE_KW = new Set([
@@ -939,6 +990,25 @@ const RENDER = {
     const formulaBadge = s.meta?.formulaBadge || "";
     const formulaLabel = s.meta?.formulaLabel || "";
     const customImg = s.meta?.image;
+    const highlightRects = Array.isArray(s.meta?.highlightRects) ? s.meta.highlightRects : [];
+    const isCropped = Boolean(s.meta?.position);
+    const shotDims = customImg && !isCropped ? readImageDimensions(customImg) : null;
+    const shotAr = shotDims && shotDims.width > 0 && shotDims.height > 0 ? (shotDims.width / shotDims.height).toFixed(6) : null;
+    const shotHighlights = highlightRects.map((rect, idx) => {
+      const x = Math.max(0, Math.min(100, Number(rect.x || 0)));
+      const y = Math.max(0, Math.min(100, Number(rect.y || 0)));
+      const w = Math.max(0, Math.min(100 - x, Number(rect.w || 0)));
+      const h = Math.max(0, Math.min(100 - y, Number(rect.h || 0)));
+      const tagBelow = y < 8 ? " tag-below" : "";
+      const lbl = rect.label ? `<span class="web-shot-hl-tag">${esc(rect.label)}</span>` : "";
+      return `<div class="web-shot-hl${tagBelow}" style="left:${x}%;top:${y}%;width:${w}%;height:${h}%;" data-hl-index="${idx}"><span class="web-shot-hl-fill"></span>${lbl}</div>`;
+    }).join("");
+    const shotCursor = customImg && highlightRects.length > 0 ? (() => {
+      const r0 = highlightRects[0];
+      const cx = Math.min(96, Math.max(4, Number(r0.x || 0) + Number(r0.w || 0)));
+      const cy = Math.min(94, Math.max(6, Number(r0.y || 0) + Number(r0.h || 0)));
+      return `<div class="web-cursor-wrap" style="left:${cx}%;top:${cy}%;"><svg class="web-cursor" viewBox="0 0 24 24"><path fill="var(--ac)" d="M3 3l7 18 3-7 7-3L3 3z"/></svg><div class="web-click-ripple"></div></div>`;
+    })() : "";
 
     return `
     ${ghost ? `<div class="web-ghost" data-layout-allow-overflow>${esc(ghost)}</div>` : ""}
@@ -956,7 +1026,7 @@ const RENDER = {
       <div class="web-body">
         <div class="web-viewport">
           <div class="web-doc-scroll">
-            ${customImg ? `<div class="web-screenshot-wrap"><img class="web-screenshot" src="${esc(customImg)}" alt="${esc(s.meta?.alt || docTitle || "")}" style="${s.meta?.position ? `object-position:${esc(s.meta.position)};` : ""}" /></div>` : `
+            ${customImg ? `<div class="web-screenshot-wrap"><div class="web-screenshot-stage${isCropped ? " is-cropped" : ""}"${shotAr ? ` style="--shot-ar:${shotAr};"` : ""}><img class="web-screenshot" src="${esc(customImg)}" alt="${esc(s.meta?.alt || docTitle || "")}" style="${s.meta?.position ? `object-position:${esc(s.meta.position)};` : ""}" />${shotHighlights}${shotCursor}</div></div>` : `
             <div class="web-doc-header">
               ${crumb ? `<div class="web-doc-crumb">${esc(crumb)}</div>` : ""}
               ${docTitle ? `<div class="web-doc-title">${esc(docTitle)}</div>` : ""}
@@ -978,12 +1048,19 @@ const RENDER = {
               </div>` : ""}
             </div>`}
           </div>
-          <div class="web-scrollbar"><div class="web-scroll-thumb"></div></div>
+          ${customImg ? (callout ? `
+          <div class="web-callout web-shot-callout ${calloutType ? `callout-${calloutType.toLowerCase().replace(/[^a-z0-9_-]/g, "")}` : ""}">
+            <div class="web-callout-top">
+              ${calloutType ? `<span class="web-callout-tag">${esc(calloutType)}</span>` : ""}
+              ${formulaBadge ? `<span class="web-callout-algo-badge">${esc(formulaBadge)}</span>` : ""}
+            </div>
+            <div class="web-callout-text">${splitWords(callout, s)}</div>
+          </div>` : "") : `<div class="web-scrollbar"><div class="web-scroll-thumb"></div></div>`}
         </div>
-        <div class="web-cursor-wrap">
+        ${customImg ? "" : `<div class="web-cursor-wrap">
           <svg class="web-cursor" viewBox="0 0 24 24"><path fill="var(--ac)" d="M3 3l7 18 3-7 7-3L3 3z"/></svg>
           <div class="web-click-ripple"></div>
-        </div>
+        </div>`}
       </div>
     </div>
     ${s.subline ? `<div class="web-foot-sub">${esc(s.subline)}</div>` : ""}`;

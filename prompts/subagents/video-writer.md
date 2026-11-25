@@ -37,4 +37,4 @@ Deliver a complete **Scene-by-Scene Technical Script & Display Copy Payload** re
   - `narration`: Exact spoken words (verbatim from `build/vo.json` if audio exists).
   - `eyebrow`, `headline`, `subline`, `ghost` (where applicable).
   - `mascot`: `{ expression, bubble, hud, position, timeline }` (when directed).
-  - Draft `meta` text content: exact code lines (`t`, `k`, `key`, `bad`), diff lines (`+`/`-`), terminal commands and outputs, `webref` URL/snippet/highlight/callout, `stat` value/prefix/suffix/`revealOn`, `cloud`/`flow`/`stack` node labels, and `ledger`/`compare`/`split` copy.
+  - Draft `meta` text content: exact code lines (`t`, `k`, `key`, `bad`), diff lines (`+`/`-`), terminal commands and outputs, `webref` URL + exact target quote to capture/highlight on the live page via `scripts/capture_webref.mjs` (or concise `snippet`/`highlight`/`callout` only when screenshots are explicitly omitted), `stat` value/prefix/suffix/`revealOn`, `cloud`/`flow`/`stack` node labels, and `ledger`/`compare`/`split` copy.

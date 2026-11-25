@@ -242,6 +242,7 @@ function splitWords(text, s = null) {
 
   const parts = str.split(/(==.*?==|~~.*?~~)/g);
   return parts.map(part => {
+    if (!part) return "";
     if (part.startsWith("==") && part.endsWith("==") && part.length > 4) {
       const inner = part.slice(2, -2);
       return `<span class="hl-marker is-live-hl" data-hl="${esc(inner)}"><span class="hl-ink"></span><span class="hl-text">${splitWordsOnly(inner)}</span></span>`;
@@ -249,9 +250,12 @@ function splitWords(text, s = null) {
       const inner = part.slice(2, -2);
       return `<span class="forensic-redact is-live-redact" data-redact="${esc(inner)}"><span class="redact-tape"><span class="redact-laser"></span></span><span class="redact-text">${splitWordsOnly(inner)}</span></span>`;
     } else {
-      return splitWordsOnly(part);
+      const lead = /^\s/.test(part) ? " " : "";
+      const trail = /\s$/.test(part) ? " " : "";
+      const inner = splitWordsOnly(part);
+      return inner ? `${lead}${inner}${trail}` : (part.length ? " " : "");
     }
-  }).join(" ");
+  }).join("");
 }
 
 // ---------------------------------------------------------------- scene render

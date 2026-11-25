@@ -76,6 +76,31 @@ before(async () => {
         source: "Source: Engram technical specification",
       },
     },
+    {
+      id: "s002",
+      type: "webref",
+      act: "one",
+      start: 8,
+      end: 16,
+      accent: "#a855f7",
+      eyebrow: "TEXT FALLBACK MODE",
+      headline: "Emulated Doc View",
+      subline: "Compact proportional reader with anchored cursor.",
+      narration: "Static world knowledge can be stored as sparse n-gram hash tables.",
+      meta: {
+        url: "arxiv.org/abs/2609.deepseek-v4-engram",
+        badge: "WHITE PAPER",
+        crumb: "PRIOR ART / MEMORY OFFLOADING",
+        title: "Engram Sparse N-Gram Lookup Tables",
+        snippet: [
+          "Static world knowledge can be stored as sparse n-gram hash tables.",
+          "Routing tables offload memory-bound lookups to high-speed NVMe storage."
+        ],
+        highlight: "stored as sparse n-gram hash tables",
+        callout: "Engram tables reduce required active GPU memory by over 60%.",
+        calloutType: "NOTE",
+      },
+    },
   ];
 
   async function setupComp(dir, projectJson) {
@@ -215,4 +240,68 @@ test("portrait webref screenshot uses taller 540px viewport without flattening",
   assert.ok(Math.abs(pt.stageAspect - pt.naturalAspect) < 0.02);
 
   await page.close();
+});
+
+test("emulated doc webref omits fake scrollbar on short docs, keeps punctuation attached, and sweeps cursor cleanly in both landscape and portrait", async () => {
+  for (const cfg of [
+    { dir: "ls", compId: "webref-ls", viewport: { width: 1920, height: 1080 }, maxShell: 1165, rootScale: 1 },
+    { dir: "pt", compId: "webref-pt", viewport: { width: 1080, height: 1920 }, maxShell: 950, rootScale: 1 },
+    { dir: "ls", compId: "webref-ls", viewport: { width: 1920, height: 1080 }, maxShell: 1165, rootScale: 0.5 },
+  ]) {
+    const page = await browser.newPage({ viewport: cfg.viewport });
+    await page.route("https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js", (route) =>
+      route.fulfill({ path: require.resolve("gsap/dist/gsap.min.js"), contentType: "text/javascript" }),
+    );
+    if (cfg.rootScale !== 1) {
+      await page.addInitScript((scale) => {
+        window.addEventListener("DOMContentLoaded", () => {
+          const r = document.getElementById("root");
+          if (r) {
+            r.style.transformOrigin = "top left";
+            r.style.transform = `scale(${scale})`;
+          }
+        });
+      }, cfg.rootScale);
+    }
+    await page.goto(pathToFileURL(path.join(workDir, cfg.dir, "index.html")).href);
+    await page.evaluate(() => document.fonts.ready);
+
+    const doc = await page.evaluate(({ compId, scale }) => {
+      const tl = window.__timelines[compId];
+      const s2 = document.querySelector("#s002");
+
+      tl.seek(8.54, false);
+      const cStart = s2.querySelector(".web-cursor-wrap").getBoundingClientRect();
+
+      tl.seek(12.0, false);
+      const shell = s2.querySelector(".web-shell").getBoundingClientRect();
+      const body = s2.querySelector(".web-body").getBoundingClientRect();
+      const pText = s2.querySelector(".web-p.has-hl").textContent.replace(/\s+/g, " ").trim();
+      const scrollbar = s2.querySelector(".web-scrollbar");
+      const hl = s2.querySelector(".web-doc-content .hl-marker").getBoundingClientRect();
+      const cursor = s2.querySelector(".web-cursor-wrap").getBoundingClientRect();
+      const title = s2.querySelector(".web-doc-title").getBoundingClientRect();
+      const vp = s2.querySelector(".web-viewport").getBoundingClientRect();
+      return {
+        shellWidth: shell.width / scale,
+        pText,
+        scrollbarDisplay: scrollbar ? getComputedStyle(scrollbar).display : "none",
+        sweepDeltaX: (cursor.left - cStart.left) / scale,
+        cursorDx: Math.abs(cursor.left - hl.right) / scale,
+        cursorDy: Math.abs(cursor.top - hl.bottom) / scale,
+        insideBody: cursor.left >= body.left - 1 && cursor.right <= body.right + 1 && cursor.top >= body.top - 1 && cursor.bottom <= body.bottom + 1,
+        titleClipped: title.top < vp.top - 1,
+      };
+    }, { compId: cfg.compId, scale: cfg.rootScale });
+
+    assert.ok(doc.shellWidth <= cfg.maxShell, `Expected reader shell <= ${cfg.maxShell}px (${cfg.dir}), got ${doc.shellWidth}`);
+    assert.ok(!doc.pText.includes("tables ."), `Unexpected space before period in ${doc.pText}`);
+    assert.equal(doc.scrollbarDisplay, "none");
+    assert.equal(doc.titleClipped, false);
+    assert.ok(doc.sweepDeltaX > 80, `Expected left-to-right cursor sweep across highlight (${cfg.dir}), got ${doc.sweepDeltaX}`);
+    assert.ok(doc.cursorDx < 12 && doc.cursorDy < 12, `Expected cursor anchored at highlight corner (${cfg.dir}, scale=${cfg.rootScale}), got dx=${doc.cursorDx}, dy=${doc.cursorDy}`);
+    assert.equal(doc.insideBody, true, `Expected cursor inside .web-body (${cfg.dir}, scale=${cfg.rootScale})`);
+
+    await page.close();
+  }
 });

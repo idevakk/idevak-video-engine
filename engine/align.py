@@ -20,18 +20,29 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from engine.workspace import (  # noqa: E402
+    default_audio_rel,
+    project_json_path,
+    resolve_project_dir,
+    resolve_project_path,
+)
+
 DEFAULT_PROJECT = ROOT / "content/video.json"
 DEFAULT_VO = ROOT / "build/vo.json"
 DEFAULT_OUT = ROOT / "build"
 GAP = 0.85
 
 
-def resolve(path: str | Path) -> Path:
+def resolve(path: str | Path, base: Path = ROOT) -> Path:
     p = Path(path)
-    return p if p.is_absolute() else (ROOT / p)
+    return p if p.is_absolute() else (base / p)
 
 
 def load_json(path: Path):
@@ -228,18 +239,38 @@ def apply_timing(
 
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("project", nargs="?", default=str(DEFAULT_PROJECT))
-    ap.add_argument("vo", nargs="?", default=str(DEFAULT_VO))
+    ap.add_argument("project", nargs="?", default=None)
+    ap.add_argument("vo", nargs="?", default=None)
+    ap.add_argument("--project", "--workspace", dest="workspace", default=None, help="isolated project workspace slug or directory")
     ap.add_argument("--draft", action="store_true", help="estimate timings from script word counts for fast preview")
-    ap.add_argument("--out-dir", default=str(DEFAULT_OUT))
+    ap.add_argument("--out-dir", default=None)
     ap.add_argument("--lead-in", type=float, default=0.0, help="optional visual anticipation in inter-scene silence; default 0 follows speech")
     ap.add_argument("--min-gap", type=float, default=0.6, help="minimum time between scene starts")
     ap.add_argument("--min-duration", type=float, default=0.35, help="minimum scene duration")
     args = ap.parse_args()
 
-    project_path = resolve(args.project)
-    vo_path = resolve(args.vo)
-    out_dir = resolve(args.out_dir)
+    if args.workspace is not None:
+        project_dir = resolve_project_dir(args.workspace, engine_root=ROOT)
+    elif args.project is not None:
+        p = Path(args.project)
+        if p.is_dir() or (ROOT / p).is_dir() or ("/" not in args.project and "\\" not in args.project and not args.project.endswith(".json")):
+            project_dir = resolve_project_dir(args.project, engine_root=ROOT)
+        else:
+            resolved_proj = resolve(args.project, ROOT).resolve()
+            parent = resolved_proj.parent
+            project_dir = parent.parent if parent.name == "content" and (parent.parent / "engine").is_dir() else parent
+    else:
+        # When explicit vo or --out-dir is passed without --project, keep legacy ROOT default so tests stay isolated.
+        use_active = args.vo is None and args.out_dir is None
+        project_dir = resolve_project_dir(None, engine_root=ROOT, use_active=use_active)
+
+    if args.project is not None and str(args.project).lower().endswith(".json"):
+        project_path = resolve_project_path(args.project, project_dir, ROOT)
+    else:
+        project_path = project_json_path(project_dir, ROOT)
+
+    vo_path = resolve(args.vo, project_dir) if args.vo is not None else (project_dir / "build/vo.json")
+    out_dir = resolve(args.out_dir, project_dir) if args.out_dir is not None else (project_dir / "build")
     video = load_json(project_path)
 
     scenes = video.get("scenes")
@@ -396,7 +427,7 @@ def main() -> None:
         "title": video.get("title") or "Untitled video",
         "slug": slug,
         "compositionId": video.get("compositionId") or slug,
-        "audio": video.get("audio") or "content/voiceover.wav",
+        "audio": video.get("audio") or default_audio_rel(project_dir, ROOT),
         "channel": video.get("channel") or "",
         "cta": video.get("cta") or "",
         "ctaSub": video.get("ctaSub") or "",

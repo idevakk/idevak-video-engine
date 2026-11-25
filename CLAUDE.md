@@ -25,8 +25,9 @@ preparation reports and frames; fix source and repeat preparation before render.
 - Starting a preview server or encoding any draft/final video requires explicit user permission. This includes direct commands and indirect tools, tests, subagents, and lifecycle hooks. Finish setup, builds, and permitted checks before asking; reuse explicit permission already granted for that action.
 - Use the 21 scene types (including `webref`, `meme`, `cloud`, `mascot`).
 - Support the iDevak mascot (**Devak**) with expressions (`neutral`, `shocked`, `thinking`, `solved`) and audio-synced overlays.
-- `content/video.json` is the source of truth. `build/`, `index.html`, `hyperframes.json`, and `renders/` are generated and ignored.
-- Run `validate -> transcribe -> align -> build -> check`.
+- Always work in an isolated gitignored workspace under `workspaces/<slug>/` (`npm run project:new -- <slug>`, `--project <slug>`). Keep root `content/video.json`, root `assets/`, and engine files clean during video projects or ad-hoc tests; keep user `workspaces/` notes untouched during engine improvements.
+- `workspaces/<slug>/video.json` is the project source of truth. `workspaces/<slug>/build/`, `index.html`, `hyperframes.json`, and `renders/` are generated and ignored.
+- Run `validate -> transcribe -> align -> build -> check` with `--project <slug>` (or `npm run project:use -- <slug>`).
 - `lint` and `check` must report 0 errors.
 - Do not commit generated files, audio, or renders.
 - Use plain hyphens, not em dashes.

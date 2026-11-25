@@ -3,8 +3,10 @@
 import { chromium } from '@playwright/test';
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { ENGINE_ROOT, popProjectArg, resolveProjectDir } from '../engine/workspace.mjs';
 
-const root = process.cwd();
+const { project: projectArg } = popProjectArg();
+const root = resolveProjectDir(projectArg, { engineRoot: ENGINE_ROOT });
 const outDir = path.join(root, 'build', 'qa', 'local');
 const framesDir = path.join(outDir, 'frames');
 await fs.rm(outDir, { recursive: true, force: true });

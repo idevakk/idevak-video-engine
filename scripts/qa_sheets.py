@@ -1,4 +1,5 @@
 """Compose review sheets from the frames written by scripts/qa_frames.mjs."""
+import argparse
 import json
 import math
 import sys
@@ -7,13 +8,23 @@ from pathlib import Path
 from PIL import Image, ImageDraw
 
 ROOT = Path(__file__).resolve().parent.parent
-QA = ROOT / "build/qa/local"
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from engine.workspace import resolve_project_dir  # noqa: E402
+
+ap = argparse.ArgumentParser(description=__doc__)
+ap.add_argument("--project", "--workspace", default=None, help="isolated project workspace slug or directory")
+args = ap.parse_args()
+
+PROJECT_DIR = resolve_project_dir(args.project, engine_root=ROOT)
+QA = PROJECT_DIR / "build/qa/local"
 REPORT = QA / "report.json"
 FRAMES = QA / "frames"
 SHEETS = QA / "sheets"
 
 if not REPORT.is_file():
-    sys.exit(f"Missing {REPORT.relative_to(ROOT)}. Run: npm run qa:frames")
+    sys.exit(f"Missing {REPORT}. Run: npm run qa:frames")
 
 data = json.loads(REPORT.read_text(encoding="utf-8"))
 files = [shot["file"] for shot in data["shots"]]

@@ -1,7 +1,21 @@
+import argparse
 import json
-import os
+import sys
+from pathlib import Path
 
-path = 'build/project.json' if os.path.exists('build/project.json') else 'content/video.json'
+ROOT = Path(__file__).resolve().parent.parent
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from engine.workspace import project_json_path, resolve_project_dir  # noqa: E402
+
+ap = argparse.ArgumentParser()
+ap.add_argument("--project", "--workspace", default=None)
+args = ap.parse_args()
+
+project_dir = resolve_project_dir(args.project, engine_root=ROOT)
+built = project_dir / "build/project.json"
+path = built if built.is_file() else project_json_path(project_dir, ROOT)
 with open(path, 'r', encoding='utf-8') as f:
     v = json.load(f)
 

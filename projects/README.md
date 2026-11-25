@@ -13,26 +13,15 @@ projects/
 └── README.md
 ```
 
-## How to Switch Projects
+## How to Load an Archived Project Safely (Isolated Workspace)
 
-To work on an existing project or restore it into the engine:
+Do not overwrite `content/video.json` at the repo root. Clone an archived project into a gitignored workspace under `workspaces/<slug>/`:
 
 ```bash
-# On Windows PowerShell:
-Copy-Item projects/emudhra-key-was-four/video.json content/video.json
+# Create an isolated workspace from an archived project and set it active:
+npm run project:new -- emudhra-test --from emudhra-key-was-four --use
 
-# Test and preview immediately:
+# Test and preview immediately inside workspaces/emudhra-test/:
 npm run draft
 npm run preview
-```
-
-To archive your current active project before starting a new one:
-
-```bash
-# Save your current project:
-New-Item -ItemType Directory -Force -Path "projects/my-new-video"
-Copy-Item content/video.json "projects/my-new-video/video.json"
-
-# Reset content/video.json to the blank boilerplate template:
-Copy-Item content/video.example.json content/video.json
 ```

@@ -1,14 +1,19 @@
 // Build the HyperFrames composition from build/scenes.json + build/project.json.
 // Deterministic: all animation state is baked into one paused GSAP timeline.
 import fs from "node:fs/promises";
-import { readFileSync } from "node:fs";
+import fsSync, { readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { createRequire } from "node:module";
 import { bakeSFX } from "./audio.mjs";
+import { defaultAudioRel, popProjectArg, resolveProjectDir } from "./workspace.mjs";
 
-const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const read = (p) => fs.readFile(path.resolve(ROOT, p), "utf8");
+const { project: projectArg } = popProjectArg();
+const ENGINE_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const PROJECT_DIR = resolveProjectDir(projectArg, { engineRoot: ENGINE_ROOT });
+const IS_ISOLATED_WORKSPACE = path.resolve(PROJECT_DIR) !== path.resolve(ENGINE_ROOT);
+const readEngine = (p) => fs.readFile(path.resolve(ENGINE_ROOT, p), "utf8");
+const readProject = (p) => fs.readFile(path.resolve(PROJECT_DIR, p), "utf8");
 const esc = (s = "") =>
   String(s)
     .replace(/&/g, "&amp;")
@@ -18,28 +23,72 @@ const esc = (s = "") =>
     .replace(/\/\*/g, "&#47;*")
     .replace(/\*\//g, "*&#47;");
 
-const project = JSON.parse(await read("build/project.json"));
-const scenes = JSON.parse(await read("build/scenes.json"));
+function resolveLocalPath(relPath) {
+  if (!relPath || /^(?:https?:|data:)/i.test(relPath)) return null;
+  if (path.isAbsolute(relPath)) return fsSync.existsSync(relPath) ? relPath : null;
+  const inProj = path.resolve(PROJECT_DIR, relPath);
+  if (fsSync.existsSync(inProj)) return inProj;
+  if (IS_ISOLATED_WORKSPACE) {
+    const inRoot = path.resolve(ENGINE_ROOT, relPath);
+    if (fsSync.existsSync(inRoot)) return inRoot;
+  }
+  return null;
+}
+
+function stageAsset(relPath) {
+  if (!relPath) return "";
+  const raw = String(relPath);
+  if (/^(?:https?:|data:)/i.test(raw)) return raw;
+  const norm = raw.replace(/\\/g, "/");
+  if (!IS_ISOLATED_WORKSPACE) return raw;
+  const inProj = path.resolve(PROJECT_DIR, raw);
+  if (fsSync.existsSync(inProj)) return norm;
+  const inRoot = path.resolve(ENGINE_ROOT, raw);
+  if (fsSync.existsSync(inRoot)) {
+    const cleanRel = norm.replace(/^\/+/, "");
+    const stagedRel = `build/shared-assets/${cleanRel}`;
+    const dest = path.resolve(PROJECT_DIR, stagedRel);
+    fsSync.mkdirSync(path.dirname(dest), { recursive: true });
+    fsSync.copyFileSync(inRoot, dest);
+    return stagedRel;
+  }
+  return norm;
+}
+
+const project = JSON.parse(await readProject("build/project.json"));
+const scenes = JSON.parse(await readProject("build/scenes.json"));
 const total = scenes[scenes.length - 1].end;
 const compositionId = project.compositionId || project.slug || "video";
 const width = Number(project.width) || 1920;
 const height = Number(project.height) || 1080;
 const isPortrait = Boolean(project.isPortrait || height > width || project.aspect === "9:16");
 const fps = Number(project.fps) || 30;
-const audio = project.audio || "content/voiceover.wav";
+const audio = stageAsset(project.audio || defaultAudioRel(PROJECT_DIR, ENGINE_ROOT));
 const title = project.title || "Untitled video";
-const fontsCss = await read("engine/fonts.css");
-const CSS = await read("engine/style.css");
-const JS = (await read("engine/anim.js")).replace('"__COMPOSITION_ID__"', JSON.stringify(compositionId));
+let fontsCss = await readEngine("engine/fonts.css");
+if (IS_ISOLATED_WORKSPACE) {
+  const srcFontsDir = path.resolve(ENGINE_ROOT, "assets/fonts");
+  const destFontsDir = path.resolve(PROJECT_DIR, "build/fonts");
+  if (fsSync.existsSync(srcFontsDir)) {
+    fsSync.mkdirSync(destFontsDir, { recursive: true });
+    for (const entry of fsSync.readdirSync(srcFontsDir)) {
+      fsSync.copyFileSync(path.join(srcFontsDir, entry), path.join(destFontsDir, entry));
+    }
+    fontsCss = fontsCss.replace(/url\(assets\/fonts\//g, "url(build/fonts/");
+  }
+}
+const CSS = await readEngine("engine/style.css");
+const JS = (await readEngine("engine/anim.js")).replace('"__COMPOSITION_ID__"', JSON.stringify(compositionId));
 const require = createRequire(import.meta.url);
 const gsapJS = await fs.readFile(require.resolve("gsap/dist/gsap.min.js"), "utf8");
 
 const tok = (s) => esc(s).replace(/\n/g, "<br>");
 
 function readImageDimensions(relPath) {
-  if (!relPath || /^(?:https?:|data:)/i.test(relPath)) return null;
+  const absPath = resolveLocalPath(relPath);
+  if (!absPath) return null;
   try {
-    const buf = readFileSync(path.resolve(ROOT, relPath));
+    const buf = readFileSync(absPath);
     // PNG
     if (buf.length >= 24 && buf.readUInt32BE(0) === 0x89504e47 && buf.readUInt32BE(4) === 0x0d0a1a0a) {
       return { width: buf.readUInt32BE(16), height: buf.readUInt32BE(20) };
@@ -151,7 +200,7 @@ const MASCOT_EXPRS = [
 ];
 
 for (const expr of MASCOT_EXPRS) {
-  const pngPath = path.resolve(ROOT, `assets/mascot/${expr}.png`);
+  const pngPath = path.resolve(ENGINE_ROOT, `assets/mascot/${expr}.png`);
   try {
     const buf = await fs.readFile(pngPath);
     MASCOT_IMAGES[expr] = `data:image/png;base64,${buf.toString("base64")}`;
@@ -326,7 +375,7 @@ const RENDER = {
         ${s.subline ? `<p class="hero-sub">${esc(s.subline)}</p>` : ""}
       </div>
       <div class="hero-right">
-        ${s.meta?.image || s.meta?.video ? `<div class="evidence-frame">${s.meta?.label ? `<div class="evidence-label">${esc(s.meta.label)}</div>` : ""}<div class="evidence-viewport"><img class="evidence-image" src="${esc(s.meta.image || s.meta.poster || "")}" alt="${esc(s.meta?.alt || "")}" style="${s.meta?.position ? `object-position:${esc(s.meta.position)};` : ""}${s.meta?.video ? "visibility:hidden" : ""}" /></div>${s.meta?.caption ? `<div class="evidence-caption">${esc(s.meta.caption)}</div>` : ""}</div>` : s.meta?.logos ? `<div class="brand-grid">${s.meta.logos.map(logo => `<div class="brand-item"><img src="${esc(logo.src)}" alt="${esc(logo.name)}" style="background:${/^#[0-9a-f]{6}$/i.test(logo.background || "") ? logo.background : "transparent"}" /><span>${esc(logo.name)}</span></div>`).join("")}</div>` : (mark ? `<div class="hero-mark" style="--hero-mark-size:${markSize}px">${esc(mark)}</div>` : "")}
+        ${s.meta?.image || s.meta?.video ? `<div class="evidence-frame">${s.meta?.label ? `<div class="evidence-label">${esc(s.meta.label)}</div>` : ""}<div class="evidence-viewport"><img class="evidence-image" src="${esc(stageAsset(s.meta.image || s.meta.poster || ""))}" alt="${esc(s.meta?.alt || "")}" style="${s.meta?.position ? `object-position:${esc(s.meta.position)};` : ""}${s.meta?.video ? "visibility:hidden" : ""}" /></div>${s.meta?.caption ? `<div class="evidence-caption">${esc(s.meta.caption)}</div>` : ""}</div>` : s.meta?.logos ? `<div class="brand-grid">${s.meta.logos.map(logo => `<div class="brand-item"><img src="${esc(stageAsset(logo.src))}" alt="${esc(logo.name)}" style="background:${/^#[0-9a-f]{6}$/i.test(logo.background || "") ? logo.background : "transparent"}" /><span>${esc(logo.name)}</span></div>`).join("")}</div>` : (mark ? `<div class="hero-mark" style="--hero-mark-size:${markSize}px">${esc(mark)}</div>` : "")}
         ${s.meta?.rule ? `<div class="hero-vrule"><span class="hero-vrule-dot"></span></div>` : ""}
       </div>
     </div>
@@ -899,7 +948,7 @@ const RENDER = {
   },
 
   quote(s) {
-    const avatar = s.meta?.avatar;
+    const avatar = s.meta?.avatar ? stageAsset(s.meta.avatar) : "";
     const authorInitials = s.meta?.initials || "";
     const badgeHtml = avatar 
       ? `<div class="q-avatar"><img src="${esc(avatar)}" alt="author" /><span class="q-avatar-ring"></span></div>` 
@@ -1030,7 +1079,7 @@ const RENDER = {
       <div class="web-body">
         <div class="web-viewport">
           <div class="web-doc-scroll">
-            ${customImg ? `<div class="web-screenshot-wrap"><div class="web-screenshot-stage${isCropped ? " is-cropped" : ""}"${shotAr ? ` style="--shot-ar:${shotAr};"` : ""}><img class="web-screenshot" src="${esc(customImg)}" alt="${esc(s.meta?.alt || docTitle || "")}" style="${s.meta?.position ? `object-position:${esc(s.meta.position)};` : ""}" />${shotHighlights}${shotCursor}</div></div>` : `
+            ${customImg ? `<div class="web-screenshot-wrap"><div class="web-screenshot-stage${isCropped ? " is-cropped" : ""}"${shotAr ? ` style="--shot-ar:${shotAr};"` : ""}><img class="web-screenshot" src="${esc(stageAsset(customImg))}" alt="${esc(s.meta?.alt || docTitle || "")}" style="${s.meta?.position ? `object-position:${esc(s.meta.position)};` : ""}" />${shotHighlights}${shotCursor}</div></div>` : `
             <div class="web-doc-header">
               ${crumb ? `<div class="web-doc-crumb">${esc(crumb)}</div>` : ""}
               ${docTitle ? `<div class="web-doc-title">${esc(docTitle)}</div>` : ""}
@@ -1076,7 +1125,7 @@ const RENDER = {
     const badge = s.meta?.badge || s.meta?.reaction || "";
     const sub = s.meta?.subtext || s.meta?.sub || "";
     const expr = s.meta?.expression || "";
-    const image = s.meta?.image || (expr && MASCOT_IMAGES[expr]) || "";
+    const image = (s.meta?.image ? stageAsset(s.meta.image) : "") || (expr && MASCOT_IMAGES[expr]) || "";
     const file = s.meta?.file || "";
     const bubble = s.meta?.bubble || s.meta?.thought || "";
     const stamp = s.meta?.stamp || s.meta?.reactionTag || "";
@@ -1346,11 +1395,12 @@ const body = scenes.map(renderScene).join("\n");
 // Timed media lives beside scenes, never inside a plain timed section. This
 // keeps source seeking and visibility on the same global clock in HyperFrames.
 const evidenceVideos = scenes.map((s, i) => s.type === "hero" && s.meta?.video
-  ? `<video id="evidence-video-${i + 1}" class="clip evidence-video" src="${esc(s.meta.video)}" poster="${esc(s.meta.image || s.meta.poster || "")}" data-start="${s.start.toFixed(3)}" data-duration="${(s.end - s.start).toFixed(3)}" data-media-start="${Number(s.meta.mediaStart || 0)}" data-track-index="4" muted playsinline preload="metadata"></video>`
+  ? `<video id="evidence-video-${i + 1}" class="clip evidence-video" src="${esc(stageAsset(s.meta.video))}" poster="${esc(stageAsset(s.meta.image || s.meta.poster || ""))}" data-start="${s.start.toFixed(3)}" data-duration="${(s.end - s.start).toFixed(3)}" data-media-start="${Number(s.meta.mediaStart || 0)}" data-track-index="4" muted playsinline preload="metadata"></video>`
   : "").join("\n");
 
 const hasSubtitles = Boolean(project.subtitles || project.karaoke);
-const bgm = project.bgm || project.music || null;
+const bgmRaw = project.bgm || project.music || null;
+const bgm = bgmRaw ? stageAsset(bgmRaw) : null;
 
 const html = `<!doctype html>
 <html lang="en">
@@ -1432,8 +1482,9 @@ const meta = {
   channel: project.channel || "",
 };
 
-await bakeSFX(html, Number(total.toFixed(3)), path.resolve(ROOT, "build/sfx_track.wav"));
-await fs.writeFile(path.resolve(ROOT, "index.html"), html, "utf8");
-await fs.writeFile(path.resolve(ROOT, "hyperframes.json"), JSON.stringify(meta, null, 2) + "\n", "utf8");
-console.log(`index.html written: ${scenes.length} scenes, ${total.toFixed(1)}s`);
+await fs.mkdir(path.resolve(PROJECT_DIR, "build"), { recursive: true });
+await bakeSFX(html, Number(total.toFixed(3)), path.resolve(PROJECT_DIR, "build/sfx_track.wav"));
+await fs.writeFile(path.resolve(PROJECT_DIR, "index.html"), html, "utf8");
+await fs.writeFile(path.resolve(PROJECT_DIR, "hyperframes.json"), JSON.stringify(meta, null, 2) + "\n", "utf8");
+console.log(`index.html written (${path.relative(ENGINE_ROOT, PROJECT_DIR) || "."}): ${scenes.length} scenes, ${total.toFixed(1)}s`);
 console.log(`hyperframes.json written: ${meta.name}`);

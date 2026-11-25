@@ -1,8 +1,10 @@
 import { chromium } from 'playwright';
 import fs from 'fs';
 import path from 'path';
+import { ENGINE_ROOT, popProjectArg, resolveProjectDir } from '../engine/workspace.mjs';
 
-const root = process.cwd();
+const { project: projectArg } = popProjectArg();
+const root = resolveProjectDir(projectArg, { engineRoot: ENGINE_ROOT });
 const scenesTiming = JSON.parse(fs.readFileSync(path.join(root, 'build/qa/scenes_timing.json'), 'utf8'));
 const project = JSON.parse(fs.readFileSync(path.join(root, 'build/project.json'), 'utf8'));
 

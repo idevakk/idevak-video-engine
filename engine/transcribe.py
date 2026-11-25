@@ -23,15 +23,24 @@ import urllib.parse
 import urllib.request
 from pathlib import Path
 
-from engine.domain_vocab import (
+ROOT = Path(__file__).resolve().parent.parent
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from engine.domain_vocab import (  # noqa: E402
     build_deepgram_params,
     build_whisper_prompt,
     extract_project_vocabulary,
     normalize_transcript,
     normalize_words_array,
 )
+from engine.workspace import (  # noqa: E402
+    default_audio_rel,
+    project_json_path,
+    resolve_project_dir,
+    resolve_project_path,
+)
 
-ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_PROJECT = ROOT / "content/video.json"
 DEFAULT_OUT = ROOT / "build/vo.json"
 SECRET_KEY_FILE = Path(r"C:\Users\atulk\.t3\userdata\secrets\files\3fe6af57238e20616047733bf8da4fdd")
@@ -48,17 +57,16 @@ def find_deepgram_key() -> str | None:
     return None
 
 
-def resolve(path: str | Path) -> Path:
-    p = Path(path)
-    return p if p.is_absolute() else (ROOT / p)
+def resolve(path: str | Path, project_dir: Path = ROOT) -> Path:
+    return resolve_project_path(path, project_dir, ROOT)
 
 
-def project_audio(project_path: Path) -> Path:
+def project_audio(project_path: Path, project_dir: Path = ROOT) -> Path:
     if not project_path.exists():
         raise SystemExit(f"missing project file: {project_path}")
     data = json.loads(project_path.read_text(encoding="utf-8"))
-    audio = data.get("audio") or "content/voiceover.wav"
-    return resolve(audio)
+    audio = data.get("audio") or default_audio_rel(project_dir, ROOT)
+    return resolve(audio, project_dir)
 
 
 def extract_project_prompt(project_path: Path) -> str:
@@ -264,7 +272,7 @@ def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("audio", nargs="?", default=None, help="voiceover file (default: project audio)")
     ap.add_argument("out", nargs="?", default=None, help="output JSON (default: build/vo.json)")
-    ap.add_argument("--project", default=str(DEFAULT_PROJECT), help="project JSON used to resolve audio")
+    ap.add_argument("--project", "--workspace", default=None, help="project workspace slug/dir or project JSON file")
     ap.add_argument("--model", default="large-v3-turbo", help="faster-whisper model (default: large-v3-turbo)")
     ap.add_argument("--language", default="en", help="language code, or 'auto' (default: en)")
     ap.add_argument("--start", type=float, default=None, help="optional trim start in seconds")
@@ -277,14 +285,21 @@ def main() -> None:
     ap.add_argument("--no-deepgram", action="store_true", help="force local faster-whisper even if DEEPGRAM_API_KEY is present")
     args = ap.parse_args()
 
-    project_file = resolve(args.project)
-    audio = resolve(args.audio) if args.audio else project_audio(project_file)
-    out = resolve(args.out) if args.out else DEFAULT_OUT
+    if args.project and str(args.project).lower().endswith(".json"):
+        project_file = resolve(args.project, ROOT)
+        parent = project_file.resolve().parent
+        project_dir = parent.parent if parent.name == "content" and (parent.parent / "engine").is_dir() else parent
+    else:
+        project_dir = resolve_project_dir(args.project, engine_root=ROOT)
+        project_file = project_json_path(project_dir, ROOT)
+
+    audio = resolve(args.audio, project_dir) if args.audio else project_audio(project_file, project_dir)
+    out = resolve(args.out, project_dir) if args.out else (project_dir / "build/vo.json")
 
     if not audio.exists():
         raise SystemExit(
             f"voiceover not found: {audio}\n"
-            "Put the recording at content/voiceover.wav or set 'audio' in content/video.json."
+            f"Put the recording at {default_audio_rel(project_dir, ROOT)} inside {project_dir} or set 'audio' in {project_file.name}."
         )
 
     out.parent.mkdir(parents=True, exist_ok=True)
@@ -369,9 +384,12 @@ def main() -> None:
             print(f"[{seg.start:8.2f} -> {seg.end:8.2f}] {seg.text.strip()[:100]}", file=sys.stderr, flush=True)
 
         try:
-            audio_label = str(audio.relative_to(ROOT))
+            audio_label = str(audio.relative_to(project_dir))
         except ValueError:
-            audio_label = str(audio)
+            try:
+                audio_label = str(audio.relative_to(ROOT))
+            except ValueError:
+                audio_label = str(audio)
 
         payload = {
             "audio": audio_label,

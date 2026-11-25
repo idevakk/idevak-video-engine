@@ -1465,6 +1465,70 @@
       if (el.querySelector(".web-head-title")) {
         words(el.querySelector(".web-head-title"), at + 0.05, { dur: 0.65, stagger: 0.035, y: 16 });
       }
+      var isShot = el.classList.contains("has-screenshot");
+      var vpEl = el.querySelector(".web-viewport");
+      var scrollWrap = el.querySelector(".web-doc-scroll");
+      var scrollbar = el.querySelector(".web-scrollbar");
+      var thumb = el.querySelector(".web-scroll-thumb");
+      var cursorWrap = el.querySelector(".web-cursor-wrap");
+      var overflowY = !isShot && scrollWrap && vpEl ? Math.max(0, scrollWrap.scrollHeight - vpEl.clientHeight) : 0;
+      var scrollTravel = !isShot && overflowY > 8 ? Math.min(overflowY, 96) : 0;
+      if (!isShot && overflowY <= 8 && scrollbar) {
+        scrollbar.style.display = "none";
+      } else if (!isShot && overflowY > 8 && scrollWrap) {
+        scrollWrap.style.paddingRight = "24px";
+      }
+      var cursorStartOffset = null;
+      var cursorSweepStart = null;
+      if (!isShot && cursorWrap) {
+        var hlTarget = el.querySelector(".web-doc-content .hl-marker");
+        var calloutTarget = el.querySelector(".web-callout");
+        var cursorTarget =
+          hlTarget ||
+          calloutTarget ||
+          el.querySelector(".web-p.has-hl") ||
+          el.querySelector(".web-p");
+        var bodyEl = el.querySelector(".web-body");
+        if (cursorTarget && bodyEl) {
+          var bR = bodyEl.getBoundingClientRect();
+          var tR = cursorTarget.getBoundingClientRect();
+          var scaleX = bodyEl.clientWidth > 0 && bR.width > 0 ? bR.width / bodyEl.clientWidth : 1;
+          var scaleY = bodyEl.clientHeight > 0 && bR.height > 0 ? bR.height / bodyEl.clientHeight : 1;
+          var bodyW = bodyEl.clientWidth || bR.width;
+          var bodyH = bodyEl.clientHeight || bR.height;
+          if (bodyW > 0 && tR.width > 0) {
+            var relLeft = (tR.left - bR.left) / scaleX;
+            var relRight = (tR.right - bR.left) / scaleX;
+            var relBottom = (tR.bottom - bR.top) / scaleY - scrollTravel;
+            var targetX, targetY;
+            if (hlTarget) {
+              targetX = Math.min(bodyW - 30, Math.max(16, relRight - 2));
+              targetY = Math.min(bodyH - 28, Math.max(16, relBottom - 2));
+              var sweepStartX = Math.min(targetX - 24, Math.max(16, relLeft - 2));
+              if (targetX - sweepStartX >= 32) {
+                cursorSweepStart = { x: sweepStartX - targetX, y: 0 };
+              }
+            } else if (cursorTarget === calloutTarget) {
+              targetX = Math.min(bodyW - 36, Math.max(24, relLeft + (tR.width / scaleX) * 0.85));
+              targetY = Math.min(bodyH - 28, Math.max(24, relBottom - 18));
+            } else {
+              targetX = Math.min(bodyW - 30, Math.max(16, relRight - 2));
+              targetY = Math.min(bodyH - 28, Math.max(16, relBottom - 2));
+            }
+            cursorWrap.style.left = targetX + "px";
+            cursorWrap.style.top = targetY + "px";
+            cursorWrap.style.right = "auto";
+            cursorWrap.style.bottom = "auto";
+
+            var entryDx = Math.min(110, Math.max(36, bodyW - targetX - 32));
+            var entryDy = (bodyH - targetY >= 72)
+              ? Math.min(72, Math.max(28, bodyH - targetY - 28))
+              : -Math.min(64, Math.max(28, targetY - 20));
+            cursorStartOffset = { x: entryDx, y: entryDy };
+          }
+        }
+      }
+
       var shell = el.querySelector(".web-shell");
       if (shell) {
         tl.fromTo(shell,
@@ -1489,7 +1553,6 @@
       if (docHeader) {
         tl.fromTo(docHeader, { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.45, ease: E.soft }, at + 0.28);
       }
-      var isShot = el.classList.contains("has-screenshot");
       var ps = q(el, ".web-p");
       if (ps.length) {
         tl.fromTo(ps, { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.55, stagger: 0.12, ease: E.soft }, at + 0.38);
@@ -1504,14 +1567,12 @@
         queueSFX("unmask", at + 0.58, { vol: 0.75 });
       }
 
-      // Smooth document scroll & scrollbar thumb motion (text-emulated mode only)
-      var scrollWrap = el.querySelector(".web-doc-scroll");
-      var thumb = el.querySelector(".web-scroll-thumb");
-      if (scrollWrap && !isShot) {
-        tl.fromTo(scrollWrap, { y: 0 }, { y: -36, duration: 1.1, ease: "power2.inOut" }, at + 0.85);
-      }
-      if (thumb && !isShot) {
-        tl.fromTo(thumb, { y: 0 }, { y: 46, duration: 1.1, ease: "power2.inOut" }, at + 0.85);
+      // Smooth document scroll & scrollbar thumb motion (only when content actually overflows)
+      if (scrollWrap && !isShot && scrollTravel > 0) {
+        tl.fromTo(scrollWrap, { y: 0 }, { y: -scrollTravel, duration: 0.65, ease: "power2.inOut" }, at + 0.42);
+        if (thumb) {
+          tl.fromTo(thumb, { y: 0 }, { y: 46, duration: 0.65, ease: "power2.inOut" }, at + 0.42);
+        }
       }
 
       var shotHls = q(el, ".web-shot-hl");
@@ -1536,14 +1597,31 @@
         if (!callout) queueSFX("unmask", at + 0.95, { vol: 0.8 });
       }
 
-      var cursorWrap = el.querySelector(".web-cursor-wrap");
       var cursor = el.querySelector(".web-cursor");
       var ripple = el.querySelector(".web-click-ripple");
       if (cursorWrap) {
-        var clickAt = isShot ? at + 0.92 : at + 1.25;
-        var moveFrom = isShot ? { opacity: 0, x: 110, y: 80 } : { opacity: 0, x: 150, y: 100 };
-        var moveDur = isShot ? 0.55 : 0.9;
-        tl.fromTo(cursorWrap, moveFrom, { opacity: 1, x: 0, y: 0, duration: moveDur, ease: "power2.out" }, at + 0.35);
+        var scrollDelay = scrollTravel > 0 ? 0.25 : 0;
+        var clickAt = isShot ? at + 0.92 : at + 0.92 + scrollDelay;
+        if (isShot) {
+          tl.fromTo(cursorWrap, { opacity: 0, x: 110, y: 80 }, { opacity: 1, x: 0, y: 0, duration: 0.55, ease: "power2.out" }, at + 0.35);
+        } else if (cursorSweepStart) {
+          var approachAt = at + 0.30 + scrollDelay;
+          var sweepAt = at + 0.52 + scrollDelay;
+          tl.fromTo(cursorWrap,
+            { opacity: 0, x: cursorSweepStart.x + 36, y: 44 },
+            { opacity: 1, x: cursorSweepStart.x, y: 0, duration: 0.22, ease: "power2.out" },
+            approachAt
+          );
+          tl.to(cursorWrap,
+            { x: 0, y: 0, duration: 0.38, ease: "power1.inOut" },
+            sweepAt
+          );
+        } else {
+          var moveFrom = cursorStartOffset
+            ? { opacity: 0, x: cursorStartOffset.x, y: cursorStartOffset.y }
+            : { opacity: 0, x: 110, y: 72 };
+          tl.fromTo(cursorWrap, moveFrom, { opacity: 1, x: 0, y: 0, duration: 0.55, ease: "power2.out" }, at + 0.35 + scrollDelay);
+        }
         if (cursor) {
           tl.to(cursor, { scale: 0.75, duration: 0.12, ease: "power2.inOut", yoyo: true, repeat: 1 }, clickAt);
         }
@@ -1561,8 +1639,8 @@
             boxShadow: "0 0 50px rgba(56,189,248,0.5), inset 0 0 25px rgba(56,189,248,0.2)",
             duration: 0.45,
             ease: "power2.out"
-          }, at + 1.28);
-          queueSFX("flare", at + 1.28, { vol: 0.85 });
+          }, clickAt + 0.04);
+          queueSFX("flare", clickAt + 0.04, { vol: 0.85 });
         }
         var mOv = el.querySelector(".m-ov");
         if (mOv) {

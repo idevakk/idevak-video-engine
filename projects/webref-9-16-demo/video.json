@@ -1,0 +1,143 @@
+{
+  "title": "Webref 9:16 Portrait Demo",
+  "slug": "webref-portrait-demo",
+  "compositionId": "webref-portrait-demo",
+  "aspect": "9:16",
+  "audio": "content/voiceover.wav",
+  "channel": "youtube.com/@iDevak",
+  "ghost": "WEBREF",
+  "cta": "Subscribe",
+  "ctaSub": "BUILD. SOLVE. DEPLOY.",
+  "composition": {
+    "width": 1080,
+    "height": 1920,
+    "fps": 30
+  },
+  "acts": [
+    {
+      "id": "demo",
+      "name": "WEBREF 9:16",
+      "accent": "#38bdf8"
+    }
+  ],
+  "scenes": [
+    {
+      "id": "s001",
+      "type": "cold",
+      "act": "demo",
+      "accent": "#38bdf8",
+      "narration": "Here is the vertical 9:16 portrait demo of webref in both real screenshot and emulated doc modes.",
+      "eyebrow": "PORTRAIT DEMO",
+      "headline": "9:16 ==Webref==",
+      "subline": "Real website captures and emulated docs framed for mobile shorts.",
+      "meta": {
+        "chips": [
+          "1080x1920",
+          "REAL CAPTURE",
+          "EMULATED DOC"
+        ],
+        "ghost": "9:16"
+      }
+    },
+    {
+      "id": "s002",
+      "type": "webref",
+      "act": "demo",
+      "accent": "#f5a524",
+      "narration": "Real GitHub repository screenshots keep a tall 540 pixel viewport with exact highlight alignment.",
+      "eyebrow": "REAL CAPTURE",
+      "headline": "gpillon / ignis",
+      "subline": "Repository overview captured at 2x DPI without flattening.",
+      "meta": {
+        "ghost": "REPO",
+        "url": "github.com/gpillon/ignis",
+        "badge": "GITHUB",
+        "image": "assets/webref/ignis-repo.png",
+        "alt": "GitHub repository page for gpillon/ignis",
+        "highlightRects": [
+          {
+            "x": 75.94,
+            "y": 39.73,
+            "w": 20.4,
+            "h": 3.92
+          }
+        ],
+        "source": "Source: github.com/gpillon/ignis"
+      }
+    },
+    {
+      "id": "s003",
+      "type": "webref",
+      "act": "demo",
+      "accent": "#38bdf8",
+      "narration": "Multi-line highlights and floating engineering callouts also stay inside the mobile safe zone.",
+      "eyebrow": "MULTI-LINE",
+      "headline": "AWS ==Backoff==",
+      "subline": "Wrapped text highlights stay locked onto the captured page.",
+      "meta": {
+        "ghost": "SPEC",
+        "url": "aws.amazon.com/builders-library/timeouts-retries-and-backoff-with-jitter/",
+        "badge": "AWS DOCS",
+        "image": "assets/webref/aws-backoff.png",
+        "alt": "AWS Builders Library article on backoff and jitter",
+        "highlightRects": [
+          {
+            "x": 49.8,
+            "y": 29.51,
+            "w": 20.5,
+            "h": 3.78
+          },
+          {
+            "x": 25.39,
+            "y": 32.75,
+            "w": 35.26,
+            "h": 3.78
+          }
+        ],
+        "callout": "Capped backoff without jitter causes synchronized retry bursts.",
+        "calloutType": "IMPORTANT",
+        "source": "Source: AWS Builders Library"
+      }
+    },
+    {
+      "id": "s004",
+      "type": "webref",
+      "act": "demo",
+      "accent": "#a855f7",
+      "narration": "When screenshots are omitted, the emulated doc mode frames the snippet, highlight, and callout cleanly.",
+      "eyebrow": "EMULATED DOC",
+      "headline": "Engram Tables",
+      "subline": "Text fallback mode when screenshots are opted out.",
+      "meta": {
+        "ghost": "DOC",
+        "url": "arxiv.org/abs/2609.deepseek-v4-engram",
+        "badge": "PAPER",
+        "crumb": "PRIOR ART / MEMORY OFFLOADING",
+        "title": "Engram Sparse N-Gram Lookup Tables",
+        "snippet": [
+          "Static world knowledge can be stored as sparse n-gram hash tables.",
+          "Routing tables offload memory-bound lookups to high-speed NVMe storage."
+        ],
+        "highlight": "stored as sparse n-gram hash tables",
+        "callout": "Engram tables reduce required active GPU memory by over 60%.",
+        "calloutType": "NOTE"
+      }
+    },
+    {
+      "id": "s005",
+      "type": "outro",
+      "act": "demo",
+      "accent": "#38bdf8",
+      "narration": "Both 9:16 webref modes are ready to preview or render.",
+      "eyebrow": "DEMO READY",
+      "headline": "Preview or Render",
+      "subline": "9:16 portrait demo compiled cleanly.",
+      "meta": {
+        "channel": "youtube.com/@iDevak",
+        "cta": "Subscribe",
+        "ctaSub": "IDEVAK VIDEO ENGINE",
+        "ghost": "READY"
+      }
+    }
+  ]
+}

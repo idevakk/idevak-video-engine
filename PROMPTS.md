@@ -13,6 +13,18 @@ This section is the canonical production policy for both landscape and portrait
 prompts below. Examples elsewhere in this guide are illustrative, not verified
 source quotations or evidence.
 
+### Isolated project workspaces
+
+- Every new video and ad-hoc test must live in its own gitignored workspace
+  under `workspaces/<slug>/` (`npm run project:new -- <slug>`).
+- Keep `video.json`, voiceover audio, `notes/`, `assets/` (`logos/`, `webref/`,
+  `SOURCES.md`), `build/`, `index.html`, `hyperframes.json`, and `renders/`
+  inside `workspaces/<slug>/`. Pass `--project <slug>` to pipeline/QA/helper
+  commands (or set active via `npm run project:use -- <slug>`).
+- Never overwrite template `content/video.json` or put project-specific media
+  or notes into root `assets/` or repo root. When improving the engine itself,
+  never modify user `workspaces/` folders or notes.
+
 ### Optional Daytona transcription and rendering
 
 Use the local workflow by default. Only when the user explicitly enables

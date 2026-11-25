@@ -12,10 +12,21 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import sys
 from collections import Counter
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from engine.workspace import (  # noqa: E402
+    default_audio_rel,
+    project_json_path,
+    resolve_project_dir,
+    resolve_project_path,
+)
+
 DEFAULT_PROJECT = ROOT / "content/video.json"
 
 TYPES = {
@@ -151,6 +162,7 @@ def validate_scene(
     top_ghost: str,
     errors: list[str],
     warnings: list[str],
+    project_dir: Path = ROOT,
 ) -> None:
     where = f"scene {i + 1}"
     scene_type = scene.get("type")
@@ -251,7 +263,7 @@ def validate_scene(
             sfield(meta, key, where, errors)
         for key in ("image", "video", "poster"):
             asset = meta.get(key)
-            if isinstance(asset, str) and asset and not (ROOT / asset).is_file():
+            if isinstance(asset, str) and asset and not asset.startswith(("http://", "https://", "data:")) and not resolve_project_path(asset, project_dir, ROOT).is_file():
                 errors.append(f"{where}.meta.{key}: local media not found: {asset}")
         if meta.get("video") and not (meta.get("image") or meta.get("poster")):
             errors.append(f"{where}.meta.video: requires an image or poster")
@@ -261,7 +273,7 @@ def validate_scene(
             logos = listfield(meta, "logos", where, errors, lo=1, hi=6)
             check_items(logos, f"{where}.meta.logos", errors, required=("src", "name"))
             for logo in logos:
-                if isinstance(logo, dict) and isinstance(logo.get("src"), str) and not (ROOT / logo["src"]).is_file():
+                if isinstance(logo, dict) and isinstance(logo.get("src"), str) and not logo["src"].startswith(("http://", "https://", "data:")) and not resolve_project_path(logo["src"], project_dir, ROOT).is_file():
                     errors.append(f"{where}.meta.logos: local logo not found: {logo['src']}")
                 if isinstance(logo, dict) and "background" in logo and not re.fullmatch(r"#[0-9a-fA-F]{6}", str(logo["background"])):
                     errors.append(f"{where}.meta.logos.background: must be a #rrggbb color")
@@ -460,7 +472,7 @@ def validate_scene(
         sfield(meta, "formulaBadge", where, errors)
         sfield(meta, "formulaLabel", where, errors)
         img = sfield(meta, "image", where, errors)
-        if isinstance(img, str) and img and not img.startswith(("http://", "https://", "data:")) and not (ROOT / img).is_file():
+        if isinstance(img, str) and img and not img.startswith(("http://", "https://", "data:")) and not resolve_project_path(img, project_dir, ROOT).is_file():
             errors.append(f"{where}.meta.image: local media not found: {img}")
         sfield(meta, "alt", where, errors)
         sfield(meta, "position", where, errors)
@@ -560,17 +572,34 @@ def validate_scene(
 
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("project", nargs="?", default=str(DEFAULT_PROJECT))
+    ap.add_argument("project", nargs="?", default=None)
+    ap.add_argument("--project", "--workspace", dest="workspace", default=None, help="isolated project workspace slug or directory")
     ap.add_argument("--strict", action="store_true", help="treat warnings as errors")
     args = ap.parse_args()
 
-    path = resolve(args.project)
+    if args.project:
+        if args.workspace:
+            project_dir = resolve_project_dir(args.workspace, engine_root=ROOT)
+            path = resolve_project_path(args.project, project_dir, ROOT)
+        else:
+            candidate = Path(args.project)
+            if candidate.is_dir() or (ROOT / candidate).is_dir() or ("/" not in args.project and "\\" not in args.project and not args.project.endswith(".json")):
+                project_dir = resolve_project_dir(args.project, engine_root=ROOT)
+                path = project_json_path(project_dir, ROOT)
+            else:
+                path = resolve(args.project)
+                resolved_dir = path.resolve().parent
+                project_dir = resolved_dir.parent if resolved_dir.name == "content" and (resolved_dir.parent / "engine").is_dir() else resolved_dir
+    else:
+        project_dir = resolve_project_dir(args.workspace, engine_root=ROOT)
+        path = project_json_path(project_dir, ROOT)
+
     data = load_json(path)
     errors: list[str] = []
     warnings: list[str] = []
 
     if not isinstance(data, dict):
-        raise SystemExit("content/video.json must be an object")
+        raise SystemExit("video.json must be an object")
 
     title = sfield(data, "title", "video", errors, required=True, max_len=120)
     sfield(data, "slug", "video", errors)
@@ -586,13 +615,13 @@ def main() -> None:
         if not isinstance(accent, str) or not HEX.match(accent):
             errors.append("video.defaultAccent: must be a #rrggbb string")
 
-    audio = data.get("audio") or "content/voiceover.wav"
+    audio = data.get("audio") or default_audio_rel(project_dir, ROOT)
     if not isinstance(audio, str):
         errors.append("video.audio: must be a string")
-        audio = "content/voiceover.wav"
+        audio = default_audio_rel(project_dir, ROOT)
     if Path(audio).is_absolute():
-        warnings.append("video.audio: use a path relative to the repo root")
-    audio_path = resolve(audio)
+        warnings.append("video.audio: use a path relative to the project directory")
+    audio_path = resolve_project_path(audio, project_dir, ROOT)
     if not audio_path.exists():
         warnings.append(f"video.audio: file not found: {audio} (add it before transcribing)")
 
@@ -668,7 +697,7 @@ def main() -> None:
             type_counts[stype] += 1
         narr = scene.get("narration") or ""
         total_words += len(re.findall(r"\S+", narr))
-        validate_scene(scene, i, acts, top_channel, top_ghost, errors, warnings)
+        validate_scene(scene, i, acts, top_channel, top_ghost, errors, warnings, project_dir=project_dir)
 
     if scenes:
         first = scenes[0]

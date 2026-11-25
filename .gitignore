@@ -7,6 +7,11 @@ renders/
 .thumbnails/
 .waveform-cache/
 .firecrawl/
+.active-project
+
+# Isolated per-project workspaces (scripts, voiceovers, notes, assets, builds, renders)
+workspaces/*
+!workspaces/README.md
 
 # User media. Bring your own voiceover; do not commit audio or renders.
 *.mp4

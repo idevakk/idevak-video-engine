@@ -2,8 +2,9 @@ import { chromium } from '@playwright/test';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { execSync } from 'node:child_process';
+import { ENGINE_ROOT, popProjectArg, resolveProjectDir } from '../engine/workspace.mjs';
 
-const args = process.argv.slice(2);
+const { project: projectArg, rest: args } = popProjectArg();
 function getArg(key, def) {
   const idx = args.indexOf(key);
   if (idx !== -1 && idx + 1 < args.length) return args[idx + 1];
@@ -15,7 +16,7 @@ const toSceneId = getArg('--to', '');
 const scenesArg = getArg('--scenes', '');
 const sceneId = getArg('--scene', 's002');
 
-const root = process.cwd();
+const root = resolveProjectDir(projectArg, { engineRoot: ENGINE_ROOT });
 const scenes = JSON.parse(await fs.readFile(path.join(root, 'build/scenes.json'), 'utf8'));
 const project = JSON.parse(await fs.readFile(path.join(root, 'build/project.json'), 'utf8'));
 const compId = project.compositionId;

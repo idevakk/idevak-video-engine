@@ -136,10 +136,10 @@ npm run render        # Agent execution requires explicit permission
 
 ## Project Organization
 
-* **`content/video.json`**: The active project source of truth.
-* **`content/video.example.json`**: Fresh starter template to reset back to anytime.
-* **`projects/`**: Archived video episodes (e.g. `projects/emudhra-key-was-four/`).
-* **`assets/mascot/`**: The complete 12-pose mascot asset library (transparent PNGs and chroma green).
+* **`workspaces/<slug>/`**: Gitignored per-project workspace (`video.json`, `voiceover.wav`, `notes/`, `assets/`, `build/`, `index.html`, `hyperframes.json`, `renders/`). Create with `npm run project:new -- <slug>`.
+* **`content/video.example.json`** & **`content/video.json`**: Clean template starter files (do not overwrite for individual videos).
+* **`projects/`**: Tracked reference episodes (e.g. `projects/emudhra-key-was-four/`).
+* **`assets/mascot/`** & **`assets/fonts/`**: Shared template mascot and font assets.
 
 ## Exported sound effects
 

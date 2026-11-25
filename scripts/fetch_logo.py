@@ -19,6 +19,11 @@ import urllib.request
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from engine.workspace import resolve_project_dir  # noqa: E402
+
 CACHE_DIR = ROOT / "build/cache/logos"
 CACHE_FILE = CACHE_DIR / "cache.json"
 CACHE_TTL_SECONDS = 3600  # 1 hour cache to prevent rate-limiting
@@ -226,8 +231,13 @@ def fetch_logo(
     provider: str = "auto",
     force: bool = False,
     dry_run: bool = False,
+    project: str | Path | None = None,
 ) -> dict:
     """Waterfall logo retrieval: SVGL -> FaviconDL -> Fallback guidance."""
+    project_dir = resolve_project_dir(project, engine_root=ROOT)
+    global CACHE_DIR, CACHE_FILE
+    CACHE_DIR = project_dir / "build/cache/logos"
+    CACHE_FILE = CACHE_DIR / "cache.json"
     result = None
 
     # Provider 1: SVGL
@@ -262,17 +272,22 @@ def fetch_logo(
     fmt = result.get("format", "svg")
     slug = slugify(result.get("title") or query)
     if output:
-        dest_path = Path(output)
+        out_p = Path(output)
+        dest_path = out_p if out_p.is_absolute() else (project_dir / out_p)
         if not dest_path.suffix:
             dest_path = dest_path.with_suffix(f".{fmt}")
     else:
-        dest_path = ROOT / f"assets/logos/{slug}.{fmt}"
+        dest_path = project_dir / f"assets/logos/{slug}.{fmt}"
 
     try:
-        rel_path = str(dest_path.relative_to(ROOT)).replace("\\", "/")
+        rel_path = str(dest_path.relative_to(project_dir)).replace("\\", "/")
     except ValueError:
-        rel_path = str(dest_path).replace("\\", "/")
+        try:
+            rel_path = str(dest_path.relative_to(ROOT)).replace("\\", "/")
+        except ValueError:
+            rel_path = str(dest_path).replace("\\", "/")
     result["dest_path"] = rel_path
+    result["workspace_path"] = str(dest_path)
 
     if not dry_run:
         dest_path.parent.mkdir(parents=True, exist_ok=True)
@@ -297,6 +312,7 @@ def main():
     parser.add_argument("query", help="Brand, tool, or product name (e.g., 'discord', 'docker', 'vercel.com')")
     parser.add_argument("--domain", help="Explicit website domain for FaviconDL lookup (e.g., 'github.com')")
     parser.add_argument("-o", "--output", help="Target output file path (defaults to assets/logos/<name>.<ext>)")
+    parser.add_argument("--project", "--workspace", default=None, help="Isolated project workspace slug or directory")
     parser.add_argument("--theme", choices=["auto", "dark", "light"], default="auto", help="Theme preference (default: auto)")
     parser.add_argument("--size", type=int, default=512, help="Preferred raster size if SVG is unavailable (default: 512)")
     parser.add_argument("--wordmark", action="store_true", help="Prefer wordmark version if available in SVGL")
@@ -316,6 +332,7 @@ def main():
         provider=args.provider,
         force=args.force,
         dry_run=args.dry_run,
+        project=args.project,
     )
 
     if args.as_json:

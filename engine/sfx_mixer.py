@@ -4,9 +4,10 @@ SFX now comes from the actual animation schedule during every build. The source
 voiceover and generated alignment metadata are never overwritten by mixing.
 """
 import subprocess
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 
 if __name__ == "__main__":
-    raise SystemExit(subprocess.call(["node", str(ROOT / "engine/build.mjs")], cwd=ROOT))
+    raise SystemExit(subprocess.call(["node", str(ROOT / "engine/build.mjs"), *sys.argv[1:]], cwd=ROOT))

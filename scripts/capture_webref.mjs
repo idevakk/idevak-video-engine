@@ -8,9 +8,11 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { chromium } from "@playwright/test";
+import { ENGINE_ROOT, resolveProjectDir } from "../engine/workspace.mjs";
 
 function parseArgs(argv) {
   const opts = {
+    project: null,
     url: "",
     out: "",
     highlights: [],
@@ -30,7 +32,9 @@ function parseArgs(argv) {
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     const next = () => argv[++i];
-    if (a === "--url") opts.url = next() || "";
+    if (a === "--project" || a === "--workspace") opts.project = next() || null;
+    else if (a.startsWith("--project=") || a.startsWith("--workspace=")) opts.project = a.slice(a.indexOf("=") + 1);
+    else if (a === "--url") opts.url = next() || "";
     else if (a === "--out") opts.out = next() || "";
     else if (a === "--highlight" || a === "-h") opts.highlights.push(next() || "");
     else if (a === "--label") opts.labels.push(next() || "");
@@ -70,7 +74,8 @@ export async function captureWebref(rawOpts) {
   if (!opts.url) throw new Error("--url is required");
   if (!opts.out) throw new Error("--out is required");
 
-  const outPath = path.resolve(opts.out);
+  const projectDir = resolveProjectDir(opts.project, { engineRoot: ENGINE_ROOT });
+  const outPath = path.resolve(projectDir, opts.out);
   await fs.mkdir(path.dirname(outPath), { recursive: true });
 
   const browser = await chromium.launch({ headless: true, args: ["--no-sandbox"] });
@@ -407,7 +412,7 @@ export async function captureWebref(rawOpts) {
     };
 
     if (opts.metaOut) {
-      const metaPath = path.resolve(opts.metaOut);
+      const metaPath = path.resolve(projectDir, opts.metaOut);
       await fs.mkdir(path.dirname(metaPath), { recursive: true });
       await fs.writeFile(metaPath, JSON.stringify(payload, null, 2));
     }

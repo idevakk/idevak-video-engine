@@ -40,10 +40,22 @@ if missing using the exact commands in `docs/DAYTONA.md`. This policy is repo-lo
 4. Keep the existing design system and the 21 scene types. The look is the
    product. Add a new type only when the story cannot be told with an existing
    one, and then add the renderer, CSS, animation, and schema together.
-5. One active video per clone. `content/video.json` is the source of truth.
-   `build/`, `index.html`, `hyperframes.json`, and `renders/` are generated.
-6. Do not commit generated files, audio, or renders. The ignore rules handle
-   this; do not force-add them.
+5. Isolated project workspaces (`workspaces/<slug>/`, ignored by git):
+   - Never overwrite the template `content/video.json`, drop project assets into
+     root `assets/`, or write project notes/builds/renders at the repo root when
+     creating or testing a video.
+   - Always create or target an isolated workspace under `workspaces/<slug>/`
+     (`npm run project:new -- <slug>` and `--project <slug>` or
+     `npm run project:use -- <slug>`). Every project's `video.json`, voiceover,
+     `notes/`, `assets/` (`logos/`, `webref/`, `SOURCES.md`), `build/`,
+     `index.html`, `hyperframes.json`, and `renders/` live strictly inside that
+     workspace folder.
+   - When improving the video engine (`engine/`, `scripts/`, `tests/`, `docs/`),
+     do not touch or overwrite files inside user `workspaces/<slug>/` folders.
+     Use `npm test`, `npm run test:py`, or a disposable `workspaces/_test-*`
+     workspace (and clean up any temporary test workspace afterward).
+6. Do not commit generated files, audio, workspaces, or renders. The ignore
+   rules handle this; do not force-add them.
 7. Use plain hyphens in repo docs and commit messages. Do not use em dashes.
 8. Source authentic logos, relevant incident images and footage, and real website
    captures by default. Never let an LLM attempt to build, synthesize, or invent
@@ -114,37 +126,41 @@ Resolve setup/build/check failures yourself; report genuine external blockers.
 Do not launch preview or render as an install or test side effect. Follow
 `PROMPTS.md` for missing research skills/tools.
 
-### 1. Put the voiceover in place
+### 1. Create an isolated workspace and put the voiceover in place
 
-Place the user's file at `content/voiceover.wav`. If it has another name or
-format, set `audio` in `content/video.json` to the path relative to the repo
-root. The exact file that is transcribed must be the file embedded in the
-composition.
+Create a gitignored workspace for the video or test (`npm run project:new -- <slug>`).
+Put the user's file at `workspaces/<slug>/voiceover.wav` (or set `audio` in
+`workspaces/<slug>/video.json` relative to that workspace). Pass `--project <slug>`
+to pipeline commands (or set it active with `npm run project:use -- <slug>`).
+The exact file that is transcribed must be the file embedded in the composition.
 
 ### 2. Transcribe the audio
 
 ```bash
-python engine/transcribe.py
+python engine/transcribe.py --project <slug>
 # or
-npm run transcribe
+npm run transcribe -- --project <slug>
 ```
 
-This reads `audio` from `content/video.json` and writes `build/vo.json` with
-word-level timings. The default model is `large-v3-turbo`, which is accurate but
-slow on CPU. For a quick draft, use `--model small.en`. Always transcribe the
-exact final audio file. If the voiceover is not English, pass `--language`.
+This reads `audio` from `workspaces/<slug>/video.json` and writes
+`workspaces/<slug>/build/vo.json` with word-level timings. The default model is
+`large-v3-turbo`, which is accurate but slow on CPU. For a quick draft, use
+`--model small.en`. Always transcribe the exact final audio file. If the
+voiceover is not English, pass `--language`.
 
 ### 3. Write the project
 
-Replace the starter scenes in `content/video.json` with the new topic. Keep the
-top-level shape:
+Edit `workspaces/<slug>/video.json` (leaving root `content/video.json` untouched).
+Store research notes and TTS scripts in `workspaces/<slug>/notes/`, and store
+project-only logos/screenshots/clips and `SOURCES.md` in `workspaces/<slug>/assets/`.
+Keep the top-level shape:
 
 ```json
 {
   "title": "...",
-  "slug": "...",
-  "compositionId": "...",
-  "audio": "content/voiceover.wav",
+  "slug": "<slug>",
+  "compositionId": "<slug>",
+  "audio": "voiceover.wav",
   "channel": "@...",
   "ghost": "...",
   "cta": "Subscribe",

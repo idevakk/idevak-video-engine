@@ -423,6 +423,14 @@ def main() -> None:
     h = int(comp_h or default_h)
     is_portrait = (h > w) or (aspect == "9:16")
 
+    style_aliases = {
+        "default": "default",
+        "chalkboard-explainer": "chalkboard-explainer",
+        "chalkboad-explainer": "chalkboard-explainer",
+    }
+    raw_style = str(video.get("style") or "").strip().lower()
+    norm_style = style_aliases.get(raw_style, raw_style) if raw_style else ""
+
     project = {
         "title": video.get("title") or "Untitled video",
         "slug": slug,
@@ -439,6 +447,10 @@ def main() -> None:
         "fps": int(composition.get("fps", 30)),
         "duration": round(total, 3),
     }
+    if norm_style:
+        project["style"] = norm_style
+    if "enableMascot" in video:
+        project["enableMascot"] = bool(video.get("enableMascot"))
 
     out_dir.mkdir(parents=True, exist_ok=True)
     (out_dir / "scenes.json").write_text(json.dumps(out_scenes, indent=1, ensure_ascii=False), encoding="utf-8")

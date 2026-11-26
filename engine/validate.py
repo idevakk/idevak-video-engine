@@ -10,6 +10,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import json
 import re
 import sys
@@ -58,6 +59,11 @@ DIFF_KINDS = {"ctx", "add", "del"}
 TERM_KINDS = {"cmd", "out", "err"}
 MASCOT_EXPRESSIONS = {"neutral", "talking", "thinking", "shocked", "cool", "happy", "angry", "sad", "facepalm", "pointing", "panic", "skeptical", "solved"}
 HEX = re.compile(r"^#[0-9a-fA-F]{6}$")
+STYLE_ALIASES = {
+    "default": "default",
+    "chalkboard-explainer": "chalkboard-explainer",
+    "chalkboad-explainer": "chalkboard-explainer",
+}
 
 
 def resolve(path: str | Path) -> Path:
@@ -609,6 +615,9 @@ def main() -> None:
             warnings.append("video.compositionId: use letters, numbers, underscores, or hyphens")
     sfield(data, "channel", "video", errors)
     sfield(data, "ghost", "video", errors)
+    style_val = sfield(data, "style", "video", errors)
+    if style_val is not None and style_val.strip().lower() not in STYLE_ALIASES:
+        warnings.append(f"video.style: unknown '{style_val}'; supported styles are 'default' and 'chalkboard-explainer'")
     sfield(data, "defaultAccent", "video", errors)
     if "defaultAccent" in data:
         accent = data["defaultAccent"]
@@ -687,19 +696,32 @@ def main() -> None:
     total_words = 0
     top_channel = data.get("channel") or ""
     top_ghost = data.get("ghost") or ""
+    norm_style = STYLE_ALIASES.get(style_val.strip().lower(), "") if isinstance(style_val, str) else ""
+    cb_schema = None
+    if norm_style == "chalkboard-explainer":
+        spec = importlib.util.spec_from_file_location(
+            "chalkboard_schema",
+            ROOT / "engine/presets/chalkboard-explainer/schema.py",
+        )
+        cb_schema = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(cb_schema)
 
     for i, scene in enumerate(scenes):
         if not isinstance(scene, dict):
             errors.append(f"scenes[{i}]: must be an object")
             continue
         stype = scene.get("type")
-        if stype in TYPES:
-            type_counts[stype] += 1
         narr = scene.get("narration") or ""
         total_words += len(re.findall(r"\S+", narr))
-        validate_scene(scene, i, acts, top_channel, top_ghost, errors, warnings, project_dir=project_dir)
+        if cb_schema and stype in cb_schema.CB_TYPES:
+            type_counts[stype] += 1
+            cb_schema.validate_chalkboard_scene(scene, i, acts, errors, warnings)
+        else:
+            if stype in TYPES:
+                type_counts[stype] += 1
+            validate_scene(scene, i, acts, top_channel, top_ghost, errors, warnings, project_dir=project_dir)
 
-    if scenes:
+    if scenes and norm_style != "chalkboard-explainer":
         first = scenes[0]
         if isinstance(first, dict) and first.get("type") != "cold":
             warnings.append("video.scenes[0]: the first scene is usually 'cold'")

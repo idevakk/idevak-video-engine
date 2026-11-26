@@ -21,7 +21,7 @@ export const CHALK_PALETTE = {
   green:  { stroke: "#589f76", fill: "rgba(88, 159, 118, 0.09)", text: "#63b384" },
   cyan:   { stroke: "#4d8da6", fill: "rgba(77, 141, 166, 0.09)", text: "#5aa5c2" },
   ochre:  { stroke: "#b5983b", fill: "rgba(181, 152, 59, 0.09)", text: "#ccb04b" },
-  coral:  { stroke: "#b94a58", fill: "rgba(185, 74, 88, 0.10)", text: "#cb5a69" },
+  coral:  { stroke: "#b94a58", fill: "rgba(185, 74, 88, 0.10)", text: "#d86d7b" },
   violet: { stroke: "#8a6eb8", fill: "rgba(138, 110, 184, 0.09)", text: "#9c80cc" },
   amber:  { stroke: "#b86d3b", fill: "rgba(184, 109, 59, 0.09)", text: "#cc7d48" },
   slate:  { stroke: "rgba(212, 216, 223, 0.34)", fill: "rgba(212, 216, 223, 0.03)", text: "#d4d8df" },
@@ -104,9 +104,98 @@ function chalkIcon(name, stroke = "#d4d8df", size = 44) {
     equal: `<rect class="cb-draw" x="8" y="14" width="32" height="20" rx="6"/><path class="cb-draw" d="M17 21 L31 21 M17 27 L31 27"/>`,
     "trend-up": `<path class="cb-draw" d="M8 34 L19 23 L26 28 L39 13"/><path class="cb-draw" d="M31 13 L39 13 L39 21"/>`,
     thermometer: `<path class="cb-draw" d="M21 10 A3 3 0 0 1 27 10 L27 27 A6 6 0 1 1 21 27 Z"/><path class="cb-draw" d="M24 20 L24 32"/>`,
+    mail: `<rect class="cb-draw" x="7" y="13" width="34" height="22" rx="4"/><path class="cb-draw" d="M8 15 L24 27 L40 15"/>`,
+    packet: `<rect class="cb-draw" x="7" y="13" width="34" height="22" rx="4"/><path class="cb-draw" d="M8 15 L24 27 L40 15"/>`,
+    funnel: `<path class="cb-draw" d="M8 10 L40 10 L28 25 L28 38 L20 35 L20 25 Z"/>`,
+    dns: `<circle class="cb-draw" cx="24" cy="24" r="15"/><path class="cb-draw" d="M9 24 L39 24 M24 9 Q32 24 24 39 M24 9 Q16 24 24 39"/>`,
+    globe: `<circle class="cb-draw" cx="24" cy="24" r="15"/><path class="cb-draw" d="M9 24 L39 24 M24 9 Q32 24 24 39 M24 9 Q16 24 24 39"/>`,
+    shield: `<path class="cb-draw" d="M24 7 L38 13 L38 24 C38 33 31 39 24 42 C17 39 10 33 10 24 L10 13 Z"/><path class="cb-draw" d="M18 24 L22.5 28.5 L31 19.5"/>`,
+    skull: `<path class="cb-draw" d="M14 27 C11 24 11 10 24 10 C37 10 37 24 34 27 L32 36 L16 36 Z"/><circle class="cb-draw" cx="19" cy="21" r="2.8"/><circle class="cb-draw" cx="29" cy="21" r="2.8"/><path class="cb-draw" d="M20 36 L20 31 M24 36 L24 31 M28 36 L28 31"/>`,
+    hacker: `<path class="cb-draw" d="M10 39 C12 31 17 28 24 28 C31 28 36 31 38 39"/><path class="cb-draw" d="M12 18 L24 11 L36 18 L34 24 L14 24 Z"/><path class="cb-draw" d="M9 18 L39 18"/>`,
+    bug: `<ellipse class="cb-draw" cx="24" cy="26" rx="9" ry="11"/><path class="cb-draw" d="M18 15 L20 10 M30 15 L28 10 M15 22 L8 19 M33 22 L40 19 M15 28 L8 28 M33 28 L40 28 M17 34 L10 38 M31 34 L38 38 M17 23 L31 23"/>`,
+    github: `<path class="cb-draw" d="M19 39 C13 37 10 31 11 23 L13 13 L18 16 C22 15 26 15 30 16 L35 13 L37 23 C38 31 35 37 29 39"/><circle cx="19.5" cy="25" r="1.5" fill="${stroke}"/><circle cx="28.5" cy="25" r="1.5" fill="${stroke}"/>`,
+    key: `<circle class="cb-draw" cx="16" cy="24" r="7"/><path class="cb-draw" d="M23 24 L40 24 L40 30 M34 24 L34 29"/>`,
+    eye: `<path class="cb-draw" d="M6 24 C12 15 36 15 42 24 C36 33 12 33 6 24 Z"/><circle class="cb-draw" cx="24" cy="24" r="4.5"/>`,
+    "thumbs-up": `<path class="cb-draw" d="M15 22 L22 10 Q25 9 25 14 L24 20 L35 20 Q38 20 37 24 L35 35 Q34 38 30 38 L15 38 Z"/><rect class="cb-draw" x="9" y="21" width="6" height="17" rx="2"/>`,
+    calendar: `<rect class="cb-draw" x="8" y="12" width="32" height="28" rx="4"/><path class="cb-draw" d="M8 20 L40 20 M17 8 L17 15 M31 8 L31 15"/>`,
+    lock: `<rect class="cb-draw" x="11" y="21" width="26" height="19" rx="4"/><path class="cb-draw" d="M17 21 L17 15 A7 7 0 0 1 31 15 L31 21"/><circle cx="24" cy="30" r="2" fill="${stroke}"/>`,
+    folder: `<path class="cb-draw" d="M7 13 L19 13 L23 17 L41 17 L41 37 L7 37 Z"/>`,
+    docker: `<path class="cb-draw" d="M7 27 L41 27 C40 36 33 39 22 39 C12 39 8 34 7 27 Z"/><rect class="cb-draw" x="12" y="21" width="5" height="5"/><rect class="cb-draw" x="19" y="21" width="5" height="5"/><rect class="cb-draw" x="26" y="21" width="5" height="5"/><rect class="cb-draw" x="19" y="15" width="5" height="5"/><rect class="cb-draw" x="26" y="15" width="5" height="5"/>`,
+    play: `<polygon class="cb-draw" points="16,12 36,24 16,36"/>`,
+    "chat-dots": `<path class="cb-draw" d="M9 11 L39 11 Q41 11 41 13 L41 31 Q41 33 39 33 L21 33 L13 40 L13 33 L9 33 Q7 33 7 31 L7 13 Q7 11 9 11 Z"/><circle cx="17" cy="22" r="1.8" fill="${stroke}"/><circle cx="24" cy="22" r="1.8" fill="${stroke}"/><circle cx="31" cy="22" r="1.8" fill="${stroke}"/>`,
+    server: `<rect class="cb-draw" x="9" y="10" width="30" height="12" rx="3"/><rect class="cb-draw" x="9" y="26" width="30" height="12" rx="3"/><circle cx="15" cy="16" r="1.5" fill="${stroke}"/><circle cx="15" cy="32" r="1.5" fill="${stroke}"/><path class="cb-draw" d="M22 16 L33 16 M22 32 L33 32"/>`,
   };
   const body = paths[name] || paths.layers;
   return `<svg class="cb-icon" width="${size}" height="${size}" viewBox="0 0 48 48" fill="none" stroke="${stroke}" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${body}</svg>`;
+}
+
+function sketchDashedBoxSvg(w, h, r, pal, seed = 3, strokeWidth = 1.8) {
+  const p = sketchRectPath(4, 4, w - 8, h - 8, r, seed);
+  return `<svg class="cb-box-svg cb-dashed-svg" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true">
+    <path class="cb-fill" d="${p}" fill="${pal.fill}" stroke="none"/>
+    <path class="cb-dashed-stroke" d="${p}" fill="none" stroke="${pal.stroke}" stroke-width="${strokeWidth}" stroke-dasharray="10 7" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>`;
+}
+
+function sketchLassoSvg(w = 240, h = 150, colorName = "ochre", seed = 5) {
+  const pal = resolveColor(colorName, "ochre");
+  const cx = w / 2, cy = h / 2;
+  const rx = w * 0.45, ry = h * 0.43;
+  const d = `M ${(cx - rx).toFixed(1)} ${cy.toFixed(1)} C ${(cx - rx).toFixed(1)} ${(cy - ry * 1.12).toFixed(1)}, ${(cx + rx * 0.96).toFixed(1)} ${(cy - ry * 1.06 + jitter(seed, 1) * 4).toFixed(1)}, ${(cx + rx).toFixed(1)} ${cy.toFixed(1)} C ${(cx + rx * 1.04).toFixed(1)} ${(cy + ry * 1.1).toFixed(1)}, ${(cx - rx * 0.94).toFixed(1)} ${(cy + ry * 1.08 + jitter(seed, 2) * 4).toFixed(1)}, ${(cx - rx + 6).toFixed(1)} ${(cy - 4).toFixed(1)}`;
+  return `<svg class="cb-lasso-svg" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true">
+    <path class="cb-lasso-stroke" d="${d}" fill="none" stroke="${pal.text}" stroke-width="2.8" stroke-linecap="round"/>
+  </svg>`;
+}
+
+function sketchCalendarSvg(topLabel, mainLabel, colorName = "ochre", seed = 7) {
+  const pal = resolveColor(colorName, "ochre");
+  return `<div class="cb-cal-card" style="--cb-stroke:${pal.stroke};--cb-text:${pal.text}">
+    ${sketchBoxSvg(168, 134, 10, pal, seed, { doublePass: true, strokeWidth: 1.6 })}
+    <div class="cb-cal-top" style="border-bottom-color:${pal.stroke};background:${pal.fill}">
+      <span class="cb-tracked cb-cal-sub">${esc(topLabel || "BACK IN")}</span>
+    </div>
+    <div class="cb-cal-main cb-hand" style="color:${pal.text}">${esc(mainLabel)}</div>
+  </div>`;
+}
+
+function renderTokenHighlights(text, highlight, circle, highlightColor = "ochre") {
+  const hlPal = resolveColor(highlightColor, "ochre");
+  const raw = String(text || "");
+  const hls = Array.isArray(highlight) ? highlight.filter(Boolean) : (highlight ? [highlight] : []);
+  const targets = [];
+  for (const h of hls) {
+    targets.push({ tok: String(h), kind: circle && String(circle) === String(h) ? "both" : "hl" });
+  }
+  if (circle && !hls.some((h) => String(h) === String(circle))) {
+    targets.push({ tok: String(circle), kind: "circle" });
+  }
+  if (!targets.length) return esc(raw);
+
+  // Split greedily on earliest matching token (single pass, no double escaping)
+  let out = "";
+  let pos = 0;
+  while (pos < raw.length) {
+    let bestIdx = -1;
+    let bestTarget = null;
+    for (const t of targets) {
+      const idx = raw.indexOf(t.tok, pos);
+      if (idx !== -1 && (bestIdx === -1 || idx < bestIdx)) {
+        bestIdx = idx;
+        bestTarget = t;
+      }
+    }
+    if (bestIdx === -1 || !bestTarget) {
+      out += esc(raw.slice(pos));
+      break;
+    }
+    if (bestIdx > pos) out += esc(raw.slice(pos, bestIdx));
+    const tokEsc = esc(bestTarget.tok);
+    const hasHl = bestTarget.kind === "hl" || bestTarget.kind === "both";
+    const hasCir = bestTarget.kind === "circle" || bestTarget.kind === "both";
+    out += `<span class="cb-hl-tok">${hasHl ? `<span class="cb-hl-bg" style="background:${hlPal.fill};border-bottom:2px solid ${hlPal.stroke}"></span>` : ""}<span class="cb-hl-txt" style="${hasHl ? `color:${hlPal.text}` : ""}">${tokEsc}</span>${hasCir ? `<svg class="cb-oval-ring" viewBox="0 0 160 44" preserveAspectRatio="none" aria-hidden="true"><ellipse class="cb-draw" cx="80" cy="22" rx="76" ry="18" fill="none" stroke="#cb5a69" stroke-width="2.4"/></svg>` : ""}</span>`;
+    pos = bestIdx + bestTarget.tok.length;
+  }
+  return out;
 }
 
 function renderBrandAsset(logoPath, label, stageAsset, resolveLocalPath) {
@@ -644,6 +733,463 @@ function buildRenderers({ stageAsset, resolveLocalPath }) {
           ${cta ? renderPill(cta, "green", "check") : ""}
           ${m.channel ? renderPill(m.channel, "cyan", "") : ""}
         </div>
+      </div>`;
+    },
+
+    cb_sandbox(s, i) {
+      const m = s.meta || {};
+      const mode = m.mode || (m.steps ? "chain" : "capture");
+      const bottom = m.bottomPill ? renderPill(m.bottomPill, m.bottomColor || "ochre", m.bottomIcon || "", "cb-bottom-pill") : "";
+
+      if (mode === "chain") {
+        const steps = m.steps || [];
+        const chainHtml = steps.map((st, k) => {
+          const pal = resolveColor(st.color, ["cyan", "ochre", "slate", "green"][k % 4]);
+          const media = st.logo
+            ? renderBrandAsset(st.logo, st.title, stageAsset, resolveLocalPath)
+            : chalkIcon(st.icon || "dns", pal.text, 34);
+          return `${k > 0 ? `<svg class="cb-chain-arrow" viewBox="0 0 64 32" aria-hidden="true">
+            <path class="cb-draw" d="M 4 16 L 54 16" fill="none" stroke="rgba(212,216,223,0.52)" stroke-width="2" stroke-linecap="round"/>
+            <path class="cb-draw" d="M 44 8 L 56 16 L 44 24" fill="none" stroke="rgba(212,216,223,0.52)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>` : ""}
+          <div class="cb-chain-step-col" data-k="${k}">
+            <div class="cb-chain-node ${st.lasso ? "cb-lasso-host" : ""}">
+              ${sketchBoxSvg(280, 132, 12, pal, i * 13 + k, { doublePass: true, strokeWidth: 1.5 })}
+              <div class="cb-card-in">
+                ${media}
+                <div class="cb-hand cb-sb-node-title" style="color:${pal.text}">${esc(st.title)}</div>
+                ${st.sub ? `<div class="cb-tracked cb-sb-node-sub">${esc(st.sub)}</div>` : ""}
+              </div>
+              ${st.lasso ? sketchLassoSvg(280, 144, st.lassoColor || "ochre", i + k + 3) : ""}
+            </div>
+            ${st.subCallout ? `<div class="cb-sub-callout">
+              ${sketchDashedBoxSvg(240, 56, 10, CHALK_PALETTE.slate, i + k + 9, 1.4)}
+              <span class="cb-hand" style="position:relative;z-index:1">${esc(st.subCallout)}</span>
+            </div>` : ""}
+          </div>`;
+        }).join("");
+
+        const shieldHtml = m.shield
+          ? `<div class="cb-sb-shield-row">${renderPill(m.shield.label, m.shield.color || "green", m.shield.icon || "shield")}</div>`
+          : "";
+
+        return `
+        <div class="cb-stage cb-stage-sandbox">
+          ${renderEyebrow(s)}
+          <div class="cb-chain-row">${chainHtml}</div>
+          ${shieldHtml}
+          ${bottom}
+        </div>`;
+      }
+
+      const sources = m.sources || [];
+      const targets = m.targets || [];
+      const pkts = Array.isArray(m.packets) ? m.packets : Array.from({ length: Math.min(4, Number(m.packets || 2)) }, () => ({}));
+
+      const srcHtml = sources.map((src, k) => {
+        const pal = resolveColor(src.color, ["amber", "cyan", "slate", "violet"][k % 4]);
+        const media = src.logo
+          ? renderBrandAsset(src.logo, src.title, stageAsset, resolveLocalPath)
+          : chalkIcon(src.icon || "terminal", pal.text, 34);
+        return `<div class="cb-sb-node ${src.lasso ? "cb-lasso-host" : ""} ${src.blocked ? "is-xout" : ""}" data-k="${k}">
+          ${sketchBoxSvg(360, 118, 12, pal, i * 7 + k, { doublePass: true, strokeWidth: 1.5 })}
+          ${media}
+          <div class="cb-sb-node-body">
+            <div class="cb-hand cb-sb-node-title" style="color:${pal.text}">${esc(src.title)}</div>
+            ${src.sub ? `<div class="cb-tracked cb-sb-node-sub">${esc(src.sub)}</div>` : ""}
+          </div>
+          ${src.lasso ? sketchLassoSvg(360, 126, "ochre", i + k) : ""}
+          ${src.blocked ? sketchXOverlay(360, 118, i + k + 5) : ""}
+        </div>`;
+      }).join("");
+
+      const tgtHtml = targets.map((tgt, k) => {
+        const pal = resolveColor(tgt.color, tgt.funnel ? "coral" : "cyan");
+        const media = tgt.logo
+          ? renderBrandAsset(tgt.logo, tgt.title, stageAsset, resolveLocalPath)
+          : chalkIcon(tgt.icon || (tgt.funnel ? "funnel" : "server"), pal.text, 36);
+        return `<div class="cb-sb-node ${tgt.lasso ? "cb-lasso-host" : ""}" data-k="${k}">
+          ${sketchBoxSvg(360, 124, 12, pal, i * 11 + k, { doublePass: true, strokeWidth: 1.5 })}
+          ${media}
+          <div class="cb-sb-node-body">
+            <div class="cb-sb-funnel-row">
+              <div class="cb-hand cb-sb-node-title" style="color:${pal.text}">${esc(tgt.title)}</div>
+              ${tgt.recLabel ? `<span class="cb-rec-badge"><span class="cb-rec-dot"></span><span>${esc(tgt.recLabel)}</span></span>` : ""}
+            </div>
+            ${tgt.sub || tgt.recSub ? `<div class="cb-tracked cb-sb-node-sub">${esc(tgt.sub || tgt.recSub)}</div>` : ""}
+          </div>
+          ${tgt.lasso ? sketchLassoSvg(360, 130, "coral", i + k + 17) : ""}
+        </div>`;
+      }).join("");
+
+      const lanesSvg = `<svg class="cb-sb-lanes" viewBox="0 0 250 240" aria-hidden="true">
+        ${pkts.map((pk, k) => {
+          const y0 = 60 + k * Math.min(54, 120 / Math.max(1, pkts.length));
+          const y1 = 120;
+          const col = pk.blocked ? "#cb5a69" : "#63b384";
+          const pathD = `M 8 ${y0} C 95 ${y0}, 145 ${y1}, 240 ${y1}`;
+          return `<path class="cb-draw cb-sb-traj" d="${pathD}" fill="none" stroke="${col}" stroke-width="2" stroke-dasharray="7 6" stroke-linecap="round"/>
+            ${pk.blocked
+              ? `<path class="cb-x-stroke" d="M 110 ${y0 - 14} L 138 ${y0 + 14}" fill="none" stroke="#cb5a69" stroke-width="3" stroke-linecap="round"/>
+                 <path class="cb-x-stroke" d="M 138 ${y0 - 14} L 110 ${y0 + 14}" fill="none" stroke="#cb5a69" stroke-width="3" stroke-linecap="round"/>`
+              : `<g class="cb-sb-pkt" data-k="${k}">
+                  <rect x="-15" y="-11" width="30" height="22" rx="4" fill="#0b0d11" stroke="${col}" stroke-width="1.8"/>
+                  <path d="M -13 -9 L 0 2 L 13 -9" fill="none" stroke="${col}" stroke-width="1.6"/>
+                </g>`}
+            ${pk.label ? `<text x="125" y="${y0 - 14}" text-anchor="middle" fill="${col}" font-size="14" font-family="Excalifont, sans-serif">${esc(pk.label)}</text>` : ""}`;
+        }).join("")}
+      </svg>`;
+
+      const meterHtml = m.meter ? (() => {
+        const mp = resolveColor(m.meter.color, "cyan");
+        const pct = Math.max(4, Math.min(100, Number(m.meter.pct ?? 75)));
+        const hatchId = `cbHatch_${i}`;
+        return `<div class="cb-hatch-wrap">
+          <div class="cb-hatch-track" data-pct="${pct}">
+            ${sketchBoxSvg(980, 52, 8, CHALK_PALETTE.slate, i + 41, { doublePass: false, strokeWidth: 1.5 })}
+            <svg class="cb-hatch-fill-svg" viewBox="0 0 970 42" preserveAspectRatio="none" style="width:${pct}%">
+              <defs>
+                <pattern id="${hatchId}" width="14" height="14" patternTransform="rotate(42 0 0)" patternUnits="userSpaceOnUse">
+                  <line x1="0" y1="0" x2="0" y2="14" stroke="${mp.stroke}" stroke-width="4" stroke-opacity="0.68"/>
+                </pattern>
+              </defs>
+              <rect x="0" y="0" width="970" height="42" rx="5" fill="${m.meter.hatched !== false ? `url(#${hatchId})` : mp.fill}" stroke="${mp.stroke}" stroke-width="1.6"/>
+            </svg>
+          </div>
+          <div class="cb-bar-meta">
+            <span class="cb-tracked cb-bar-label">${esc(m.meter.label || "")}</span>
+            <span class="cb-hand cb-bar-val" style="color:${mp.text}">${esc(m.meter.value || "")}${m.meter.targetValue ? ` -> ${esc(m.meter.targetValue)}` : ""}</span>
+          </div>
+        </div>`;
+      })() : "";
+
+      const gridContent = `<div class="cb-sb-grid">
+        <div class="cb-sb-col">${srcHtml}</div>
+        ${lanesSvg}
+        <div class="cb-sb-col">${tgtHtml}</div>
+      </div>`;
+
+      const hostPal = resolveColor(m.hostColor, "green");
+      const bounded = m.hostLabel
+        ? `<div class="cb-dashed-wrap">
+            ${sketchDashedBoxSvg(1340, 420, 18, hostPal, i + 23, 1.8)}
+            <div class="cb-host-badge">${renderPill(m.hostLabel, m.hostColor || "green", m.hostIcon || "server")}</div>
+            ${gridContent}
+            ${meterHtml}
+          </div>`
+        : `${gridContent}${meterHtml}`;
+
+      return `
+      <div class="cb-stage cb-stage-sandbox">
+        ${renderEyebrow(s)}
+        <div class="cb-sb-wrap">${bounded}</div>
+        ${m.shield ? `<div class="cb-sb-shield-row">${renderPill(m.shield.label, m.shield.color || "green", m.shield.icon || "shield")}</div>` : ""}
+        ${bottom}
+      </div>`;
+    },
+
+    cb_log(s, i) {
+      const m = s.meta || {};
+      const lines = m.lines || [];
+      const notes = m.notes || [];
+      const bottom = m.bottomPill ? renderPill(m.bottomPill, m.bottomColor || "ochre", m.bottomIcon || "", "cb-bottom-pill") : "";
+
+      let headerHtml = "";
+      if (m.mode === "permissions" || m.permBits) {
+        const cols = (m.permBits || "- rw- --- ---").trim().split(/\s+/).slice(0, 4);
+        const labels = ["TYPE", "YOU", "GROUP", "EVERYONE"];
+        const permInner = cols.map((bits, k) => {
+          const isOpen = k > 0 && bits !== "---";
+          const col = k === 0 ? "slate" : (isOpen && k > 1 ? "coral" : (isOpen ? "green" : "slate"));
+          const pal = resolveColor(col);
+          return `<div class="cb-perm-col">
+            <div class="cb-perm-bits" style="color:${pal.text}">${esc(bits)}</div>
+            <div class="cb-tracked cb-perm-lbl">${esc(labels[k] || "")}</div>
+          </div>`;
+        }).join("");
+        headerHtml = `<div class="cb-perm-header">
+          <div class="cb-perm-block">
+            ${sketchBoxSvg(520, 96, 10, CHALK_PALETTE.slate, i + 11, { doublePass: false, strokeWidth: 1.4 })}
+            ${permInner}
+          </div>
+          ${m.envPill ? renderPill(m.envPill, m.envPillColor || "cyan", "lock") : ""}
+          ${m.thumbsUp ? chalkIcon("thumbs-up", "#63b384", 42) : ""}
+        </div>`;
+      } else if (m.envPill) {
+        headerHtml = `<div class="cb-perm-header">${renderPill(m.envPill, m.envPillColor || "cyan", "terminal")}</div>`;
+      }
+
+      const linesHtml = lines.map((ln, k) => {
+        const lp = ln.color ? resolveColor(ln.color) : null;
+        const body = renderTokenHighlights(ln.text, ln.highlight, ln.circle, ln.highlightColor || "ochre");
+        return `<div class="cb-term-line ${ln.dim ? "is-dim" : ""}" data-k="${k}" style="${lp ? `color:${lp.text}` : ""}">${body}</div>`;
+      }).join("");
+
+      const notesHtml = notes.length
+        ? `<div class="cb-log-notes">${notes.map((nt, k) => {
+            const np = resolveColor(nt.color, k === 0 ? "ochre" : "coral");
+            return `<div class="cb-log-note" data-k="${k}" style="color:${np.text}">
+              <svg width="42" height="28" viewBox="0 0 42 28" aria-hidden="true">
+                <path class="cb-draw" d="M 38 22 Q 18 22 10 8" fill="none" stroke="${np.text}" stroke-width="2" stroke-linecap="round"/>
+                <path class="cb-draw" d="M 4 14 L 10 7 L 18 11" fill="none" stroke="${np.text}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <span class="cb-hand">${esc(nt.text)}</span>
+            </div>`;
+          }).join("")}</div>`
+        : "";
+
+      return `
+      <div class="cb-stage cb-stage-log">
+        ${renderEyebrow(s)}
+        ${headerHtml}
+        <div class="cb-term-win">
+          ${sketchBoxSvg(1140, Math.max(240, 120 + lines.length * 46), 12, CHALK_PALETTE.slate, i + 17, { doublePass: true, strokeWidth: 1.5 })}
+          <div class="cb-term-bar">
+            <span class="cb-term-dot"></span><span class="cb-term-dot"></span><span class="cb-term-dot"></span>
+            <span class="cb-term-fname">${esc(m.filename || m.title || "terminal")}</span>
+          </div>
+          <div class="cb-term-lines">${linesHtml}</div>
+        </div>
+        ${notesHtml}
+        ${bottom}
+      </div>`;
+    },
+
+    cb_issue(s, i) {
+      const m = s.meta || {};
+      const pal = resolveColor(m.color, "slate");
+      const statusPalName = m.statusColor || "green";
+      const bottom = m.bottomPill ? renderPill(m.bottomPill, m.bottomColor || "ochre", m.bottomIcon || "", "cb-bottom-pill") : "";
+
+      const issueCard = `<div class="cb-issue-card">
+        ${sketchBoxSvg(760, 380, 12, pal, i + 29, { doublePass: true, strokeWidth: 1.6 })}
+        <div class="cb-issue-top">
+          <div class="cb-issue-repo">
+            ${chalkIcon("github", "#dfe3ea", 30)}
+            <span>${esc(m.repo || "repo")}${m.number ? ` #${esc(m.number)}` : ""}</span>
+          </div>
+          ${renderPill(m.status || "Open", statusPalName, "bug")}
+        </div>
+        <div class="cb-hand cb-issue-title">${esc(m.issueTitle || m.title || s.headline || "")}</div>
+        ${m.body ? `<div class="cb-hand cb-issue-body">${esc(m.body)}</div>` : ""}
+        <div class="cb-issue-meta">
+          ${m.dateLabel ? `<span class="cb-tracked" style="display:inline-flex;align-items:center;gap:8px;color:#ccb04b">${chalkIcon("calendar", "#ccb04b", 22)}${esc(m.dateLabel)}</span>` : ""}
+          ${m.author ? `<span class="cb-tracked">${esc(m.author)}</span>` : ""}
+        </div>
+      </div>`;
+
+      const tg = m.toggle;
+      const toggleBox = tg ? (() => {
+        const isOnStart = Boolean(tg.on);
+        const flipTo = tg.flipTo === undefined ? isOnStart : Boolean(tg.flipTo);
+        const onPal = resolveColor(tg.onColor, "green");
+        const offPal = resolveColor(tg.offColor, "coral");
+        return `<div class="cb-toggle-box" data-start-on="${isOnStart}" data-end-on="${flipTo}">
+          ${sketchBoxSvg(390, 310, 12, flipTo ? onPal : offPal, i + 37, { doublePass: true, strokeWidth: 1.6 })}
+          <div class="cb-toggle-track">
+            <div class="cb-toggle-on-fill" style="background:${onPal.fill};border:2px solid ${onPal.stroke}"></div>
+            <div class="cb-toggle-knob"></div>
+          </div>
+          <div class="cb-hand cb-toggle-label" style="color:${(flipTo ? onPal : offPal).text}">${esc(tg.label)}</div>
+          ${tg.sub ? `<div class="cb-hand cb-toggle-sub">${esc(tg.sub)}</div>` : ""}
+          ${tg.badge ? renderPill(tg.badge, flipTo ? (tg.onColor || "green") : (tg.offColor || "coral"), "") : ""}
+        </div>`;
+      })() : (m.sideNote ? `<div class="cb-toggle-box">${sketchBoxSvg(360, 220, 12, CHALK_PALETTE.ochre, i + 43)}<div class="cb-hand cb-toggle-label" style="color:#ccb04b">${esc(m.sideNote)}</div></div>` : "");
+
+      return `
+      <div class="cb-stage cb-stage-issue">
+        ${renderEyebrow(s)}
+        <div class="cb-issue-grid">
+          ${issueCard}
+          ${toggleBox}
+        </div>
+        ${bottom}
+      </div>`;
+    },
+
+    cb_timeline(s, i) {
+      const m = s.meta || {};
+      const events = m.events || [];
+      const notes = m.notes || [];
+      const axisPal = resolveColor(m.axisColor, "slate");
+      const bottom = m.bottomPill ? renderPill(m.bottomPill, m.bottomColor || "ochre", m.bottomIcon || "", "cb-bottom-pill") : "";
+
+      const topStrip = (m.calendar || notes.length) ? `<div class="cb-tl-top-strip">
+        <div class="cb-tl-notes">${notes.map((nt) => renderPill(nt.text, nt.color || "cyan", nt.icon || "docker")).join("")}</div>
+        ${m.calendar ? sketchCalendarSvg(m.calendar.topLabel || "RELEASE", m.calendar.mainLabel, m.calendar.color || "ochre", i + 7) : ""}
+      </div>` : "";
+
+      const colsHtml = events.map((ev, k) => {
+        const side = ev.side || (k % 2 === 0 ? "above" : "below");
+        const pal = resolveColor(ev.color, ev.xOut ? "coral" : (ev.lasso ? "ochre" : ["green", "cyan", "slate", "ochre"][k % 4]));
+        const card = `<div class="cb-tl-card ${ev.lasso ? "cb-lasso-host" : ""} ${ev.xOut ? "is-xout" : ""}">
+          ${sketchBoxSvg(210, 96, 10, pal, i * 9 + k, { doublePass: false, strokeWidth: 1.5 })}
+          <div class="cb-hand cb-tl-ev-lbl" style="color:${pal.text}">${esc(ev.label)}</div>
+          ${ev.sub ? `<div class="cb-tracked cb-tl-ev-sub">${esc(ev.sub)}</div>` : ""}
+          ${ev.lasso ? sketchLassoSvg(214, 104, "ochre", i + k + 3) : ""}
+          ${ev.xOut ? sketchXOverlay(210, 96, i + k + 5) : ""}
+        </div>`;
+        const stem = `<svg class="cb-tl-stem" viewBox="0 0 8 54" aria-hidden="true">
+          <path class="cb-draw" d="M 4 2 L 4 52" fill="none" stroke="${pal.stroke}" stroke-width="2" stroke-linecap="round"/>
+        </svg>`;
+        return `<div class="cb-tl-col" data-k="${k}">
+          <div class="cb-tl-slot-above">${side === "above" ? `${card}${stem}` : ""}</div>
+          <div class="cb-tl-dot" style="border-color:${pal.text}"></div>
+          <div class="cb-tl-slot-below">${side === "below" ? `${stem}${card}` : ""}</div>
+        </div>`;
+      }).join("");
+
+      return `
+      <div class="cb-stage cb-stage-timeline">
+        ${renderEyebrow(s)}
+        ${topStrip}
+        <div class="cb-tl-wrap" style="grid-template-columns:repeat(${events.length}, minmax(0, 1fr))">
+          <svg class="cb-tl-axis-line" viewBox="0 0 1280 24" preserveAspectRatio="none" aria-hidden="true">
+            <path class="cb-draw cb-tl-axis-path" d="M 8 12 L 1266 12" fill="none" stroke="${axisPal.stroke}" stroke-width="2.4" stroke-linecap="round"/>
+            <path class="cb-draw" d="M 1254 4 L 1270 12 L 1254 20" fill="none" stroke="${axisPal.stroke}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          ${colsHtml}
+        </div>
+        ${bottom}
+      </div>`;
+    },
+
+    cb_stamp_card(s, i) {
+      const m = s.meta || {};
+      const bottom = m.bottomPill ? renderPill(m.bottomPill, m.bottomColor || "ochre", m.bottomIcon || "", "cb-bottom-pill") : "";
+
+      const heroHtml = (m.card || m.calendar) ? `<div class="cb-stamp-hero">
+        ${m.card ? (() => {
+          const cp = resolveColor(m.card.color, "cyan");
+          const media = m.card.logo
+            ? renderBrandAsset(m.card.logo, m.card.title, stageAsset, resolveLocalPath)
+            : chalkIcon(m.card.icon || "cube", cp.text, 44);
+          const st = m.stamp;
+          const sp = st ? resolveColor(st.color, "coral") : null;
+          const angle = st && st.angle != null ? Number(st.angle) : -7;
+          return `<div class="cb-stamp-target">
+            ${sketchBoxSvg(520, 220, 12, cp, i + 13, { doublePass: true, strokeWidth: 1.6 })}
+            ${media}
+            <div class="cb-hand cb-card-title" style="color:${cp.text};position:relative;z-index:1">${esc(m.card.title)}</div>
+            ${m.card.sub ? `<div class="cb-hand cb-card-sub" style="position:relative;z-index:1">${esc(m.card.sub)}</div>` : ""}
+            ${st ? `<div class="cb-stamp-badge" data-angle="${angle}" style="--stamp-stroke:${sp.stroke};--stamp-text:${sp.text};transform:rotate(${angle}deg)">${esc(st.text)}</div>` : ""}
+          </div>`;
+        })() : ""}
+        ${m.calendar ? sketchCalendarSvg(m.calendar.topLabel || "BACK IN", m.calendar.mainLabel, m.calendar.color || "ochre", i + 19) : ""}
+      </div>` : "";
+
+      const rowsHtml = (m.rows || []).length ? `<div class="cb-spy-rows">${(m.rows || []).map((rw, k) => {
+        const rp = resolveColor(rw.color, "coral");
+        const tag = rw.tag ? renderPill(rw.tag, rw.tagColor || "ochre", "key") : `<span></span>`;
+        const rightMedia = rw.rightLogo ? renderBrandAsset(rw.rightLogo, rw.right, stageAsset, resolveLocalPath) : "";
+        return `<div class="cb-spy-row" data-k="${k}">
+          ${tag}
+          <div class="cb-spy-node">
+            ${sketchBoxSvg(340, 72, 10, CHALK_PALETTE.slate, i + k + 23, { doublePass: false, strokeWidth: 1.4 })}
+            <div style="position:relative;z-index:1">
+              <div class="cb-hand" style="font-size:24px">${esc(rw.left)}</div>
+              ${rw.leftSub ? `<div class="cb-tracked" style="font-size:10px">${esc(rw.leftSub)}</div>` : ""}
+            </div>
+          </div>
+          <div class="cb-spy-edge">
+            <svg viewBox="0 0 150 24" aria-hidden="true">
+              <path class="cb-draw" d="M 4 12 L 138 12" fill="none" stroke="${rp.stroke}" stroke-width="2" stroke-dasharray="6 5" stroke-linecap="round"/>
+              <path class="cb-draw" d="M 130 6 L 142 12 L 130 18" fill="none" stroke="${rp.stroke}" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            ${rw.eye !== false ? `<span class="cb-spy-eye">${chalkIcon("eye", rp.text, 24)}</span>` : ""}
+          </div>
+          <div class="cb-spy-node">
+            ${sketchBoxSvg(340, 72, 10, rp, i + k + 31, { doublePass: false, strokeWidth: 1.4 })}
+            <div style="position:relative;z-index:1;display:flex;align-items:center;gap:10px">
+              ${rightMedia}
+              <div>
+                <div class="cb-hand" style="font-size:24px;color:${rp.text}">${esc(rw.right)}</div>
+                ${rw.rightSub ? `<div class="cb-tracked" style="font-size:10px">${esc(rw.rightSub)}</div>` : ""}
+              </div>
+            </div>
+          </div>
+        </div>`;
+      }).join("")}</div>` : "";
+
+      return `
+      <div class="cb-stage cb-stage-stamp">
+        ${renderEyebrow(s)}
+        ${heroHtml}
+        ${rowsHtml}
+        ${bottom}
+      </div>`;
+    },
+
+    cb_prompt_card(s, i) {
+      const m = s.meta || {};
+      const mode = m.mode || "prompt";
+      const pal = resolveColor(m.color, mode === "media" ? "coral" : "cyan");
+      const bottom = m.bottomPill ? renderPill(m.bottomPill, m.bottomColor || "ochre", m.bottomIcon || "", "cb-bottom-pill") : "";
+
+      if (mode === "media") {
+        const scrubPct = Math.max(8, Math.min(96, Number(m.scrubPct ?? 72)));
+        const thumb = m.thumbnail ? `<img class="cb-media-thumb" src="${esc(stageAsset(m.thumbnail))}" alt="${esc(m.title)}"/>` : "";
+        return `
+        <div class="cb-stage cb-stage-prompt">
+          ${renderEyebrow(s)}
+          <div class="cb-media-card ${m.lasso ? "cb-lasso-host" : ""}">
+            ${sketchBoxSvg(860, 480, 14, pal, i + 7, { doublePass: true, strokeWidth: 1.6 })}
+            <div class="cb-media-head">
+              ${renderPill(m.platform || "Video", "coral", "play")}
+              ${m.badge ? renderPill(m.badge, "ochre", "") : ""}
+            </div>
+            <div class="cb-media-viewport">
+              ${thumb}
+              <div style="position:relative;z-index:1;display:flex;align-items:center;gap:18px;padding:0 28px;text-align:center">
+                ${chalkIcon(m.eye ? "eye" : "play", pal.text, 54)}
+                <div class="cb-hand" style="font-size:32px;color:#dfe3ea">${esc(m.title)}</div>
+              </div>
+            </div>
+            <div class="cb-media-scrub" data-pct="${scrubPct}">
+              <div class="cb-media-scrub-fill" style="width:${scrubPct}%"></div>
+              <div class="cb-media-scrub-dot" style="left:calc(${scrubPct}% - 9px)"></div>
+            </div>
+            <div class="cb-media-foot">
+              ${m.viewsStart || m.viewsEnd ? `<div class="cb-hand" style="font-size:28px;color:#ccb04b">${esc(m.viewsStart || "")}${m.viewsEnd ? ` -> ${esc(m.viewsEnd)}` : ""}</div>` : "<span></span>"}
+              ${m.chatPill ? renderPill(m.chatPill, "green", "chat-dots") : ""}
+            </div>
+            ${m.lasso ? sketchLassoSvg(872, 492, "coral", i + 19) : ""}
+          </div>
+          ${bottom}
+        </div>`;
+      }
+
+      const choicesHtml = (m.choices || []).map((ch, k) => {
+        const obj = typeof ch === "string" ? { text: ch } : ch;
+        const cp = resolveColor(obj.color, obj.active ? "green" : "slate");
+        return `<div class="cb-choice-pill ${obj.active ? "is-active" : ""}" data-k="${k}">
+          ${sketchBoxSvg(164, 58, 28, cp, i * 5 + k, { doublePass: false, strokeWidth: obj.active ? 2.0 : 1.4 })}
+          <span class="cb-hand" style="position:relative;z-index:1;color:${cp.text}">${esc(obj.text)}</span>
+          ${obj.active ? `<span style="position:relative;z-index:1;display:inline-flex">${chalkIcon("check", cp.text, 22)}</span>` : ""}
+        </div>`;
+      }).join("");
+
+      const avatarBox = (m.avatar || m.avatarLabel) ? `<div class="cb-cal-card" style="width:220px;height:210px;padding:18px;justify-content:center;gap:12px">
+        ${sketchBoxSvg(220, 210, 12, CHALK_PALETTE.ochre, i + 41, { doublePass: true, strokeWidth: 1.5 })}
+        ${m.avatar ? `<img src="${esc(stageAsset(m.avatar))}" alt="${esc(m.avatarLabel || "")}" style="position:relative;z-index:1;width:120px;height:120px;object-fit:cover;border-radius:8px"/>` : chalkIcon("hacker", "#ccb04b", 64)}
+        ${m.avatarLabel ? `<div class="cb-hand" style="position:relative;z-index:1;font-size:22px;color:#ccb04b">${esc(m.avatarLabel)}</div>` : ""}
+      </div>` : "";
+
+      return `
+      <div class="cb-stage cb-stage-prompt">
+        ${renderEyebrow(s)}
+        <div class="cb-prompt-layout">
+          <div class="cb-speech-card">
+            ${sketchBoxSvg(820, 360, 16, pal, i + 11, { doublePass: true, strokeWidth: 1.6 })}
+            ${m.icon ? chalkIcon(m.icon, pal.text, 44) : ""}
+            <div class="cb-hand cb-speech-q">${esc(m.question || "")}</div>
+            ${m.codeToken ? `<div class="cb-code-token">${esc(m.codeToken)}</div>` : ""}
+            ${m.subNote ? `<div class="cb-hand" style="position:relative;z-index:1;font-size:26px;color:var(--dim)">${esc(m.subNote)}</div>` : ""}
+            ${choicesHtml ? `<div class="cb-choices-row">${choicesHtml}</div>` : ""}
+          </div>
+          ${avatarBox}
+        </div>
+        ${bottom}
       </div>`;
     },
   };

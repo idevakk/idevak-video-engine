@@ -316,6 +316,7 @@ def main() -> None:
     if is_draft:
         curr_t = 0.0
         for row in rows:
+            raw_tokens = re.findall(r"\S+", row["narration"] or "")
             nw = len(norm_words(row["narration"]))
             row["_nw"] = nw
             row["_matched"] = nw
@@ -323,6 +324,18 @@ def main() -> None:
             row["start"] = round(curr_t, 3)
             curr_t += dur
             row["end"] = round(curr_t, 3)
+            if raw_tokens:
+                sp_start = row["start"] + 0.18
+                sp_end = max(sp_start + 0.2, row["end"] - 0.25)
+                step = (sp_end - sp_start) / len(raw_tokens)
+                hits = []
+                for idx, tok in enumerate(raw_tokens):
+                    ws = sp_start + idx * step
+                    we = ws + min(0.32, step * 0.9)
+                    hits.append({"w": tok, "s": round(ws, 3), "e": round(we, 3)})
+                row["_hits"] = hits
+                row["_start"] = hits[0]["s"]
+                row["_end"] = hits[-1]["e"]
         audio_end = curr_t
         cost = 0.0
         total = curr_t
@@ -361,7 +374,9 @@ def main() -> None:
 
         reveal_time = None
         cue = row["meta"].get("revealOn")
-        if cue and not is_draft:
+        if isinstance(cue, (int, float)) and not isinstance(cue, bool):
+            reveal_time = round(max(0.0, float(cue)), 3)
+        elif isinstance(cue, str) and cue.strip():
             cue_tokens = norm_words(cue)
             spoken_tokens = []
             spoken_times = []
@@ -373,7 +388,7 @@ def main() -> None:
                 if spoken_tokens[i:i + len(cue_tokens)] == cue_tokens:
                     reveal_time = round(max(0.0, spoken_times[i] - scene_st), 3)
                     break
-            if reveal_time is None:
+            if reveal_time is None and not is_draft:
                 raise SystemExit(f"scene {row['index']}: revealOn phrase not found in its spoken words: {cue!r}")
 
         out_scenes.append(

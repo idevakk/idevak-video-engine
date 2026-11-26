@@ -192,6 +192,156 @@ function chalkboardSample(slug, extra = {}) {
       },
       {
         id: 's007',
+        type: 'cb_sandbox',
+        act: 'math',
+        eyebrow: 'PACKET CAPTURE SANDBOX',
+        headline: 'Host Boundary Capture',
+        narration: 'Intercept outbound telemetry inside a local boundary.',
+        meta: {
+          mode: 'capture',
+          hostLabel: 'my Mac mini',
+          hostColor: 'green',
+          sources: [
+            { title: 'LM Studio', sub: 'LOCAL APP', icon: 'terminal', color: 'amber', lasso: true },
+            { title: 'Ollama', sub: 'DAEMON', icon: 'server', color: 'cyan', blocked: true },
+          ],
+          packets: [{ label: 'POST /telemetry' }, { blocked: true, label: '0 connections' }],
+          targets: [{ title: 'Packet Funnel', icon: 'funnel', color: 'coral', funnel: true, recLabel: 'REC', recSub: 'FULL CAPTURE' }],
+          meter: { label: 'CAPTURE VOLUME', value: '0.5 GB', targetValue: '1.0 GB', pct: 68, color: 'cyan', hatched: true },
+          shield: { label: 'defence', color: 'green', icon: 'shield' },
+        },
+      },
+      {
+        id: 's008',
+        type: 'cb_sandbox',
+        act: 'math',
+        eyebrow: 'DNS RESOLUTION CHAIN',
+        headline: 'Resolution Path',
+        narration: 'Queries pass through the local resolver before reaching DNS.',
+        meta: {
+          mode: 'chain',
+          steps: [
+            { title: 'LM Studio', sub: 'CLIENT', icon: 'terminal', color: 'cyan' },
+            { title: 'lmstudio.ai?', sub: 'QUERY', icon: 'dns', color: 'ochre', lasso: true, subCallout: 'asked by app' },
+            { title: 'system resolver', sub: 'OS', icon: 'hacker', color: 'coral' },
+            { title: 'DNS', sub: 'UPSTREAM', icon: 'globe', color: 'green' },
+          ],
+          bottomPill: 'UNENCRYPTED HOST LOOKUP',
+          bottomColor: 'coral',
+        },
+      },
+      {
+        id: 's009',
+        type: 'cb_log',
+        act: 'math',
+        eyebrow: 'SERVER LOGS & PERMISSIONS',
+        headline: 'Log Inspection',
+        narration: 'Sensitive tokens appear word for word in plain text logs.',
+        meta: {
+          mode: 'permissions',
+          permBits: '- rw- --- ---',
+          envPill: 'OLLAMA_NOHISTORY=1',
+          envPillColor: 'cyan',
+          thumbsUp: true,
+          filename: 'server.log',
+          lines: [
+            { text: '[INFO] POST /v1/chat/completions canary-pw-7731', highlight: 'canary-pw-7731', circle: 'canary-pw-7731', highlightColor: 'ochre' },
+            { text: 'OPENAI_API_KEY=sk-live-000-73-1337', highlight: 'sk-live-000-73-1337', color: 'coral' },
+          ],
+          notes: [{ text: 'word for word', color: 'ochre' }],
+        },
+      },
+      {
+        id: 's010',
+        type: 'cb_issue',
+        act: 'math',
+        eyebrow: 'UPSTREAM ISSUE & TOGGLE',
+        headline: 'Open Issue',
+        narration: 'An open issue tracks the missing auto-update off switch.',
+        meta: {
+          repo: 'ollama/ollama',
+          number: '4123',
+          status: 'Open',
+          statusColor: 'green',
+          issueTitle: 'Add clean opt-out toggle for background telemetry',
+          dateLabel: 'open since May 2024',
+          toggle: { label: 'Auto-update', sub: 'off switch?', on: true, flipTo: false, onColor: 'green', offColor: 'coral', badge: 'DISABLED' },
+        },
+      },
+      {
+        id: 's011',
+        type: 'cb_timeline',
+        act: 'math',
+        eyebrow: 'RELEASE TIMELINE',
+        headline: 'Version History',
+        narration: 'Compare fixed releases against the affected local version.',
+        meta: {
+          calendar: { topLabel: 'PATCHED', mainLabel: 'Feb', color: 'ochre' },
+          notes: [{ text: 'Docker images', color: 'cyan', icon: 'docker' }],
+          events: [
+            { label: '0.17.1', sub: 'FIXED', side: 'above', color: 'green' },
+            { label: '0.30.1?', sub: 'OLD', side: 'below', color: 'coral', xOut: true },
+            { label: '0.40.2', sub: 'MINE', side: 'above', color: 'ochre', lasso: true },
+            { label: '0.40.11', sub: 'CURRENT', side: 'below', color: 'cyan' },
+          ],
+        },
+      },
+      {
+        id: 's012',
+        type: 'cb_stamp_card',
+        act: 'math',
+        eyebrow: 'DEPRECATED FEATURE & CANARIES',
+        headline: 'Stamp & Spy Rows',
+        narration: 'Even after deprecation, canary strings reveal outbound tracing.',
+        meta: {
+          card: { title: 'Telemetry Flag', sub: 'LEGACY TELEMETRY', icon: 'warning', color: 'cyan' },
+          stamp: { text: 'RETIRED', color: 'coral', angle: -7 },
+          calendar: { topLabel: 'BACK IN', mainLabel: 'Sep', color: 'ochre' },
+          rows: [
+            { tag: 'canary-pw-7731', tagColor: 'ochre', left: 'Qwen 3.5 4B', leftSub: 'LOCAL', right: 'Ollama', rightSub: 'UPSTREAM', eye: true, color: 'coral' },
+          ],
+        },
+      },
+      {
+        id: 's013',
+        type: 'cb_prompt_card',
+        act: 'math',
+        eyebrow: 'QUICK CHECK',
+        headline: 'Honest Prompt',
+        narration: 'Have you ever bound your local server to all interfaces?',
+        meta: {
+          mode: 'prompt',
+          question: 'Ever bound local inference to',
+          codeToken: 'OLLAMA_HOST=0.0.0.0',
+          subNote: 'be honest',
+          choices: [
+            { text: 'yes', active: true, color: 'green' },
+            { text: 'no', color: 'coral' },
+          ],
+        },
+      },
+      {
+        id: 's014',
+        type: 'cb_prompt_card',
+        act: 'math',
+        eyebrow: 'SOURCE VIDEO CAPTURE',
+        headline: 'Media Card',
+        narration: 'Four hundred thousand views triggered a closer packet audit.',
+        meta: {
+          mode: 'media',
+          platform: 'YouTube',
+          badge: 'SOURCE CLIP',
+          title: 'I Actually Spied on Local AI Apps',
+          viewsStart: '~397,059',
+          viewsEnd: '~400,000 views',
+          scrubPct: 72,
+          lasso: true,
+          eye: true,
+          chatPill: 'audit thread',
+        },
+      },
+      {
+        id: 's015',
         type: 'cb_outro',
         act: 'math',
         eyebrow: 'TAKEAWAY',
@@ -253,9 +403,36 @@ test('chalkboard-explainer renders dedicated cb_* scenes in 16:9 with zero Cyber
   assert.deepEqual(qaReport.overflow, []);
   assert.deepEqual(qaReport.jitter, []);
 
-  // Verify dedicated chalkboard SFX synthesis is deterministic
+  // Verify word-synced kinetic pacing: timeline registers synchronously and elements pop progressively, not all at once
+  const scenesJson = JSON.parse(await fs.readFile(path.join(WS_CHALK, 'build/scenes.json'), 'utf8'));
+  assert.ok(scenesJson[1].wordTimings && scenesJson[1].wordTimings.length > 0, 'draft alignment must populate estimated wordTimings');
+
+  // Verify dedicated chalkboard SFX synthesis + progressive kinetic timeline timing
   const browser = await chromium.launch({ headless: true });
   try {
+    const compPage = await browser.newPage({ viewport: { width: 1920, height: 1080 } });
+    await compPage.goto('file://' + path.join(WS_CHALK, 'index.html').replace(/\\/g, '/'));
+    const s2 = scenesJson[1];
+    const prog = await compPage.evaluate(({ s2, compId }) => {
+      const tl = window.__timelines && window.__timelines[compId];
+      if (!tl) return { missingTimeline: true };
+      const cardsAt = (t) => {
+        tl.seek(t, false);
+        return Array.from(document.querySelectorAll('#s002 .cb-card')).map((c) => Number(getComputedStyle(c).opacity));
+      };
+      return {
+        missingTimeline: false,
+        atStart: cardsAt(s2.start + 0.05),
+        atMid: cardsAt(s2.start + (s2.end - s2.start) * 0.45),
+        atEnd: cardsAt(s2.end - 0.35),
+      };
+    }, { s2, compId: project.compositionId });
+    assert.equal(prog.missingTimeline, false);
+    assert.ok(prog.atStart[1] === 0 && prog.atStart[3] === 0, 'later cards must stay hidden at scene start: ' + JSON.stringify(prog));
+    assert.ok(prog.atMid[0] > 0.9 && prog.atMid[3] < 0.1, 'cards must reveal progressively across narration: ' + JSON.stringify(prog));
+    assert.ok(prog.atEnd.every((v) => v > 0.99), 'all cards must settle cleanly before scene cut: ' + JSON.stringify(prog));
+    await compPage.close();
+
     const page = await browser.newPage();
     await page.setContent('<div id="root" data-style="chalkboard-explainer"></div>');
     await page.addScriptTag({ path: require.resolve('gsap/dist/gsap.min.js') });

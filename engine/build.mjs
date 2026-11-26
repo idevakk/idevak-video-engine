@@ -7,6 +7,7 @@ import { fileURLToPath } from "node:url";
 import { createRequire } from "node:module";
 import { bakeSFX } from "./audio.mjs";
 import { defaultAudioRel, popProjectArg, resolveProjectDir } from "./workspace.mjs";
+import { renderChalkboardDocument } from "./presets/chalkboard-explainer/renderer.mjs";
 
 const { project: projectArg } = popProjectArg();
 const ENGINE_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -77,8 +78,15 @@ if (IS_ISOLATED_WORKSPACE) {
     fontsCss = fontsCss.replace(/url\(assets\/fonts\//g, "url(build/fonts/");
   }
 }
-const CSS = await readEngine("engine/style.css");
-const JS = (await readEngine("engine/anim.js")).replace('"__COMPOSITION_ID__"', JSON.stringify(compositionId));
+const STYLE_ALIASES = {
+  "default": "default",
+  "chalkboard-explainer": "chalkboard-explainer",
+  "chalkboad-explainer": "chalkboard-explainer",
+};
+const rawStyle = String(project.style || "").trim().toLowerCase();
+const styleId = STYLE_ALIASES[rawStyle] || (rawStyle || "default");
+const isChalkboard = styleId === "chalkboard-explainer";
+
 const require = createRequire(import.meta.url);
 const gsapJS = await fs.readFile(require.resolve("gsap/dist/gsap.min.js"), "utf8");
 
@@ -1391,6 +1399,27 @@ const RENDER = {
 };
 
 // ---------------------------------------------------------------- document
+let html;
+if (isChalkboard) {
+  html = await renderChalkboardDocument({
+    project,
+    scenes,
+    total,
+    compositionId,
+    width,
+    height,
+    isPortrait,
+    fps,
+    audio,
+    title,
+    fontsCss,
+    gsapJS,
+    stageAsset,
+    resolveLocalPath,
+  });
+} else {
+const CSS = await readEngine("engine/style.css");
+const JS = (await readEngine("engine/anim.js")).replace('"__COMPOSITION_ID__"', JSON.stringify(compositionId));
 const body = scenes.map(renderScene).join("\n");
 // Timed media lives beside scenes, never inside a plain timed section. This
 // keeps source seeking and visibility on the same global clock in HyperFrames.
@@ -1402,7 +1431,7 @@ const hasSubtitles = Boolean(project.subtitles || project.karaoke);
 const bgmRaw = project.bgm || project.music || null;
 const bgm = bgmRaw ? stageAsset(bgmRaw) : null;
 
-const html = `<!doctype html>
+html = `<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8" />
@@ -1470,6 +1499,7 @@ ${JS}
 </script>
 </body>
 </html>`;
+}
 
 const meta = {
   name: project.slug || compositionId,

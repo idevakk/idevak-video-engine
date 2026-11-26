@@ -13,6 +13,16 @@ This section is the canonical production policy for both landscape and portrait
 prompts below. Examples elsewhere in this guide are illustrative, not verified
 source quotations or evidence.
 
+### Opt-in style workflow (`chalkboard-explainer`)
+
+- Keep the default Cyber-Tech / Devak engine workflow for all standard requests.
+- ONLY when the user explicitly asks to use the `chalkboard-explainer` (or
+  `chalkboad-explainer`) style, or sets `"style": "chalkboard-explainer"` in
+  `video.json`, read and follow `docs/styles/chalkboard-explainer.md` (matte
+  charcoal canvas, `Excalifont` + tracked uppercase eyebrows, muted pastel chalk
+  palette, hold-heavy calm motion, mascot and karaoke subtitles off by default,
+  no BGM by default, and the soft chalkboard SFX pack).
+
 ### Isolated project workspaces
 
 - Every new video and ad-hoc test must live in its own gitignored workspace

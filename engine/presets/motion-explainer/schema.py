@@ -2,6 +2,36 @@
 from __future__ import annotations
 
 import re
+from pathlib import Path
+
+_REPO_ROOT = Path(__file__).resolve().parents[3]
+
+
+def _check_asset_exists(val: str | None, where: str, errors: list[str], project_dir: Path | None) -> None:
+    if not val or val.startswith(("http://", "https://", "data:")):
+        return
+    clean = val.lstrip("/\\")
+    candidates = [_REPO_ROOT / clean]
+    if project_dir is not None:
+        candidates.insert(0, project_dir / clean)
+    if not any(c.is_file() for c in candidates):
+        errors.append(f"{where}: local asset not found: {val}")
+
+
+def _validate_logos(meta: dict, where: str, errors: list[str], project_dir: Path | None) -> None:
+    if "logoBackground" in meta and meta["logoBackground"] is not None:
+        _s(meta, "logoBackground", where, errors)
+    for k, lg in enumerate(_list(meta, "logos", where, errors, hi=6)):
+        lw = f"{where}.logos[{k}]"
+        if isinstance(lg, dict):
+            src = _s(lg, "src", lw, errors, required=True)
+            _s(lg, "name", lw, errors)
+            _s(lg, "background", lw, errors)
+            _check_asset_exists(src, f"{lw}.src", errors, project_dir)
+        elif isinstance(lg, str):
+            _check_asset_exists(lg, lw, errors, project_dir)
+        else:
+            errors.append(f"{lw}: must be string or object")
 
 ME_TYPES = {
     "me_title",
@@ -80,7 +110,7 @@ def _list(obj: dict, key: str, where: str, errors: list[str], *, required: bool 
     return val
 
 
-def validate_motion_explainer_scene(scene: dict, i: int, acts: dict, errors: list[str], warnings: list[str]) -> bool:
+def validate_motion_explainer_scene(scene: dict, i: int, acts: dict, errors: list[str], warnings: list[str], *, project_dir: Path | None = None) -> bool:
     """Validate a dedicated me_* motion-explainer scene. Returns True if handled."""
     stype = scene.get("type")
     if stype not in ME_TYPES:
@@ -124,7 +154,9 @@ def validate_motion_explainer_scene(scene: dict, i: int, acts: dict, errors: lis
     if stype == "me_title":
         _s(meta, "badge", f"{where}.meta", errors)
         _s(meta, "highlight", f"{where}.meta", errors)
-        _s(meta, "logo", f"{where}.meta", errors)
+        _check_asset_exists(_s(meta, "logo", f"{where}.meta", errors), f"{where}.meta.logo", errors, project_dir)
+        _check_asset_exists(_s(meta, "image", f"{where}.meta", errors), f"{where}.meta.image", errors, project_dir)
+        _validate_logos(meta, f"{where}.meta", errors, project_dir)
         _color(meta, "color", f"{where}.meta", errors)
         _bool(meta, "showCore", f"{where}.meta", errors)
         _s(meta, "watermark", f"{where}.meta", errors)
@@ -142,10 +174,20 @@ def validate_motion_explainer_scene(scene: dict, i: int, acts: dict, errors: lis
         _s(meta, "bottomPill", f"{where}.meta", errors)
         _s(meta, "coreLabel", f"{where}.meta", errors)
         _s(meta, "coreIcon", f"{where}.meta", errors)
-        _s(meta, "logo", f"{where}.meta", errors)
+        _check_asset_exists(_s(meta, "logo", f"{where}.meta", errors), f"{where}.meta.logo", errors, project_dir)
+        _check_asset_exists(_s(meta, "coreLogo", f"{where}.meta", errors), f"{where}.meta.coreLogo", errors, project_dir)
+        _s(meta, "coreBackground", f"{where}.meta", errors)
+        _check_asset_exists(_s(meta, "targetLogo", f"{where}.meta", errors), f"{where}.meta.targetLogo", errors, project_dir)
+        _s(meta, "targetBackground", f"{where}.meta", errors)
+        _check_asset_exists(_s(meta, "image", f"{where}.meta", errors), f"{where}.meta.image", errors, project_dir)
+        _check_asset_exists(_s(meta, "targetImage", f"{where}.meta", errors), f"{where}.meta.targetImage", errors, project_dir)
+        _validate_logos(meta, f"{where}.meta", errors, project_dir)
+        _bool(meta, "showCube", f"{where}.meta", errors)
+        _bool(meta, "showTargetCube", f"{where}.meta", errors)
         _s(meta, "watermark", f"{where}.meta", errors)
         _color(meta, "color", f"{where}.meta", errors)
         _s(meta, "targetLabel", f"{where}.meta", errors)
+        _s(meta, "targetSub", f"{where}.meta", errors)
         _s(meta, "targetIcon", f"{where}.meta", errors)
         _s(meta, "arrowLabel", f"{where}.meta", errors)
         _color(meta, "arrowColor", f"{where}.meta", errors)
@@ -326,7 +368,7 @@ def validate_motion_explainer_scene(scene: dict, i: int, acts: dict, errors: lis
 
     elif stype == "me_evidence_card":
         _s(meta, "mode", f"{where}.meta", errors)
-        _s(meta, "source", f"{where}.meta", errors)
+        src_val = _s(meta, "source", f"{where}.meta", errors)
         _s(meta, "handle", f"{where}.meta", errors)
         _s(meta, "date", f"{where}.meta", errors)
         _s(meta, "title", f"{where}.meta", errors)
@@ -334,11 +376,15 @@ def validate_motion_explainer_scene(scene: dict, i: int, acts: dict, errors: lis
         _s(meta, "highlight", f"{where}.meta", errors)
         _s(meta, "callout", f"{where}.meta", errors)
         _s(meta, "badge", f"{where}.meta", errors)
-        _s(meta, "logo", f"{where}.meta", errors)
-        _s(meta, "image", f"{where}.meta", errors)
-        _s(meta, "browserUrl", f"{where}.meta", errors)
+        _check_asset_exists(_s(meta, "logo", f"{where}.meta", errors), f"{where}.meta.logo", errors, project_dir)
+        img_val = _s(meta, "image", f"{where}.meta", errors)
+        _check_asset_exists(img_val, f"{where}.meta.image", errors, project_dir)
+        _validate_logos(meta, f"{where}.meta", errors, project_dir)
+        b_url = _s(meta, "browserUrl", f"{where}.meta", errors)
         _s(meta, "browserTab", f"{where}.meta", errors)
         _color(meta, "color", f"{where}.meta", errors)
+        if not img_val and ((b_url or "") or re.search(r"arxiv|github\.com|https?://|\.(org|com|io|ai)\b", src_val or "", re.I)):
+            warnings.append(f"{where}.meta.image: cites external page/repo without real screenshot (capture via scripts/capture_webref.mjs)")
         if "claim" in meta and meta["claim"] is not None:
             cw = f"{where}.meta.claim"
             if isinstance(meta["claim"], dict):
@@ -368,6 +414,10 @@ def validate_motion_explainer_scene(scene: dict, i: int, acts: dict, errors: lis
 
     elif stype == "me_pipeline_flow":
         _s(meta, "mode", f"{where}.meta", errors)
+        _check_asset_exists(_s(meta, "logo", f"{where}.meta", errors), f"{where}.meta.logo", errors, project_dir)
+        _check_asset_exists(_s(meta, "centerLogo", f"{where}.meta", errors), f"{where}.meta.centerLogo", errors, project_dir)
+        _check_asset_exists(_s(meta, "image", f"{where}.meta", errors), f"{where}.meta.image", errors, project_dir)
+        _validate_logos(meta, f"{where}.meta", errors, project_dir)
         _s(meta, "centerTitle", f"{where}.meta", errors)
         _s(meta, "centerBadge", f"{where}.meta", errors)
         _s(meta, "rightTitle", f"{where}.meta", errors)
@@ -389,6 +439,9 @@ def validate_motion_explainer_scene(scene: dict, i: int, acts: dict, errors: lis
                 _s(nd, "title", nw, errors, required=True)
                 _s(nd, "sub", nw, errors)
                 _s(nd, "icon", nw, errors)
+                _check_asset_exists(_s(nd, "logo", nw, errors), f"{nw}.logo", errors, project_dir)
+                _check_asset_exists(_s(nd, "image", nw, errors), f"{nw}.image", errors, project_dir)
+                _s(nd, "logoBackground", nw, errors)
                 _color(nd, "color", nw, errors)
                 _bool(nd, "active", nw, errors)
                 _validate_cue(nd, nw)
@@ -401,6 +454,9 @@ def validate_motion_explainer_scene(scene: dict, i: int, acts: dict, errors: lis
         _s(meta, "statusPill", f"{where}.meta", errors)
         _s(meta, "eyebrow", f"{where}.meta", errors)
         _s(meta, "title", f"{where}.meta", errors, required=True)
+        _check_asset_exists(_s(meta, "logo", f"{where}.meta", errors), f"{where}.meta.logo", errors, project_dir)
+        _check_asset_exists(_s(meta, "image", f"{where}.meta", errors), f"{where}.meta.image", errors, project_dir)
+        _validate_logos(meta, f"{where}.meta", errors, project_dir)
         _s(meta, "deckTag", f"{where}.meta", errors)
         _s(meta, "deckLabel", f"{where}.meta", errors)
         _s(meta, "compareLabel", f"{where}.meta", errors)
@@ -464,6 +520,17 @@ def validate_motion_explainer_scene(scene: dict, i: int, acts: dict, errors: lis
         _s(meta, "statusPill", f"{where}.meta", errors)
         _s(meta, "counterBadge", f"{where}.meta", errors)
         _s(meta, "rolloutLabel", f"{where}.meta", errors)
+        _num(meta, "rolloutCount", f"{where}.meta", errors)
+        _num(meta, "rolloutActive", f"{where}.meta", errors)
+        _bool(meta, "showCore", f"{where}.meta", errors)
+        _check_asset_exists(_s(meta, "logo", f"{where}.meta", errors), f"{where}.meta.logo", errors, project_dir)
+        _check_asset_exists(_s(meta, "image", f"{where}.meta", errors), f"{where}.meta.image", errors, project_dir)
+        _validate_logos(meta, f"{where}.meta", errors, project_dir)
+        if "rollouts" in meta and meta["rollouts"] is not None:
+            rw = f"{where}.meta.rollouts"
+            if isinstance(meta["rollouts"], dict):
+                _num(meta["rollouts"], "total", rw, errors)
+                _num(meta["rollouts"], "active", rw, errors)
         has_tiers = isinstance(meta.get("tiers"), list) and len(meta.get("tiers")) > 0
         _s(meta, "question", f"{where}.meta", errors, required=not has_tiers)
         _s(meta, "flowLabel", f"{where}.meta", errors)
@@ -554,3 +621,33 @@ def validate_motion_explainer_scene(scene: dict, i: int, acts: dict, errors: lis
         _color(meta, "color", f"{where}.meta", errors)
 
     return True
+
+
+def validate_motion_explainer_project(scenes: list, warnings: list[str]) -> None:
+    """Emit editorial warnings if a multi-scene project omits real logos or screenshots."""
+    if len(scenes) < 4:
+        return
+    has_logo = False
+    has_image = False
+    for sc in scenes:
+        if not isinstance(sc, dict):
+            continue
+        meta = sc.get("meta") if isinstance(sc.get("meta"), dict) else {}
+        if any(meta.get(k) for k in ("logo", "coreLogo", "targetLogo", "centerLogo", "logos")):
+            has_logo = True
+        if any(meta.get(k) for k in ("image", "targetImage")):
+            has_image = True
+        for nd in (meta.get("nodes") or []):
+            if isinstance(nd, dict) and (nd.get("logo") or nd.get("image")):
+                has_logo = has_logo or bool(nd.get("logo"))
+                has_image = has_image or bool(nd.get("image"))
+        for bdg in (meta.get("badges") or []):
+            if isinstance(bdg, dict) and bdg.get("logo"):
+                has_logo = True
+        for bar in (meta.get("bars") or []):
+            if isinstance(bar, dict) and bar.get("logo"):
+                has_logo = True
+    if not has_logo:
+        warnings.append("motion-explainer project uses zero authentic brand/model logos; fetch official logos via scripts/fetch_logo.py")
+    if not has_image:
+        warnings.append("motion-explainer project uses zero real website/evidence screenshots; capture proof via scripts/capture_webref.mjs")

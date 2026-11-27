@@ -529,6 +529,23 @@ test('motion-explainer renders dedicated me_* scenes in 16:9 with zero Cyber-Tec
       return Number(getComputedStyle(document.querySelector('#s002 .me-orbit-side')).opacity);
     }, { s2, compId: project.compositionId });
     assert.ok(sideOp > 0.85, 'orbit side target must not sit invisible mid-scene: ' + sideOp);
+
+    // Verify no pointless cubes or hardcoded 5 rollout squares appear without opt-in
+    const visualClean = await compPage.evaluate(() => {
+      const gate = document.querySelector('.sc-me_decision_gate');
+      return {
+        s002Cubes: document.querySelectorAll('#s002 .me-iso-cube').length,
+        s002Hubs: document.querySelectorAll('#s002 .me-orbit-hub, #s002 .me-target-card').length,
+        gateRollouts: gate ? gate.querySelectorAll('.me-rollout-sq').length : -1,
+        gateCubes: gate ? gate.querySelectorAll('.me-iso-cube').length : -1,
+        gateSolo: gate ? gate.querySelectorAll('.me-gate-layout.is-solo').length : -1,
+      };
+    });
+    assert.equal(visualClean.s002Cubes, 0, 'me_core_orbit with semantic label should use module hub/target card instead of cubes');
+    assert.ok(visualClean.s002Hubs >= 2);
+    assert.equal(visualClean.gateRollouts, 0, 'me_decision_gate must not render hardcoded rollout squares by default');
+    assert.equal(visualClean.gateCubes, 0, 'me_decision_gate must not render hardcoded cube by default');
+    assert.equal(visualClean.gateSolo, 1);
     await compPage.close();
 
     const page = await browser.newPage();

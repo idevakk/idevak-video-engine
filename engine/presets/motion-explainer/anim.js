@@ -312,10 +312,10 @@
       var beats = scheduleBeats(s, dur, specs, { start: 0.28, end: Math.max(1.0, Math.min(dur - 0.55, 4.5)) });
 
       if (at === 0) {
-        gsap.set([el.querySelector(".me-eyebrow"), el.querySelector(".me-logo-badge") || el.querySelector(".me-title-wrap > .me-pill"), el.querySelector(".me-title-core"), el.querySelector(".me-hero-headline")], { opacity: 1, y: 0, scale: 1 });
+        gsap.set([el.querySelector(".me-eyebrow"), el.querySelector(".me-logos-strip") || el.querySelector(".me-logo-badge") || el.querySelector(".me-title-wrap > .me-pill"), el.querySelector(".me-title-core"), el.querySelector(".me-hero-headline")], { opacity: 1, y: 0, scale: 1 });
       } else {
         popIn(el.querySelector(".me-eyebrow"), at, { y: 8, dur: 0.26 });
-        popIn(el.querySelector(".me-logo-badge") || el.querySelector(".me-title-wrap > .me-pill"), at + 0.02, { y: 8, dur: 0.28 });
+        popIn(el.querySelector(".me-logos-strip") || el.querySelector(".me-logo-badge") || el.querySelector(".me-title-wrap > .me-pill"), at + 0.02, { y: 8, dur: 0.28 });
         popIn(el.querySelector(".me-title-core"), at + 0.04, { scale: 0.92, dur: 0.32, ease: "back.out(1.2)" });
         popIn(el.querySelector(".me-hero-headline"), at + 0.04, { y: 12, scale: 0.98, dur: 0.32 });
       }
@@ -346,7 +346,7 @@
       popIn(el.querySelector(".me-eyebrow"), at, { y: 8, dur: 0.26 });
       var stages = q(el, ".me-orbit-stage");
       if (stages[0]) {
-        popIn(stages[0].querySelector(".me-iso-cube"), at, { scale: 0.92, dur: 0.34, ease: "back.out(1.2)" });
+        popIn(stages[0].querySelector(".me-iso-cube") || stages[0].querySelector(".me-orbit-hub"), at, { scale: 0.92, dur: 0.34, ease: "back.out(1.2)" });
         spinOrbitRings(stages[0], at, dur);
         queueSFX("whoosh", at + 0.05, { vol: 0.65 });
       }
@@ -753,9 +753,11 @@
         .concat(gates.map(function (g) { return { hint: g.textContent || "" }; })), { start: 0.24, end: earlyEnd });
 
       popIn(el.querySelector(".me-eyebrow"), at, { y: 8, dur: 0.26 });
-      var stage = el.querySelector(".me-orbit-stage");
-      popIn(stage, at, { scale: 0.94, dur: 0.32 });
-      spinOrbitRings(stage, at, dur);
+      var sideBrand = el.querySelector(".me-gate-side-brand");
+      if (sideBrand) {
+        popIn(sideBrand, at, { scale: 0.94, dur: 0.32 });
+        spinOrbitRings(el.querySelector(".me-orbit-stage"), at, dur);
+      }
       popIn(el.querySelector(".me-modal-card"), at + 0.04, { y: 8, dur: 0.32 });
 
       var bi = 0;
@@ -769,7 +771,7 @@
         popIn(gt, gtt, { y: 10, dur: 0.3 });
         queueSFX("ding", gtt + 0.05, { vol: 0.74 });
       });
-      popIn(el.querySelector(".me-gate-layout > div:first-child > .me-pill"), at + Math.min(dur * 0.55, earlyEnd + 0.15), { scale: 0.9, dur: 0.3 });
+      popIn(el.querySelector(".me-gate-side-brand > .me-pill") || el.querySelector(".me-gate-panel > div > .me-pill"), at + Math.min(dur * 0.55, earlyEnd + 0.15), { scale: 0.9, dur: 0.3 });
     },
 
     me_token_grid: function (el, s, at, dur) {

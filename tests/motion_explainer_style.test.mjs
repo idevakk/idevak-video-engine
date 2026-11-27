@@ -294,6 +294,159 @@ function motionExplainerSample(slug, extra = {}) {
       },
       {
         id: 's012',
+        type: 'me_bar_compare',
+        act: 'eval',
+        eyebrow: 'LATENCY RACE',
+        headline: 'Twenty Seven Times Faster',
+        narration: 'Memorilla answers in zero point one two seconds compared to nineteen point three three seconds.',
+        meta: {
+          orientation: 'horizontal',
+          heroDelta: '27x',
+          heroUnit: 'faster',
+          paperTable: {
+            title: 'PAPER TABLE',
+            cols: ['STEP', 'TIME'],
+            rows: [
+              { step: 'Encode 512 docs', time: '2,588.84 ms' },
+              { step: 'Memorilla answer', time: '739 ms', hot: true },
+            ],
+          },
+          bars: [
+            { label: 'Memorilla', value: '0.12 s', pct: 6, color: 'orange', segments: [{ value: '2.59 s', pct: 45, color: 'slate' }, { pct: 18, color: 'orange' }], delta: '≈ 3.3 s' },
+            { label: 'Full context', value: '19.33 s', pct: 86, color: 'slate', dashedTail: true },
+          ],
+          bottomPill: 'END-TO-END LATENCY',
+        },
+      },
+      {
+        id: 's014',
+        type: 'me_bar_compare',
+        act: 'eval',
+        eyebrow: 'HARD TEST',
+        headline: 'Benchmark Score Matrix',
+        narration: 'Retrieval gets one out of four while twenty nine thousand tokens fit in context.',
+        meta: {
+          header: "Sam's clues",
+          badge: '150 chats',
+          scoreRows: [
+            { label: 'No memory', totalSlots: 3, okCount: 0, score: '0/4', color: 'slate' },
+            { label: 'Retrieval', totalSlots: 3, okCount: 1, score: '1/4', color: 'emerald' },
+            { label: 'Memorilla', totalSlots: 3, okCount: 0, score: '0/4', active: true, color: 'orange' },
+          ],
+          contextMeter: { label: 'Qwen3-8B', total: 64, filled: 48, badge: '150 seen', ticks: ['0', '~29K', '40,960'] },
+        },
+      },
+      {
+        id: 's015',
+        type: 'me_stat_split',
+        act: 'eval',
+        eyebrow: 'PREFILL DIAL',
+        headline: 'Streaming Queue Latency',
+        narration: 'Eight nine documents push latency to ten point five seconds.',
+        meta: {
+          mode: 'dial',
+          dialSeconds: 10.5,
+          dialMax: 15,
+          dialSplitText: '1 doc',
+          queueTitle: 'prompt',
+          queueBadge: '89 docs',
+          queueCount: 24,
+          badges: [{ text: 'H100', icon: 'server', color: 'emerald' }, { text: 'Qwen3-8B', icon: 'layers', color: 'blue' }],
+          delta: 'FIRST-TOKEN WAIT',
+        },
+      },
+      {
+        id: 's016',
+        type: 'me_token_grid',
+        act: 'intro',
+        eyebrow: 'COMPRESSION',
+        headline: 'Sixteen Token Prefix',
+        narration: 'One hundred fifty chats compress into sixteen continuous vectors before spelling breakfast.',
+        meta: {
+          mode: 'bus',
+          boxTitle: 'inside Qwen3-8B',
+          locked: true,
+          tokenCount: 16,
+          bracketLabel: '16 tokens',
+          callout: { title: 'spelling', input: 'bre', output: 'breakfast?' },
+          bottomPill: 'SOFT PREFIX',
+        },
+      },
+      {
+        id: 's017',
+        type: 'me_token_grid',
+        act: 'intro',
+        eyebrow: 'FROZEN MODEL',
+        headline: 'Weights Unchanged',
+        narration: 'All attention layers inside Qwen remain frozen and unchanged.',
+        meta: {
+          mode: 'layers',
+          boxTitle: 'Qwen3-8B',
+          frozenBadge: 'frozen',
+          locked: true,
+          layers: [{ ok: true }, { ok: true }, { ok: true }, { ok: true }],
+        },
+      },
+      {
+        id: 's018',
+        type: 'me_evidence_card',
+        act: 'intro',
+        eyebrow: 'CAVEAT',
+        headline: 'Sample Size Quote',
+        narration: 'The author cautions to read them as behaviour, not statistics, across four to ten questions.',
+        meta: {
+          speaker: { name: 'Andris Gauracs', quote: '...as behaviour, not statistics.', attribution: 'ANDRIS GAURACS', dotsFrom: 4, dotsTo: 10, color: 'orange' },
+        },
+      },
+      {
+        id: 's019',
+        type: 'me_decision_gate',
+        act: 'eval',
+        eyebrow: 'INTEGRATION MODES',
+        headline: 'Replace Beside or Skip',
+        narration: 'You can replace full context, run beside it, or skip it altogether.',
+        meta: {
+          tiers: [
+            { label: 'Replace', visual: 'grid', active: true, color: 'orange' },
+            { label: 'Beside', visual: 'dashed', detail: 'hybrid context' },
+            { label: 'Skip', visual: 'stack' },
+          ],
+          resultPill: 'Replace or beside',
+        },
+      },
+      {
+        id: 's020',
+        type: 'me_token_grid',
+        act: 'intro',
+        eyebrow: 'TOKEN COMPRESSION',
+        headline: 'Hundreds of Chats to 16 Tokens',
+        narration: 'One hundred fifty chats shrink into sixteen tokens inside the prompt.',
+        meta: {
+          mode: 'compress',
+          sourceLabel: '150 chats',
+          sourceCount: 40,
+          targetCount: 16,
+          targetLabel: '16 tokens',
+          stats: [{ value: '150', label: 'chats', color: 'slate' }, { value: '~29K', label: 'tokens', color: 'orange' }],
+          bottomPill: '108X COMPRESSION',
+        },
+      },
+      {
+        id: 's021',
+        type: 'me_evidence_card',
+        act: 'intro',
+        eyebrow: 'CLAIM VS PAPER',
+        headline: 'Beats Memory Baselines on 5 of 8',
+        narration: 'On five of eight benchmarks Memorilla beats memory baselines.',
+        meta: {
+          title: 'Memorilla: Latent Semantic Memory for LLMs',
+          body: 'Outperforms baselines on five of eight benchmarks with 108x fewer tokens.',
+          browserUrl: 'arxiv.org/abs/2610.21375',
+          claim: { eyebrow: 'CLAIM', pill: 'Coverage, 5 Nov', statement: 'beats baselines', checks: 5, footLabel: '5 benchmarks', color: 'emerald' },
+        },
+      },
+      {
+        id: 's022',
         type: 'me_outro',
         act: 'eval',
         eyebrow: 'SUMMARY',
@@ -368,6 +521,14 @@ test('motion-explainer renders dedicated me_* scenes in 16:9 with zero Cyber-Tec
       return Number(getComputedStyle(document.querySelector('#s005 .me-stat-big')).opacity);
     }, { s5, compId: project.compositionId });
     assert.ok(s5StatOpacity > 0.9, 'hero stat must not sit blank at +1.5s: ' + s5StatOpacity);
+
+    // Verify me_core_orbit side target enters promptly rather than leaving half screen blank
+    const sideOp = await compPage.evaluate(({ s2, compId }) => {
+      const tl = window.__timelines[compId];
+      tl.seek(s2.start + Math.min(2.6, (s2.end - s2.start) * 0.7), false);
+      return Number(getComputedStyle(document.querySelector('#s002 .me-orbit-side')).opacity);
+    }, { s2, compId: project.compositionId });
+    assert.ok(sideOp > 0.85, 'orbit side target must not sit invisible mid-scene: ' + sideOp);
     await compPage.close();
 
     const page = await browser.newPage();

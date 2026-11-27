@@ -341,7 +341,7 @@
       });
       var nodeBeats = scheduleBeats(s, dur, nodeSpecs, { start: 0.22, end: earlyEnd });
       var payoffTime = findSpokenOffset(s, buildWordStream(s), m.arrowLabel || m.targetLabel || (m.modal && m.modal.title) || "", m.revealOn, 0.4, Math.max(0.8, dur - 0.6));
-      if (payoffTime === null) payoffTime = Math.min(earlyEnd + 0.3, Math.max(0.8, dur * 0.48));
+      if (payoffTime === null) payoffTime = Math.min(1.9, Math.max(0.65, dur * 0.26));
 
       popIn(el.querySelector(".me-eyebrow"), at, { y: 8, dur: 0.26 });
       var stages = q(el, ".me-orbit-stage");
@@ -381,6 +381,56 @@
 
     me_bar_compare: function (el, s, at, dur) {
       var m = s.meta || {};
+
+      var hRows = q(el, ".me-hbar-row");
+      if (hRows.length) {
+        var hBeats = scheduleBeats(s, dur, hRows.map(function (r) { return { hint: r.textContent || "" }; }), { start: 0.22, end: Math.min(2.6, Math.max(1.0, dur * 0.46)) });
+        popIn(el.querySelector(".me-eyebrow"), at, { y: 8, dur: 0.26 });
+        popIn(el.querySelector(".me-paper-table") || el.querySelector(".me-bar-head"), at, { y: 8, dur: 0.3 });
+        q(el, ".me-pt-row").forEach(function (pr, pri) {
+          popIn(pr, at + 0.12 + pri * 0.14, { y: 6, dur: 0.24 });
+        });
+        popIn(el.querySelector(".me-hero-ratio"), at + 0.2, { y: 10, scale: 0.94, dur: 0.34 });
+        hRows.forEach(function (hr, idx) {
+          var ht = at + (hBeats[idx] || 0.22 + idx * 0.35);
+          popIn(hr, ht, { y: 8, dur: 0.28 });
+          var wrap = hr.querySelector(".me-hbar-fill-wrap");
+          if (wrap) {
+            gsap.set(wrap, { scaleX: 0 });
+            tl.to(wrap, { scaleX: 1, duration: 0.56, ease: "power3.out" }, ht + 0.06);
+          }
+          q(hr, ".me-count").forEach(function (cn) { countTo(cn, ht + 0.08, 0.54); });
+          popIn(hr.querySelector(".me-hbar-dashed"), ht + 0.45, { scale: 0.96, dur: 0.26 });
+          popIn(hr.querySelector(".me-hbar-val-out"), ht + 0.35, { y: 4, dur: 0.26 });
+          queueSFX(idx === 0 ? "whoosh" : "ding", ht + 0.1, { vol: 0.76 });
+        });
+        animateBottomPill(el, s, at, dur, (hBeats[hBeats.length - 1] || 1.2) + 0.45);
+        return;
+      }
+
+      var sRows = q(el, ".me-score-row");
+      if (sRows.length) {
+        var sBeats = scheduleBeats(s, dur, sRows.map(function (r) { return { hint: r.textContent || "" }; }), { start: 0.18, end: Math.min(2.6, Math.max(1.0, dur * 0.46)) });
+        popIn(el.querySelector(".me-eyebrow"), at, { y: 8, dur: 0.26 });
+        popIn(el.querySelector(".me-bar-head"), at, { y: 8, dur: 0.28 });
+        sRows.forEach(function (sr, idx) {
+          var st = at + (sBeats[idx] || 0.18 + idx * 0.24);
+          popIn(sr, st, { y: 8, dur: 0.28 });
+          queueSFX(sr.classList.contains("is-active") ? "ding" : "tick", st + 0.08, { vol: 0.72 });
+        });
+        var ctxMeter = el.querySelector(".me-ctx-meter");
+        if (ctxMeter) {
+          popIn(ctxMeter, at + 0.32, { y: 10, scale: 0.96, dur: 0.34 });
+          var tiles = q(ctxMeter, ".me-ctx-tile:not(.is-empty)");
+          tiles.forEach(function (tlEl, ti) {
+            gsap.set(tlEl, { opacity: 0.15, scale: 0.75 });
+            tl.to(tlEl, { opacity: 1, scale: 1, duration: 0.16, ease: "power2.out" }, at + 0.42 + Math.min(1.4, ti * 0.016));
+          });
+        }
+        animateBottomPill(el, s, at, dur, (sBeats[sBeats.length - 1] || 1.2) + 0.4);
+        return;
+      }
+
       var cols = q(el, ".me-groups-grid").length ? q(el, ".me-group-box") : q(el, ".me-bar-col");
       // Primary bars enter rapidly in first 0.2s-2.6s so charts NEVER sit empty!
       var earlyEnd = Math.min(Math.max(1.0, dur * 0.42), 2.8);
@@ -457,6 +507,25 @@
 
     me_stat_split: function (el, s, at, dur) {
       var m = s.meta || {};
+      var dialArc = el.querySelector(".me-dial-arc");
+      if (dialArc) {
+        popIn(el.querySelector(".me-eyebrow"), at, { y: 8, dur: 0.26 });
+        popIn(el.querySelector(".me-badge-strip"), at + 0.04, { y: 6, dur: 0.26 });
+        popIn(el.querySelector(".me-queue-box"), at + 0.06, { y: 10, dur: 0.32 });
+        q(el, ".me-queue-chip").forEach(function (ch, ci) {
+          gsap.set(ch, { opacity: 0, x: -12 });
+          tl.to(ch, { opacity: 1, x: 0, duration: 0.2, ease: "power2.out" }, at + 0.16 + Math.min(1.6, ci * 0.032));
+        });
+        popIn(el.querySelector(".me-dial-wrap"), at + 0.12, { scale: 0.94, dur: 0.34 });
+        var circ = Number(dialArc.getAttribute("data-circ") || 880);
+        var dash = Number(dialArc.getAttribute("data-dash") || 440);
+        gsap.set(dialArc, { strokeDasharray: circ, strokeDashoffset: circ });
+        tl.to(dialArc, { strokeDashoffset: Math.max(0, circ - dash), duration: Math.min(2.2, Math.max(0.85, dur * 0.42)), ease: "power2.out" }, at + 0.24);
+        q(el, ".me-dial-num .me-count").forEach(function (cn) { countTo(cn, at + 0.24, Math.min(2.0, Math.max(0.85, dur * 0.4))); });
+        queueSFX("whoosh", at + 0.22, { vol: 0.72 });
+        animateBottomPill(el, s, at, dur, 1.4);
+        return;
+      }
       var sideCols = q(el, ".me-split-card:last-child .me-bar-col");
       var sideBeats = scheduleBeats(s, dur, sideCols.map(function (c) { return { hint: c.textContent || "" }; }), { start: 0.45, end: Math.min(2.6, Math.max(1.1, dur * 0.48)) });
       var payoffRel = m.revealOn ? findSpokenOffset(s, buildWordStream(s), (m.value || "") + " " + (m.delta || ""), m.revealOn, 0.35, Math.max(0.8, dur - 0.6)) : null;
@@ -498,6 +567,33 @@
 
     me_evidence_card: function (el, s, at, dur) {
       var m = s.meta || {};
+
+      if (el.querySelector(".me-quote-split")) {
+        popIn(el.querySelector(".me-eyebrow"), at, { y: 8, dur: 0.26 });
+        popIn(el.querySelector(".me-avatar-col"), at + 0.04, { scale: 0.9, dur: 0.34, ease: "back.out(1.4)" });
+        popIn(el.querySelector(".me-quote-card"), at + 0.1, { y: 10, scale: 0.97, dur: 0.34 });
+        queueSFX("swipe", at + 0.12, { vol: 0.7 });
+        popIn(el.querySelector(".me-dots-delta"), at + 0.45, { y: 8, dur: 0.3 });
+        q(el, ".me-dot-cyan").forEach(function (dt, di) {
+          gsap.set(dt, { scale: 0.3, opacity: 0 });
+          tl.to(dt, { scale: 1, opacity: dt.classList.contains("is-dim") ? 0.38 : 1, duration: 0.2, ease: "back.out(1.6)" }, at + 0.56 + di * 0.045);
+        });
+        queueSFX("pop", at + 0.65, { vol: 0.75 });
+        return;
+      }
+
+      if (el.querySelector(".me-claim-split")) {
+        popIn(el.querySelector(".me-eyebrow"), at, { y: 8, dur: 0.26 });
+        popIn(el.querySelector(".me-claim-card"), at + 0.04, { y: 10, scale: 0.97, dur: 0.34 });
+        popIn(el.querySelector(".me-browser-win") || el.querySelector(".me-paper-card"), at + 0.14, { y: 12, scale: 0.98, dur: 0.36 });
+        queueSFX("swipe", at + 0.12, { vol: 0.7 });
+        q(el, ".me-check-circle").forEach(function (ck, ci) {
+          popIn(ck, at + 0.4 + ci * 0.12, { scale: 0.5, dur: 0.24, ease: "back.out(1.7)" });
+          queueSFX("tick", at + 0.4 + ci * 0.12, { vol: 0.62 });
+        });
+        return;
+      }
+
       var pts = q(el, ".me-paper-card .me-schema-row");
       var beats = scheduleBeats(s, dur, [
         { hint: m.highlight || m.callout || m.body || "", cue: m.revealOn }
@@ -637,6 +733,19 @@
 
     me_decision_gate: function (el, s, at, dur) {
       var m = s.meta || {};
+      var tierRows = q(el, ".me-tier-row");
+      if (tierRows.length) {
+        var tBeats = scheduleBeats(s, dur, tierRows.map(function (r) { return { hint: r.textContent || "" }; }), { start: 0.2, end: Math.min(2.6, Math.max(1.0, dur * 0.46)) });
+        popIn(el.querySelector(".me-eyebrow"), at, { y: 8, dur: 0.26 });
+        drawPaths(q(el, ".me-tier-brace .me-draw-path"), at + 0.12, { dur: 0.55 });
+        tierRows.forEach(function (tr, idx) {
+          var tt = at + (tBeats[idx] || 0.2 + idx * 0.26);
+          popIn(tr, tt, { y: 10, scale: 0.97, dur: 0.3 });
+          queueSFX(tr.classList.contains("is-active") ? "ding" : "pop", tt + 0.06, { vol: 0.72 });
+        });
+        animateBottomPill(el, s, at, dur, (tBeats[tBeats.length - 1] || 1.2) + 0.4);
+        return;
+      }
       var choices = q(el, ".me-gate-choice");
       var gates = q(el, ".me-gate-box");
       var earlyEnd = Math.min(Math.max(1.2, dur * 0.45), 2.8);
@@ -661,6 +770,46 @@
         queueSFX("ding", gtt + 0.05, { vol: 0.74 });
       });
       popIn(el.querySelector(".me-gate-layout > div:first-child > .me-pill"), at + Math.min(dur * 0.55, earlyEnd + 0.15), { scale: 0.9, dur: 0.3 });
+    },
+
+    me_token_grid: function (el, s, at, dur) {
+      var m = s.meta || {};
+      popIn(el.querySelector(".me-eyebrow"), at, { y: 8, dur: 0.26 });
+      var busFrame = el.querySelector(".me-bus-frame");
+      if (busFrame) {
+        popIn(busFrame, at + 0.04, { y: 10, scale: 0.98, dur: 0.32 });
+        var layers = q(el, ".me-layer-row");
+        if (layers.length) {
+          layers.forEach(function (ly, idx) {
+            var lt = at + 0.14 + idx * 0.12;
+            popIn(ly, lt, { y: 6, dur: 0.24 });
+            drawPaths(q(ly, ".me-attn-arc"), lt + 0.06, { dur: 0.35, stagger: 0.02 });
+          });
+          queueSFX("swipe", at + 0.2, { vol: 0.68 });
+        } else {
+          q(el, ".me-bus-tile").forEach(function (bt, idx) {
+            popIn(bt, at + 0.16 + idx * 0.045, { scale: 0.7, dur: 0.22, ease: "back.out(1.4)" });
+          });
+          popIn(el.querySelector(".me-bus-bracket"), at + 0.85, { y: 6, dur: 0.28 });
+          popIn(el.querySelector(".me-predict-pop"), at + 1.05, { scale: 0.9, dur: 0.32, ease: "back.out(1.5)" });
+          queueSFX("ding", at + 1.08, { vol: 0.78 });
+        }
+        animateBottomPill(el, s, at, dur, 1.4);
+        return;
+      }
+
+      q(el, ".me-glyph-cell").forEach(function (gc, idx) {
+        gsap.set(gc, { opacity: 0, scale: 0.7 });
+        tl.to(gc, { opacity: 1, scale: 1, duration: 0.18, ease: "power2.out" }, at + 0.08 + Math.min(1.1, idx * 0.016));
+      });
+      q(el, ".me-tok-compress .me-count").forEach(function (cn) { countTo(cn, at + 0.18, 0.55); });
+      drawPaths(q(el, ".me-tok-compress .me-draw-path"), at + 0.55, { dur: 0.45 });
+      popIn(el.querySelector(".me-prompt-box"), at + 0.72, { scale: 0.93, dur: 0.34, ease: "back.out(1.3)" });
+      q(el, ".me-amber-cell").forEach(function (ac, idx) {
+        popIn(ac, at + 0.82 + idx * 0.032, { scale: 0.65, dur: 0.22, ease: "back.out(1.5)" });
+      });
+      queueSFX("pop", at + 0.85, { vol: 0.78 });
+      animateBottomPill(el, s, at, dur, 1.35);
     },
 
     me_timeline: function (el, s, at, dur) {
@@ -712,7 +861,7 @@
     timeline: "me_timeline",
     dateline: "me_title",
     quote: "me_evidence_card",
-    matrix: "me_pipeline_flow",
+    matrix: "me_token_grid",
     split: "me_evidence_card",
     webref: "me_evidence_card",
     cloud: "me_core_orbit",
@@ -720,6 +869,27 @@
     meme: "me_title",
     outro: "me_outro",
   };
+
+  function addMidSceneLife(el, at, dur) {
+    if (dur < 4.5) return;
+    // Gentle non-layout-shifting glow breathe + sequential spotlight sweeps
+    var glows = q(el, ".me-orbit-glow");
+    if (glows.length) {
+      tl.to(glows, { opacity: 0.32, scale: 1.06, duration: (dur - 1.2) * 0.5, yoyo: true, repeat: 1, ease: "sine.inOut" }, at + 0.8);
+    }
+    var spotlightItems = q(el, ".me-schema-row, .me-pipe-node, .me-score-row, .me-tier-row, .me-gate-box");
+    if (spotlightItems.length >= 2 && dur >= 5.2) {
+      var winStart = at + Math.min(2.9, dur * 0.36);
+      var winSpan = Math.max(0.8, dur - (winStart - at) - 0.8);
+      var gap = winSpan / spotlightItems.length;
+      spotlightItems.forEach(function (item, idx) {
+        var st = winStart + idx * gap;
+        if (st + 0.45 < at + dur - 0.65) {
+          focusPulse(item, st);
+        }
+      });
+    }
+  }
 
   SCENES.forEach(function (s, i) {
     var el = document.getElementById("s" + String(i + 1).padStart(3, "0"));
@@ -744,6 +914,7 @@
 
     var key = ANIM[s.type] ? s.type : (FALLBACK_MAP[s.type] || "me_title");
     ANIM[key](el, s, at, dur);
+    addMidSceneLife(el, at, dur);
 
     if (i < SCENES.length - 1 && dur > 1.0 && scIn) {
       tl.to(scIn, { opacity: 0.06, scale: 1.012, duration: 0.14, ease: "power1.in" }, at + dur - 0.14);

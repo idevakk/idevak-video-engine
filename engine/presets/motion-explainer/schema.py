@@ -7,6 +7,7 @@ ME_TYPES = {
     "me_title",
     "me_core_orbit",
     "me_bar_compare",
+    "me_line_chart",
     "me_stat_split",
     "me_evidence_card",
     "me_pipeline_flow",
@@ -125,6 +126,7 @@ def validate_motion_explainer_scene(scene: dict, i: int, acts: dict, errors: lis
         _s(meta, "logo", f"{where}.meta", errors)
         _color(meta, "color", f"{where}.meta", errors)
         _bool(meta, "showCore", f"{where}.meta", errors)
+        _s(meta, "watermark", f"{where}.meta", errors)
         for k, p in enumerate(_list(meta, "pills", f"{where}.meta", errors, hi=6)):
             if isinstance(p, dict):
                 _s(p, "text", f"{where}.meta.pills[{k}]", errors, required=True)
@@ -140,6 +142,7 @@ def validate_motion_explainer_scene(scene: dict, i: int, acts: dict, errors: lis
         _s(meta, "coreLabel", f"{where}.meta", errors)
         _s(meta, "coreIcon", f"{where}.meta", errors)
         _s(meta, "logo", f"{where}.meta", errors)
+        _s(meta, "watermark", f"{where}.meta", errors)
         _color(meta, "color", f"{where}.meta", errors)
         _s(meta, "targetLabel", f"{where}.meta", errors)
         _s(meta, "targetIcon", f"{where}.meta", errors)
@@ -167,6 +170,14 @@ def validate_motion_explainer_scene(scene: dict, i: int, acts: dict, errors: lis
                 _s(meta["modal"], "body", mw, errors)
                 _color(meta["modal"], "color", mw, errors)
                 _validate_cue(meta["modal"], mw)
+        if "targetBar" in meta and meta["targetBar"] is not None:
+            tb = f"{where}.meta.targetBar"
+            if isinstance(meta["targetBar"], dict):
+                _s(meta["targetBar"], "label", tb, errors, required=True)
+                _s(meta["targetBar"], "value", tb, errors, required=True)
+                _num(meta["targetBar"], "pct", tb, errors)
+                _s(meta["targetBar"], "delta", tb, errors)
+                _color(meta["targetBar"], "color", tb, errors)
 
     elif stype == "me_bar_compare":
         _s(meta, "header", f"{where}.meta", errors)
@@ -176,8 +187,9 @@ def validate_motion_explainer_scene(scene: dict, i: int, acts: dict, errors: lis
         _color(meta, "deltaColor", f"{where}.meta", errors)
         _num(meta, "thresholdPct", f"{where}.meta", errors)
         _s(meta, "thresholdLabel", f"{where}.meta", errors)
+        _s(meta, "bracketLabel", f"{where}.meta", errors)
         _s(meta, "bottomPill", f"{where}.meta", errors)
-        bars = _list(meta, "bars", f"{where}.meta", errors, lo=1, hi=8)
+        bars = _list(meta, "bars", f"{where}.meta", errors, hi=8)
         for k, b in enumerate(bars):
             bw = f"{where}.meta.bars[{k}]"
             if not isinstance(b, dict):
@@ -190,8 +202,9 @@ def validate_motion_explainer_scene(scene: dict, i: int, acts: dict, errors: lis
             _s(b, "logo", bw, errors)
             _color(b, "color", bw, errors)
             _bool(b, "dashedCap", bw, errors)
+            _bool(b, "check", bw, errors)
             _validate_cue(b, bw)
-        groups = _list(meta, "groups", f"{where}.meta", errors, hi=4)
+        groups = _list(meta, "groups", f"{where}.meta", errors, hi=5)
         for k, g in enumerate(groups):
             gw = f"{where}.meta.groups[{k}]"
             if not isinstance(g, dict):
@@ -199,6 +212,8 @@ def validate_motion_explainer_scene(scene: dict, i: int, acts: dict, errors: lis
                 continue
             _s(g, "title", gw, errors, required=True)
             _bool(g, "active", gw, errors)
+            _bool(g, "check", gw, errors)
+            _s(g, "badge", gw, errors)
             _color(g, "color", gw, errors)
             _validate_cue(g, gw)
             for j, gb in enumerate(_list(g, "bars", gw, errors, lo=1, hi=4)):
@@ -210,6 +225,31 @@ def validate_motion_explainer_scene(scene: dict, i: int, acts: dict, errors: lis
         if not bars and not groups:
             errors.append(f"{where}.meta: require 'bars' or 'groups'")
 
+    elif stype == "me_line_chart":
+        _s(meta, "header", f"{where}.meta", errors)
+        _s(meta, "yLabel", f"{where}.meta", errors)
+        _s(meta, "badge", f"{where}.meta", errors)
+        _s(meta, "bottomPill", f"{where}.meta", errors)
+        _num(meta, "yMin", f"{where}.meta", errors)
+        _num(meta, "yMax", f"{where}.meta", errors)
+        series = _list(meta, "series", f"{where}.meta", errors, required=True, lo=1, hi=4)
+        for k, sr in enumerate(series):
+            sw = f"{where}.meta.series[{k}]"
+            if not isinstance(sr, dict):
+                errors.append(f"{sw}: must be an object")
+                continue
+            _s(sr, "label", sw, errors, required=True)
+            _color(sr, "color", sw, errors)
+            _bool(sr, "active", sw, errors)
+            _validate_cue(sr, sw)
+            pts = _list(sr, "points", sw, errors, required=True, lo=2, hi=12)
+            for j, pt in enumerate(pts):
+                if isinstance(pt, dict):
+                    _num(pt, "y", f"{sw}.points[{j}]", errors, required=True)
+                    _s(pt, "label", f"{sw}.points[{j}]", errors)
+                elif isinstance(pt, bool) or not isinstance(pt, (int, float)):
+                    errors.append(f"{sw}.points[{j}]: must be number or object")
+
     elif stype == "me_stat_split":
         _s(meta, "model", f"{where}.meta", errors)
         _s(meta, "logo", f"{where}.meta", errors)
@@ -218,6 +258,7 @@ def validate_motion_explainer_scene(scene: dict, i: int, acts: dict, errors: lis
         _s(meta, "baseline", f"{where}.meta", errors)
         _s(meta, "delta", f"{where}.meta", errors)
         _num(meta, "pct", f"{where}.meta", errors)
+        _bool(meta, "miniTerminal", f"{where}.meta", errors)
         _color(meta, "color", f"{where}.meta", errors)
         _s(meta, "sideTitle", f"{where}.meta", errors)
         _s(meta, "sideBadge", f"{where}.meta", errors)
@@ -258,6 +299,7 @@ def validate_motion_explainer_scene(scene: dict, i: int, acts: dict, errors: lis
         _s(meta, "centerBadge", f"{where}.meta", errors)
         _s(meta, "rightTitle", f"{where}.meta", errors)
         _s(meta, "bottomPill", f"{where}.meta", errors)
+        _s(meta, "roundLabel", f"{where}.meta", errors)
         _color(meta, "color", f"{where}.meta", errors)
         for k, st in enumerate(_list(meta, "steps", f"{where}.meta", errors, hi=6)):
             sw = f"{where}.meta.steps[{k}]"
@@ -288,6 +330,8 @@ def validate_motion_explainer_scene(scene: dict, i: int, acts: dict, errors: lis
         _s(meta, "title", f"{where}.meta", errors, required=True)
         _s(meta, "deckTag", f"{where}.meta", errors)
         _s(meta, "deckLabel", f"{where}.meta", errors)
+        _s(meta, "compareLabel", f"{where}.meta", errors)
+        _s(meta, "compareTitle", f"{where}.meta", errors)
         _color(meta, "color", f"{where}.meta", errors)
         rows = _list(meta, "fields", f"{where}.meta", errors, lo=1, hi=7)
         for k, f in enumerate(rows):
@@ -297,6 +341,8 @@ def validate_motion_explainer_scene(scene: dict, i: int, acts: dict, errors: lis
                 continue
             _s(f, "key", fw, errors, required=True)
             _s(f, "val", fw, errors)
+            _s(f, "icon", fw, errors)
+            _s(f, "status", fw, errors)
             _bool(f, "skeleton", fw, errors)
             _bool(f, "highlight", fw, errors)
             _color(f, "color", fw, errors)
@@ -315,6 +361,8 @@ def validate_motion_explainer_scene(scene: dict, i: int, acts: dict, errors: lis
         _s(meta, "branch", f"{where}.meta", errors)
         _s(meta, "statusRight", f"{where}.meta", errors)
         _s(meta, "footerLabel", f"{where}.meta", errors)
+        _s(meta, "stamp", f"{where}.meta", errors)
+        _color(meta, "stampColor", f"{where}.meta", errors)
         _bool(meta, "showCore", f"{where}.meta", errors)
         _color(meta, "color", f"{where}.meta", errors)
         lines = _list(meta, "lines", f"{where}.meta", errors, lo=1, hi=12)
@@ -327,10 +375,22 @@ def validate_motion_explainer_scene(scene: dict, i: int, acts: dict, errors: lis
                 _validate_cue(ln, lw)
             elif not isinstance(ln, str):
                 errors.append(f"{lw}: must be string or object")
+        if "summaryCard" in meta and meta["summaryCard"] is not None:
+            scw = f"{where}.meta.summaryCard"
+            if isinstance(meta["summaryCard"], dict):
+                _s(meta["summaryCard"], "tag", scw, errors)
+                _s(meta["summaryCard"], "badge", scw, errors)
+                _color(meta["summaryCard"], "color", scw, errors)
+        if "timeline" in meta and meta["timeline"] is not None:
+            tlw = f"{where}.meta.timeline"
+            if isinstance(meta["timeline"], dict):
+                _s(meta["timeline"], "startLabel", tlw, errors)
+                _s(meta["timeline"], "endLabel", tlw, errors)
 
     elif stype == "me_decision_gate":
         _s(meta, "statusPill", f"{where}.meta", errors)
         _s(meta, "counterBadge", f"{where}.meta", errors)
+        _s(meta, "rolloutLabel", f"{where}.meta", errors)
         _s(meta, "question", f"{where}.meta", errors, required=True)
         _s(meta, "flowLabel", f"{where}.meta", errors)
         _s(meta, "resultPill", f"{where}.meta", errors)

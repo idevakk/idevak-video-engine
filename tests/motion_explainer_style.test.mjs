@@ -220,12 +220,35 @@ function motionExplainerSample(slug, extra = {}) {
           branch: 'main',
           statusRight: 'Ln 3, Col 15  Markdown',
           color: 'emerald',
+          stamp: 'BEFORE EVAL',
+          stampColor: 'orange',
+          summaryCard: { tag: 'P8', badge: 'UNRESOLVED', color: 'orange' },
+          timeline: { startLabel: 'written', endLabel: 'eval run' },
           lines: [
             { text: '1. root cause + reason', kind: 'ctx' },
             { text: '2. expected flips', kind: 'add' },
             { text: '3. what happened', kind: 'hot', cursor: true },
           ],
-          footerLabel: 'eval run',
+        },
+      },
+      {
+        id: 's013',
+        type: 'me_line_chart',
+        act: 'eval',
+        eyebrow: 'MEAN SCORE LIFT',
+        headline: 'SIM vs No SIM',
+        narration: 'Across ten runs, SIM climbs from eighteen point three six to twenty one point seven zero.',
+        meta: {
+          header: 'avg score across 10 runs',
+          yLabel: 'avg score',
+          badge: '+2.36 pts',
+          yMin: 18,
+          yMax: 22.5,
+          series: [
+            { label: 'SIM', color: 'emerald', active: true, points: [{ y: 18.36 }, { y: 21.70 }] },
+            { label: 'no SIM', color: 'slate', active: false, points: [{ y: 18.36 }, { y: 19.33 }] },
+          ],
+          bottomPill: 'CONSISTENT POSITIVE LIFT',
         },
       },
       {
@@ -336,6 +359,15 @@ test('motion-explainer renders dedicated me_* scenes in 16:9 with zero Cyber-Tec
     assert.equal(prog.missingTimeline, false);
     assert.ok(prog.atStart.every((v) => v < 0.05), 'orbit nodes start hidden: ' + JSON.stringify(prog));
     assert.ok(prog.atEnd.every((v) => v > 0.99), 'orbit nodes settle before cut: ' + JSON.stringify(prog));
+
+    // Verify no blank-card hold: even when revealOn is late, primary metric/bars appear within 1.5s
+    const s5 = scenesJson[4];
+    const s5StatOpacity = await compPage.evaluate(({ s5, compId }) => {
+      const tl = window.__timelines[compId];
+      tl.seek(s5.start + 1.5, false);
+      return Number(getComputedStyle(document.querySelector('#s005 .me-stat-big')).opacity);
+    }, { s5, compId: project.compositionId });
+    assert.ok(s5StatOpacity > 0.9, 'hero stat must not sit blank at +1.5s: ' + s5StatOpacity);
     await compPage.close();
 
     const page = await browser.newPage();

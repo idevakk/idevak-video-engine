@@ -205,6 +205,27 @@ function formatHeroHeadline(headline) {
 }
 
 function buildRenderers({ stageAsset }) {
+  function renderLogoPlate(src, { name = "", bg = "", height = 36 } = {}) {
+    const plateStyle = bg ? `background:${bg};color:#0f172a;border-color:rgba(255,255,255,0.45)` : "";
+    return `<div class="me-logo-badge" ${plateStyle ? `style="${esc(plateStyle)}"` : ""}>
+      <img src="${esc(stageAsset(src))}" alt="" style="height:${height}px;width:auto"/>
+      ${name ? `<span class="me-pill is-mono" style="border:none;padding:0;background:transparent;color:${bg ? "#0f172a" : "var(--me-ink)"}">${esc(name)}</span>` : ""}
+    </div>`;
+  }
+
+  function renderTopLogos(m, badgeText, palColor) {
+    if (Array.isArray(m.logos) && m.logos.length) {
+      return `<div class="me-logos-strip">${m.logos.map((lg) => {
+        const obj = typeof lg === "string" ? { src: lg } : lg;
+        return renderLogoPlate(obj.src, { name: obj.name || "", bg: obj.background || m.logoBackground || "", height: 34 });
+      }).join("")}${badgeText ? renderPill(badgeText, palColor, { mono: true }) : ""}</div>`;
+    }
+    if (m.logo) {
+      return renderLogoPlate(m.logo, { name: badgeText || "", bg: m.logoBackground || "", height: 38 });
+    }
+    return badgeText ? renderPill(badgeText, palColor, { mono: true }) : "";
+  }
+
   const R = {
     me_title: (s) => {
       const m = s.meta || {};
@@ -215,16 +236,20 @@ function buildRenderers({ stageAsset }) {
       }).join("");
       const wm = m.watermark ? `<div class="me-watermark">${esc(m.watermark)}</div>` : "";
       const highlight = m.highlight ? `<div class="me-hero-highlight">${esc(m.highlight)}</div>` : "";
+      const hasLogo = Boolean(m.logo || (Array.isArray(m.logos) && m.logos.length));
+      const coreHtml = m.image
+        ? `<div style="width:760px;max-width:100%">${renderBrowserFrame(stageAsset(m.image), m.browserUrl || "", m.browserTab || "")}</div>`
+        : (m.showCore && !hasLogo ? `<div class="me-title-core">${isoCubeSvg(pal, { icon: m.coreIcon || "lock", size: 176 })}</div>` : "");
 
       return `<div class="me-stage me-stage-title">
         ${renderEyebrow(s)}
         <div class="me-title-wrap">
           ${wm}
-          ${m.logo ? `<div class="me-logo-badge"><img src="${esc(stageAsset(m.logo))}" alt=""/>${m.badge ? `<span class="me-pill is-mono" style="border:none;padding:0;background:transparent">${esc(m.badge)}</span>` : ""}</div>` : (m.badge ? renderPill(m.badge, m.color || "orange", { mono: true }) : "")}
-          ${m.showCore ? `<div class="me-title-core">${isoCubeSvg(pal, { icon: m.coreIcon || "lock", size: 176 })}</div>` : ""}
+          ${renderTopLogos(m, m.badge, m.color || "orange")}
           <h1 class="me-hero-headline">${formatHeroHeadline(s.headline)}</h1>
           ${highlight}
           ${s.subline ? `<p class="me-hero-sub">${esc(s.subline)}</p>` : ""}
+          ${coreHtml}
           ${pills ? `<div class="me-title-pills">${pills}</div>` : ""}
         </div>
       </div>`;
@@ -250,8 +275,34 @@ function buildRenderers({ stageAsset }) {
         </div>`;
       }).join("");
 
+      const centerLogo = m.coreLogo || m.logo;
+      const inferredHubTitle = m.coreLabel || (m.topPill && m.topPill.includes("·") ? m.topPill.split("·").slice(1).join("·").trim() : "");
+      let centerVisual = "";
+      if (centerLogo) {
+        const plateBg = m.coreBackground || m.logoBackground || "";
+        centerVisual = `<div class="me-orbit-hub is-logo" style="border-color:${pal.stroke};${plateBg ? `background:${esc(plateBg)};` : ""}">
+          <img src="${esc(stageAsset(centerLogo))}" alt=""/>
+          ${inferredHubTitle ? `<div class="me-orbit-hub-title" style="${plateBg ? "color:#0f172a" : ""}">${esc(inferredHubTitle)}</div>` : ""}
+        </div>`;
+      } else if (m.image) {
+        centerVisual = `<div class="me-orbit-hub is-image" style="border-color:${pal.stroke}">
+          <img src="${esc(stageAsset(m.image))}" alt=""/>
+        </div>`;
+      } else if (m.showCube === true || (!inferredHubTitle && m.coreIcon === "lock")) {
+        centerVisual = isoCubeSvg(pal, { icon: m.coreIcon || "lock", size: 245 });
+      } else {
+        centerVisual = `<div class="me-orbit-hub" style="border-color:${pal.stroke}">
+          <span class="me-node-medallion" style="width:58px;height:58px;color:${pal.stroke}">${meIcon(m.coreIcon || "layers", pal.text, 28)}</span>
+          <div class="me-orbit-hub-title">${esc(inferredHubTitle || s.headline)}</div>
+        </div>`;
+      }
+
       let sideHtml = "";
-      if (m.targetBar) {
+      if (m.targetImage) {
+        sideHtml = `<div class="me-orbit-side" style="width:460px">
+          ${renderBrowserFrame(stageAsset(m.targetImage), m.targetLabel || "", m.targetLabel || "evidence")}
+        </div>`;
+      } else if (m.targetBar) {
         const bp = resolveColor(m.targetBar.color, "orange");
         const pct = Math.max(18, Math.min(92, Number(m.targetBar.pct || 72)));
         sideHtml = `<div class="me-orbit-side" style="height:400px;width:210px;justify-content:flex-end">
@@ -275,15 +326,33 @@ function buildRenderers({ stageAsset }) {
           </div>
           <div class="me-modal-body">${esc(m.modal.body || "")}</div>
         </div>`;
-      } else if (m.targetLabel) {
+      } else if (m.targetLogo) {
+        const tBg = m.targetBackground || m.logoBackground || "";
         sideHtml = `<div class="me-orbit-side">
-          <div class="me-orbit-stage" style="width:300px;height:260px">
-            <div class="me-orbit-glow" style="width:220px;height:220px;background:${pal.stroke}"></div>
-            ${orbitRingSvg(pal, 260, arrowPal)}
-            ${isoCubeSvg(pal, { icon: m.targetIcon || "code", size: 160, dashed: Boolean(m.targetDashed) })}
+          <div class="me-orbit-hub is-logo" style="border-color:${pal.stroke};${tBg ? `background:${esc(tBg)};` : ""}">
+            <img src="${esc(stageAsset(m.targetLogo))}" alt=""/>
           </div>
-          ${renderPill(m.targetLabel, m.color || "emerald", { icon: m.targetIcon || "spark" })}
+          ${m.targetLabel ? renderPill(m.targetLabel, m.color || "emerald", { icon: m.targetIcon || "spark" }) : ""}
         </div>`;
+      } else if (m.targetLabel) {
+        if (m.showTargetCube === true) {
+          sideHtml = `<div class="me-orbit-side">
+            <div class="me-orbit-stage" style="width:300px;height:260px">
+              <div class="me-orbit-glow" style="width:220px;height:220px;background:${pal.stroke}"></div>
+              ${orbitRingSvg(pal, 260, arrowPal)}
+              ${isoCubeSvg(pal, { icon: m.targetIcon || "code", size: 160, dashed: Boolean(m.targetDashed) })}
+            </div>
+            ${renderPill(m.targetLabel, m.color || "emerald", { icon: m.targetIcon || "spark" })}
+          </div>`;
+        } else {
+          sideHtml = `<div class="me-orbit-side">
+            <div class="me-target-card ${m.targetDashed ? "is-dashed" : ""}" style="border-color:${pal.stroke}">
+              <span class="me-node-medallion" style="width:52px;height:52px;color:${pal.stroke}">${meIcon(m.targetIcon || "server", pal.text, 26)}</span>
+              <div style="font-size:26px;font-weight:700">${esc(m.targetLabel)}</div>
+              ${m.targetSub ? `<div style="font-family:var(--mono);font-size:17px;color:var(--me-dim)">${esc(m.targetSub)}</div>` : ""}
+            </div>
+          </div>`;
+        }
       } else if (m.memoryDeck?.length) {
         const d0 = m.memoryDeck[0];
         sideHtml = `<div class="me-deck-wrap">
@@ -304,7 +373,7 @@ function buildRenderers({ stageAsset }) {
             ${m.watermark ? `<div class="me-watermark" style="font-size:320px">${esc(m.watermark)}</div>` : ""}
             ${m.topPill ? `<div class="me-orbit-top">${renderPill(m.topPill, "slate", { mono: true })}</div>` : ""}
             ${orbitRingSvg(pal, 460, arrowPal)}
-            ${isoCubeSvg(pal, { icon: m.coreIcon || "lock", size: 245 })}
+            ${centerVisual}
             ${nodesHtml}
             ${m.bottomPill ? `<div class="me-orbit-bottom">${renderPill(m.bottomPill, m.color || "emerald")}</div>` : ""}
           </div>
@@ -760,15 +829,17 @@ function buildRenderers({ stageAsset }) {
           return `${idx > 0 ? `<div style="width:68px;flex:0 0 auto">${curvedArrowSvg(68, 38, np)}</div>` : ""}
           <div class="me-pipe-node ${nd.active ? "is-active" : ""}" data-idx="${idx}">
             <div style="display:flex;align-items:center;gap:12px">
-              ${meIcon(nd.icon || "layers", np.text, 24)}
+              ${nd.logo ? `<img src="${esc(stageAsset(nd.logo))}" alt="" style="height:30px;width:auto;border-radius:6px;${nd.logoBackground ? `background:${esc(nd.logoBackground)};padding:3px 6px` : ""}"/>` : meIcon(nd.icon || "layers", np.text, 24)}
               <span style="font-size:26px;font-weight:700">${esc(nd.title)}</span>
             </div>
             ${nd.sub ? `<div style="font-family:var(--mono);font-size:17px;color:var(--me-dim)">${esc(nd.sub)}</div>` : ""}
+            ${nd.image ? `<img src="${esc(stageAsset(nd.image))}" alt="" style="width:100%;max-height:110px;object-fit:cover;border-radius:8px;margin-top:6px;border:1px solid var(--me-border)"/>` : ""}
           </div>`;
         }).join("");
 
         return `<div class="me-stage me-stage-pipeline">
           ${renderEyebrow(s)}
+          ${m.logo ? renderLogoPlate(m.logo, { bg: m.logoBackground || "", height: 32 }) : ""}
           ${stepsHtml ? `<div class="me-stepper">${stepsHtml}</div>` : ""}
           <div class="me-nodes-row">${nodesHtml}</div>
           ${m.bottomPill ? `<div class="me-bottom-pill">${renderPill(m.bottomPill, m.color || "emerald", { mono: true })}</div>` : ""}
@@ -859,13 +930,17 @@ function buildRenderers({ stageAsset }) {
           ${m.deckLabel ? `<div style="font-size:25px;font-weight:600;color:var(--me-dim)">${esc(m.deckLabel)}</div>` : ""}
         </div>` : "";
 
+      const sideDeck = deckHtml || (m.image ? `<div style="width:480px;flex:0 0 auto">${renderBrowserFrame(stageAsset(m.image), m.eyebrow || s.headline, m.title || "evidence")}</div>` : "");
       return `<div class="me-stage me-stage-schema">
         ${renderEyebrow(s)}
         <div class="me-schema-layout">
           <div class="me-schema-box">
             <div class="me-schema-head">
               <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
-                <span style="font-family:var(--mono);font-size:16px;letter-spacing:0.16em;color:var(--me-dim)">${esc(m.eyebrow || "ROOT CAUSE")}</span>
+                <div style="display:flex;align-items:center;gap:12px">
+                  ${m.logo ? `<img src="${esc(stageAsset(m.logo))}" alt="" style="height:26px;width:auto;border-radius:5px;${m.logoBackground ? `background:${esc(m.logoBackground)};padding:2px 6px` : ""}"/>` : ""}
+                  <span style="font-family:var(--mono);font-size:16px;letter-spacing:0.16em;color:var(--me-dim)">${esc(m.eyebrow || "ROOT CAUSE")}</span>
+                </div>
                 ${m.statusPill ? renderPill(m.statusPill, m.color || "orange", { mono: true }) : ""}
               </div>
               <div style="font-size:36px;font-weight:700">${esc(m.title || s.headline)}</div>
@@ -875,7 +950,7 @@ function buildRenderers({ stageAsset }) {
               ${attemptHtml}
             </div>
           </div>
-          ${deckHtml}
+          ${sideDeck}
         </div>
       </div>`;
     },
@@ -912,7 +987,7 @@ function buildRenderers({ stageAsset }) {
           <div class="me-editor-win">
             <div class="me-editor-tabbar">
               <div class="me-win-dots"><span class="me-win-dot"></span><span class="me-win-dot"></span><span class="me-win-dot"></span></div>
-              <div class="me-editor-tab" style="border-bottom-color:${pal.stroke}">${esc(m.filename || "harness-log.md")}</div>
+              <div class="me-editor-tab" style="border-bottom-color:${pal.stroke};display:flex;align-items:center;gap:10px">${m.logo ? `<img src="${esc(stageAsset(m.logo))}" alt="" style="height:20px;width:auto"/>` : ""}<span>${esc(m.filename || "harness-log.md")}</span></div>
             </div>
             <div class="me-editor-body">
               ${linesHtml}
@@ -976,34 +1051,54 @@ function buildRenderers({ stageAsset }) {
         </div>`;
       }).join("");
 
-      const rolloutsHtml = `<div style="display:flex;flex-direction:column;align-items:center;gap:10px">
+      const hasRollouts = Boolean(m.rollouts || m.rolloutCount != null || m.rolloutLabel);
+      const rollTotal = Math.max(1, Math.min(8, Number((m.rollouts && m.rollouts.total) ?? m.rolloutCount ?? 5)));
+      const rollActive = Math.max(0, Math.min(rollTotal, Number((m.rollouts && m.rollouts.active) ?? m.rolloutActive ?? 1)));
+      const rolloutsHtml = hasRollouts ? `<div style="display:flex;flex-direction:column;align-items:center;gap:10px">
         ${m.rolloutLabel ? `<div style="font-family:var(--mono);font-size:16px;color:var(--me-dim)">${esc(m.rolloutLabel)}</div>` : ""}
-        <div class="me-rollout-row">
-          <span class="me-rollout-sq is-on"></span>
-          <span class="me-rollout-sq"></span>
-          <span class="me-rollout-sq"></span>
-          <span class="me-rollout-sq"></span>
-          <span class="me-rollout-sq"></span>
-        </div>
-      </div>`;
+        <div class="me-rollout-row">${Array.from({ length: rollTotal }, (_, ri) => `<span class="me-rollout-sq ${ri < rollActive ? "is-on" : ""}"></span>`).join("")}</div>
+      </div>` : "";
+
+      let gateLeftHtml = "";
+      if (m.image) {
+        gateLeftHtml = `<div class="me-gate-side-brand">
+          ${rolloutsHtml}
+          ${renderBrowserFrame(stageAsset(m.image), m.browserUrl || "", m.browserTab || "")}
+          ${m.resultPill ? renderPill(m.resultPill, m.color || "emerald", { icon: "check" }) : ""}
+        </div>`;
+      } else if (m.logo || (Array.isArray(m.logos) && m.logos.length)) {
+        gateLeftHtml = `<div class="me-gate-side-brand">
+          ${rolloutsHtml}
+          <div class="me-orbit-stage" style="width:360px;height:300px">
+            <div class="me-orbit-glow" style="width:260px;height:260px;background:${pal.stroke}"></div>
+            ${orbitRingSvg(pal, 340, ME_PALETTE.orange)}
+            <div class="me-orbit-hub is-logo" style="border-color:${pal.stroke};${m.logoBackground ? `background:${esc(m.logoBackground)};` : ""}">
+              ${m.logo ? `<img src="${esc(stageAsset(m.logo))}" alt=""/>` : renderTopLogos(m, "", m.color || "emerald")}
+            </div>
+          </div>
+          ${m.resultPill ? renderPill(m.resultPill, m.color || "emerald", { icon: "check" }) : ""}
+        </div>`;
+      } else if (m.showCore === true) {
+        gateLeftHtml = `<div class="me-gate-side-brand">
+          ${rolloutsHtml}
+          <div class="me-orbit-stage" style="width:390px;height:340px">
+            <div class="me-orbit-glow" style="width:280px;height:280px;background:${pal.stroke}"></div>
+            ${orbitRingSvg(pal, 370, ME_PALETTE.orange)}
+            ${isoCubeSvg(pal, { icon: m.coreIcon || "lock", size: 196 })}
+          </div>
+          ${m.resultPill ? renderPill(m.resultPill, m.color || "emerald", { icon: "check" }) : ""}
+        </div>`;
+      }
 
       return `<div class="me-stage me-stage-gate">
         ${renderEyebrow(s)}
-        <div class="me-gate-layout">
-          <div style="display:flex;flex-direction:column;align-items:center;gap:18px">
-            ${rolloutsHtml}
-            <div class="me-orbit-stage" style="width:390px;height:340px">
-              <div class="me-orbit-glow" style="width:280px;height:280px;background:${pal.stroke}"></div>
-              ${orbitRingSvg(pal, 370, ME_PALETTE.orange)}
-              ${isoCubeSvg(pal, { icon: "lock", size: 196 })}
-            </div>
-            ${renderPill(m.resultPill || "COMPLETE", "emerald", { icon: "check" })}
-          </div>
+        <div class="me-gate-layout ${gateLeftHtml ? "" : "is-solo"}">
+          ${gateLeftHtml}
           <div class="me-gate-panel">
             <div class="me-modal-card" style="width:100%">
               <div class="me-modal-bar">
-                <span><span class="me-pill-dot" style="display:inline-block;background:#f97316;margin-right:8px"></span>${esc(m.statusPill || "stop check")}</span>
-                <span style="color:#fb923c">${esc(m.counterBadge || "×3")}</span>
+                <span><span class="me-pill-dot" style="display:inline-block;background:#f97316;margin-right:8px"></span>${esc(m.statusPill || "decision gate")}</span>
+                ${m.counterBadge ? `<span style="color:#fb923c">${esc(m.counterBadge)}</span>` : ""}
               </div>
               <div class="me-modal-body">
                 <div style="font-size:31px;font-weight:600">${esc(m.question || s.headline)}</div>
@@ -1011,6 +1106,7 @@ function buildRenderers({ stageAsset }) {
               </div>
             </div>
             ${gatesHtml ? `<div class="me-gates-row">${gatesHtml}</div>` : ""}
+            ${!gateLeftHtml && m.resultPill ? `<div style="align-self:center;margin-top:6px">${renderPill(m.resultPill, m.color || "emerald", { icon: "check" })}</div>` : ""}
           </div>
         </div>
       </div>`;
@@ -1039,6 +1135,7 @@ function buildRenderers({ stageAsset }) {
           <div class="me-bus-frame">
             <div class="me-bus-head">
               <div style="display:flex;align-items:center;gap:18px">
+                ${m.logo ? renderLogoPlate(m.logo, { bg: m.logoBackground || "", height: 32 }) : ""}
                 <span style="font-size:44px;font-weight:800">${esc(m.boxTitle || s.headline)}</span>
                 ${m.frozenBadge ? renderPill(m.frozenBadge, "emerald", { mono: true }) : ""}
               </div>
@@ -1063,7 +1160,7 @@ function buildRenderers({ stageAsset }) {
           <div class="me-bus-frame">
             <div class="me-bus-head">
               <div style="display:flex;align-items:center;gap:12px">
-                ${m.locked ? meIcon("lock", "#f97316", 24) : meIcon("layers", pal.text, 24)}
+                ${m.logo ? renderLogoPlate(m.logo, { bg: m.logoBackground || "", height: 28 }) : (m.locked ? meIcon("lock", "#f97316", 24) : meIcon("layers", pal.text, 24))}
                 <span style="font-family:var(--mono);font-size:24px;color:var(--me-ink)">${esc(m.boxTitle || s.headline)}</span>
               </div>
               ${pop}

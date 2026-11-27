@@ -720,11 +720,14 @@ def main() -> None:
             cb_schema.validate_chalkboard_scene(scene, i, acts, errors, warnings)
         elif me_schema and stype in me_schema.ME_TYPES:
             type_counts[stype] += 1
-            me_schema.validate_motion_explainer_scene(scene, i, acts, errors, warnings)
+            me_schema.validate_motion_explainer_scene(scene, i, acts, errors, warnings, project_dir=project_dir)
         else:
             if stype in TYPES:
                 type_counts[stype] += 1
             validate_scene(scene, i, acts, top_channel, top_ghost, errors, warnings, project_dir=project_dir)
+
+    if me_schema and hasattr(me_schema, "validate_motion_explainer_project"):
+        me_schema.validate_motion_explainer_project(scenes, warnings)
 
     if scenes and norm_style not in ("chalkboard-explainer", "motion-explainer"):
         first = scenes[0]

@@ -1332,6 +1332,8 @@ window.__COMPOSITION_ID__ = ${JSON.stringify(compositionId)};
 window.__SCENES__ = ${JSON.stringify(scenes.map((s) => ({
   start: s.start,
   end: s.end,
+  speechStart: s.speechStart ?? null,
+  speechEnd: s.speechEnd ?? null,
   type: s.type,
   accent: s.accent,
   act: s.act,

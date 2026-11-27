@@ -63,6 +63,7 @@ STYLE_ALIASES = {
     "default": "default",
     "chalkboard-explainer": "chalkboard-explainer",
     "chalkboad-explainer": "chalkboard-explainer",
+    "motion-explainer": "motion-explainer",
 }
 
 
@@ -617,7 +618,7 @@ def main() -> None:
     sfield(data, "ghost", "video", errors)
     style_val = sfield(data, "style", "video", errors)
     if style_val is not None and style_val.strip().lower() not in STYLE_ALIASES:
-        warnings.append(f"video.style: unknown '{style_val}'; supported styles are 'default' and 'chalkboard-explainer'")
+        warnings.append(f"video.style: unknown '{style_val}'; supported styles are 'default', 'chalkboard-explainer', and 'motion-explainer'")
     sfield(data, "defaultAccent", "video", errors)
     if "defaultAccent" in data:
         accent = data["defaultAccent"]
@@ -697,14 +698,15 @@ def main() -> None:
     top_channel = data.get("channel") or ""
     top_ghost = data.get("ghost") or ""
     norm_style = STYLE_ALIASES.get(style_val.strip().lower(), "") if isinstance(style_val, str) else ""
-    cb_schema = None
-    if norm_style == "chalkboard-explainer":
-        spec = importlib.util.spec_from_file_location(
-            "chalkboard_schema",
-            ROOT / "engine/presets/chalkboard-explainer/schema.py",
-        )
-        cb_schema = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(cb_schema)
+
+    def _load_preset_schema(mod_name: str, rel_path: str):
+        spec = importlib.util.spec_from_file_location(mod_name, ROOT / rel_path)
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        return mod
+
+    cb_schema = _load_preset_schema("chalkboard_schema", "engine/presets/chalkboard-explainer/schema.py") if norm_style == "chalkboard-explainer" else None
+    me_schema = _load_preset_schema("motion_explainer_schema", "engine/presets/motion-explainer/schema.py") if norm_style == "motion-explainer" else None
 
     for i, scene in enumerate(scenes):
         if not isinstance(scene, dict):
@@ -716,12 +718,15 @@ def main() -> None:
         if cb_schema and stype in cb_schema.CB_TYPES:
             type_counts[stype] += 1
             cb_schema.validate_chalkboard_scene(scene, i, acts, errors, warnings)
+        elif me_schema and stype in me_schema.ME_TYPES:
+            type_counts[stype] += 1
+            me_schema.validate_motion_explainer_scene(scene, i, acts, errors, warnings)
         else:
             if stype in TYPES:
                 type_counts[stype] += 1
             validate_scene(scene, i, acts, top_channel, top_ghost, errors, warnings, project_dir=project_dir)
 
-    if scenes and norm_style != "chalkboard-explainer":
+    if scenes and norm_style not in ("chalkboard-explainer", "motion-explainer"):
         first = scenes[0]
         if isinstance(first, dict) and first.get("type") != "cold":
             warnings.append("video.scenes[0]: the first scene is usually 'cold'")

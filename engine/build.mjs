@@ -8,6 +8,7 @@ import { createRequire } from "node:module";
 import { bakeSFX } from "./audio.mjs";
 import { defaultAudioRel, popProjectArg, resolveProjectDir } from "./workspace.mjs";
 import { renderChalkboardDocument } from "./presets/chalkboard-explainer/renderer.mjs";
+import { renderMotionExplainerDocument } from "./presets/motion-explainer/renderer.mjs";
 
 const { project: projectArg } = popProjectArg();
 const ENGINE_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -82,10 +83,12 @@ const STYLE_ALIASES = {
   "default": "default",
   "chalkboard-explainer": "chalkboard-explainer",
   "chalkboad-explainer": "chalkboard-explainer",
+  "motion-explainer": "motion-explainer",
 };
 const rawStyle = String(project.style || "").trim().toLowerCase();
 const styleId = STYLE_ALIASES[rawStyle] || (rawStyle || "default");
 const isChalkboard = styleId === "chalkboard-explainer";
+const isMotionExplainer = styleId === "motion-explainer";
 
 const require = createRequire(import.meta.url);
 const gsapJS = await fs.readFile(require.resolve("gsap/dist/gsap.min.js"), "utf8");
@@ -1416,6 +1419,22 @@ if (isChalkboard) {
     gsapJS,
     stageAsset,
     resolveLocalPath,
+  });
+} else if (isMotionExplainer) {
+  html = await renderMotionExplainerDocument({
+    project,
+    scenes,
+    total,
+    compositionId,
+    width,
+    height,
+    isPortrait,
+    fps,
+    audio,
+    title,
+    fontsCss,
+    gsapJS,
+    stageAsset,
   });
 } else {
 const CSS = await readEngine("engine/style.css");

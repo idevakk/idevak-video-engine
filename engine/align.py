@@ -442,6 +442,7 @@ def main() -> None:
         "default": "default",
         "chalkboard-explainer": "chalkboard-explainer",
         "chalkboad-explainer": "chalkboard-explainer",
+        "motion-explainer": "motion-explainer",
     }
     raw_style = str(video.get("style") or "").strip().lower()
     norm_style = style_aliases.get(raw_style, raw_style) if raw_style else ""

@@ -13,7 +13,7 @@ This section is the canonical production policy for both landscape and portrait
 prompts below. Examples elsewhere in this guide are illustrative, not verified
 source quotations or evidence.
 
-### Opt-in style workflow (`chalkboard-explainer`)
+### Opt-in style workflows (`chalkboard-explainer` / `motion-explainer`)
 
 - Keep the default Cyber-Tech / Devak engine workflow for all standard requests.
 - ONLY when the user explicitly asks to use the `chalkboard-explainer` (or
@@ -22,6 +22,12 @@ source quotations or evidence.
   charcoal canvas, `Excalifont` + tracked uppercase eyebrows, muted pastel chalk
   palette, hold-heavy calm motion, mascot and karaoke subtitles off by default,
   no BGM by default, and the soft chalkboard SFX pack).
+- ONLY when the user explicitly asks to use the `motion-explainer` style, or
+  sets `"style": "motion-explainer"` in `video.json`, read and follow
+  `docs/styles/motion-explainer.md` (matte carbon-black canvas with micro-dot
+  texture, `Inter` + `JetBrains Mono`, isometric 3D core cubes + segmented
+  orbital rings, grouped/delta bar charts, IDE/schema cards, mascot and karaoke
+  subtitles off by default, no BGM by default, and the digital UI SFX pack).
 
 ### Isolated project workspaces
 

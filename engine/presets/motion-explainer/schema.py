@@ -15,6 +15,7 @@ ME_TYPES = {
     "me_editor_window",
     "me_decision_gate",
     "me_timeline",
+    "me_token_grid",
     "me_outro",
 }
 
@@ -184,11 +185,24 @@ def validate_motion_explainer_scene(scene: dict, i: int, acts: dict, errors: lis
         _s(meta, "logo", f"{where}.meta", errors)
         _s(meta, "badge", f"{where}.meta", errors)
         _s(meta, "deltaLabel", f"{where}.meta", errors)
+        _s(meta, "orientation", f"{where}.meta", errors)
+        _s(meta, "heroDelta", f"{where}.meta", errors)
+        _s(meta, "heroUnit", f"{where}.meta", errors)
         _color(meta, "deltaColor", f"{where}.meta", errors)
         _num(meta, "thresholdPct", f"{where}.meta", errors)
         _s(meta, "thresholdLabel", f"{where}.meta", errors)
         _s(meta, "bracketLabel", f"{where}.meta", errors)
         _s(meta, "bottomPill", f"{where}.meta", errors)
+        if "paperTable" in meta and meta["paperTable"] is not None:
+            ptw = f"{where}.meta.paperTable"
+            if isinstance(meta["paperTable"], dict):
+                _s(meta["paperTable"], "title", ptw, errors)
+                _list(meta["paperTable"], "cols", ptw, errors, hi=4)
+                for rk, row in enumerate(_list(meta["paperTable"], "rows", ptw, errors, hi=6)):
+                    if isinstance(row, dict):
+                        _s(row, "step", f"{ptw}.rows[{rk}]", errors, required=True)
+                        _s(row, "time", f"{ptw}.rows[{rk}]", errors, required=True)
+                        _bool(row, "hot", f"{ptw}.rows[{rk}]", errors)
         bars = _list(meta, "bars", f"{where}.meta", errors, hi=8)
         for k, b in enumerate(bars):
             bw = f"{where}.meta.bars[{k}]"
@@ -202,7 +216,13 @@ def validate_motion_explainer_scene(scene: dict, i: int, acts: dict, errors: lis
             _s(b, "logo", bw, errors)
             _color(b, "color", bw, errors)
             _bool(b, "dashedCap", bw, errors)
+            _bool(b, "dashedTail", bw, errors)
             _bool(b, "check", bw, errors)
+            for sk, sg in enumerate(_list(b, "segments", bw, errors, hi=4)):
+                if isinstance(sg, dict):
+                    _s(sg, "value", f"{bw}.segments[{sk}]", errors)
+                    _num(sg, "pct", f"{bw}.segments[{sk}]", errors)
+                    _color(sg, "color", f"{bw}.segments[{sk}]", errors)
             _validate_cue(b, bw)
         groups = _list(meta, "groups", f"{where}.meta", errors, hi=5)
         for k, g in enumerate(groups):
@@ -222,8 +242,26 @@ def validate_motion_explainer_scene(scene: dict, i: int, acts: dict, errors: lis
                     _s(gb, "value", f"{gw}.bars[{j}]", errors, required=True)
                     _num(gb, "pct", f"{gw}.bars[{j}]", errors, required=True)
                     _color(gb, "color", f"{gw}.bars[{j}]", errors)
-        if not bars and not groups:
-            errors.append(f"{where}.meta: require 'bars' or 'groups'")
+        score_rows = _list(meta, "scoreRows", f"{where}.meta", errors, hi=6)
+        for k, sr in enumerate(score_rows):
+            srw = f"{where}.meta.scoreRows[{k}]"
+            if isinstance(sr, dict):
+                _s(sr, "label", srw, errors, required=True)
+                _s(sr, "score", srw, errors)
+                _bool(sr, "active", srw, errors)
+                _color(sr, "color", srw, errors)
+                _validate_cue(sr, srw)
+        if "contextMeter" in meta and meta["contextMeter"] is not None:
+            cmw = f"{where}.meta.contextMeter"
+            if isinstance(meta["contextMeter"], dict):
+                _s(meta["contextMeter"], "label", cmw, errors)
+                _s(meta["contextMeter"], "logo", cmw, errors)
+                _num(meta["contextMeter"], "total", cmw, errors)
+                _num(meta["contextMeter"], "filled", cmw, errors)
+                _s(meta["contextMeter"], "badge", cmw, errors)
+                _color(meta["contextMeter"], "color", cmw, errors)
+        if not bars and not groups and not score_rows:
+            errors.append(f"{where}.meta: require 'bars', 'groups', or 'scoreRows'")
 
     elif stype == "me_line_chart":
         _s(meta, "header", f"{where}.meta", errors)
@@ -251,17 +289,31 @@ def validate_motion_explainer_scene(scene: dict, i: int, acts: dict, errors: lis
                     errors.append(f"{sw}.points[{j}]: must be number or object")
 
     elif stype == "me_stat_split":
+        _s(meta, "mode", f"{where}.meta", errors)
         _s(meta, "model", f"{where}.meta", errors)
         _s(meta, "logo", f"{where}.meta", errors)
         _s(meta, "benchmark", f"{where}.meta", errors)
-        _s(meta, "value", f"{where}.meta", errors, required=True)
+        is_dial = meta.get("mode") == "dial"
+        _s(meta, "value", f"{where}.meta", errors, required=not is_dial)
         _s(meta, "baseline", f"{where}.meta", errors)
         _s(meta, "delta", f"{where}.meta", errors)
         _num(meta, "pct", f"{where}.meta", errors)
+        _num(meta, "dialSeconds", f"{where}.meta", errors, required=is_dial)
+        _num(meta, "dialMax", f"{where}.meta", errors)
+        _s(meta, "dialSplitText", f"{where}.meta", errors)
+        _s(meta, "queueTitle", f"{where}.meta", errors)
+        _s(meta, "queueBadge", f"{where}.meta", errors)
+        _num(meta, "queueCount", f"{where}.meta", errors)
         _bool(meta, "miniTerminal", f"{where}.meta", errors)
         _color(meta, "color", f"{where}.meta", errors)
         _s(meta, "sideTitle", f"{where}.meta", errors)
         _s(meta, "sideBadge", f"{where}.meta", errors)
+        for k, bdg in enumerate(_list(meta, "badges", f"{where}.meta", errors, hi=4)):
+            if isinstance(bdg, dict):
+                _s(bdg, "text", f"{where}.meta.badges[{k}]", errors, required=True)
+                _s(bdg, "logo", f"{where}.meta.badges[{k}]", errors)
+                _s(bdg, "icon", f"{where}.meta.badges[{k}]", errors)
+                _color(bdg, "color", f"{where}.meta.badges[{k}]", errors)
         for k, sb in enumerate(_list(meta, "sideBars", f"{where}.meta", errors, hi=4)):
             sbw = f"{where}.meta.sideBars[{k}]"
             if isinstance(sb, dict):
@@ -284,7 +336,28 @@ def validate_motion_explainer_scene(scene: dict, i: int, acts: dict, errors: lis
         _s(meta, "badge", f"{where}.meta", errors)
         _s(meta, "logo", f"{where}.meta", errors)
         _s(meta, "image", f"{where}.meta", errors)
+        _s(meta, "browserUrl", f"{where}.meta", errors)
+        _s(meta, "browserTab", f"{where}.meta", errors)
         _color(meta, "color", f"{where}.meta", errors)
+        if "claim" in meta and meta["claim"] is not None:
+            cw = f"{where}.meta.claim"
+            if isinstance(meta["claim"], dict):
+                _s(meta["claim"], "eyebrow", cw, errors)
+                _s(meta["claim"], "pill", cw, errors)
+                _s(meta["claim"], "statement", cw, errors)
+                _num(meta["claim"], "checks", cw, errors)
+                _s(meta["claim"], "footLabel", cw, errors)
+                _color(meta["claim"], "color", cw, errors)
+        if "speaker" in meta and meta["speaker"] is not None:
+            spw = f"{where}.meta.speaker"
+            if isinstance(meta["speaker"], dict):
+                _s(meta["speaker"], "name", spw, errors, required=True)
+                _s(meta["speaker"], "avatar", spw, errors)
+                _s(meta["speaker"], "quote", spw, errors, required=True)
+                _s(meta["speaker"], "attribution", spw, errors)
+                _num(meta["speaker"], "dotsFrom", spw, errors)
+                _num(meta["speaker"], "dotsTo", spw, errors)
+                _color(meta["speaker"], "color", spw, errors)
         for k, pt in enumerate(_list(meta, "points", f"{where}.meta", errors, hi=5)):
             if isinstance(pt, dict):
                 _s(pt, "text", f"{where}.meta.points[{k}]", errors, required=True)
@@ -391,10 +464,22 @@ def validate_motion_explainer_scene(scene: dict, i: int, acts: dict, errors: lis
         _s(meta, "statusPill", f"{where}.meta", errors)
         _s(meta, "counterBadge", f"{where}.meta", errors)
         _s(meta, "rolloutLabel", f"{where}.meta", errors)
-        _s(meta, "question", f"{where}.meta", errors, required=True)
+        has_tiers = isinstance(meta.get("tiers"), list) and len(meta.get("tiers")) > 0
+        _s(meta, "question", f"{where}.meta", errors, required=not has_tiers)
         _s(meta, "flowLabel", f"{where}.meta", errors)
         _s(meta, "resultPill", f"{where}.meta", errors)
+        _s(meta, "bottomPill", f"{where}.meta", errors)
         _color(meta, "color", f"{where}.meta", errors)
+        for k, t in enumerate(_list(meta, "tiers", f"{where}.meta", errors, hi=5)):
+            tw = f"{where}.meta.tiers[{k}]"
+            if isinstance(t, dict):
+                _s(t, "label", tw, errors, required=True)
+                _s(t, "visual", tw, errors)
+                _s(t, "detail", tw, errors)
+                _bool(t, "active", tw, errors)
+                _bool(t, "dashed", tw, errors)
+                _color(t, "color", tw, errors)
+                _validate_cue(t, tw)
         for k, ch in enumerate(_list(meta, "choices", f"{where}.meta", errors, hi=5)):
             cw = f"{where}.meta.choices[{k}]"
             if isinstance(ch, dict):
@@ -411,6 +496,40 @@ def validate_motion_explainer_scene(scene: dict, i: int, acts: dict, errors: lis
                 _bool(gt, "ok", gw, errors)
                 _s(gt, "badge", gw, errors)
                 _validate_cue(gt, gw)
+
+    elif stype == "me_token_grid":
+        _s(meta, "mode", f"{where}.meta", errors)
+        _s(meta, "sourceLabel", f"{where}.meta", errors)
+        _num(meta, "sourceCount", f"{where}.meta", errors)
+        _s(meta, "targetLabel", f"{where}.meta", errors)
+        _num(meta, "targetCount", f"{where}.meta", errors)
+        _s(meta, "logo", f"{where}.meta", errors)
+        _s(meta, "avatar", f"{where}.meta", errors)
+        _s(meta, "speaker", f"{where}.meta", errors)
+        _s(meta, "boxTitle", f"{where}.meta", errors)
+        _bool(meta, "locked", f"{where}.meta", errors)
+        _s(meta, "frozenBadge", f"{where}.meta", errors)
+        _num(meta, "tokenCount", f"{where}.meta", errors)
+        _s(meta, "bracketLabel", f"{where}.meta", errors)
+        _s(meta, "bottomPill", f"{where}.meta", errors)
+        _color(meta, "color", f"{where}.meta", errors)
+        for k, st in enumerate(_list(meta, "stats", f"{where}.meta", errors, hi=4)):
+            if isinstance(st, dict):
+                _s(st, "value", f"{where}.meta.stats[{k}]", errors, required=True)
+                _s(st, "label", f"{where}.meta.stats[{k}]", errors, required=True)
+                _color(st, "color", f"{where}.meta.stats[{k}]", errors)
+        if "callout" in meta and meta["callout"] is not None:
+            cw = f"{where}.meta.callout"
+            if isinstance(meta["callout"], dict):
+                _s(meta["callout"], "title", cw, errors)
+                _s(meta["callout"], "input", cw, errors)
+                _s(meta["callout"], "output", cw, errors, required=True)
+                _color(meta["callout"], "color", cw, errors)
+        for k, ly in enumerate(_list(meta, "layers", f"{where}.meta", errors, hi=10)):
+            if isinstance(ly, dict):
+                _s(ly, "label", f"{where}.meta.layers[{k}]", errors)
+                _bool(ly, "ok", f"{where}.meta.layers[{k}]", errors)
+                _color(ly, "color", f"{where}.meta.layers[{k}]", errors)
 
     elif stype == "me_timeline":
         _color(meta, "color", f"{where}.meta", errors)

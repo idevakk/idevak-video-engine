@@ -102,6 +102,72 @@ function curvedArrowSvg(w = 200, h = 100, pal = ME_PALETTE.orange) {
   </svg>`;
 }
 
+function curlyBraceSvg(h = 440, color = "#94a3b8") {
+  const mid = h / 2;
+  const d = `M 92 14 C 52 14, 58 ${mid - 28}, 22 ${mid} C 58 ${mid + 28}, 52 ${h - 14}, 92 ${h - 14}`;
+  return `<svg class="me-tier-brace" width="110" height="${h}" viewBox="0 0 110 ${h}" aria-hidden="true">
+    <path class="me-draw-path" d="${d}" fill="none" stroke="${color}" stroke-opacity="0.72" stroke-width="2.6" stroke-linecap="round"/>
+  </svg>`;
+}
+
+function waveformBarsSvg(color = "rgba(15, 23, 42, 0.75)") {
+  const hs = [14, 24, 18, 30, 16, 26, 12];
+  return `<svg width="40" height="36" viewBox="0 0 40 36" aria-hidden="true">
+    ${hs.map((hv, i) => `<rect x="${2 + i * 5.2}" y="${(36 - hv) / 2}" width="2.8" height="${hv}" rx="1.2" fill="${color}"/>`).join("")}
+  </svg>`;
+}
+
+function attentionArcSvg(seed = 0) {
+  const pts = [20, 56, 92, 128, 164, 200, 236, 272];
+  const arcs = [];
+  for (let i = 0; i < pts.length - 1; i++) {
+    const x1 = pts[i];
+    const x2 = pts[Math.min(pts.length - 1, i + 1 + ((i + seed) % 2))];
+    const cy = 28 - (i % 3) * 7 - ((seed + i) % 2) * 5;
+    arcs.push(`<path class="me-attn-arc" d="M ${x1} 30 Q ${(x1 + x2) / 2} ${cy} ${x2} 30" fill="none" stroke="rgba(248, 113, 113, 0.45)" stroke-width="1.3"/>`);
+  }
+  const dots = pts.map((x) => `<circle cx="${x}" cy="30" r="2.2" fill="rgba(226, 232, 240, 0.48)"/>`).join("");
+  return `<svg width="290" height="36" viewBox="0 0 290 36" aria-hidden="true">${arcs.join("")}${dots}</svg>`;
+}
+
+function renderBrowserFrame(src, urlText, tabTitle) {
+  const label = tabTitle || (urlText ? urlText.replace(/^https?:\/\//, "").split("/")[0] : "evidence");
+  return `<div class="me-browser-win">
+    <div class="me-browser-bar">
+      <div class="me-win-dots"><span class="me-win-dot" style="background:#ef4444"></span><span class="me-win-dot" style="background:#f59e0b"></span><span class="me-win-dot" style="background:#10b981"></span></div>
+      <div class="me-browser-tab">${esc(label)}</div>
+    </div>
+    ${urlText ? `<div class="me-browser-urlbar">${meIcon("lock", "#94a3b8", 14)}<span>${esc(urlText)}</span></div>` : ""}
+    <img class="me-browser-img" src="${esc(src)}" alt=""/>
+  </div>`;
+}
+
+function stopwatchDialSvg(seconds, maxSec = 15, pal = ME_PALETTE.orange, splitText = "") {
+  const size = 420, c = 210, r = 162;
+  const circ = 2 * Math.PI * r;
+  const frac = Math.max(0.03, Math.min(0.95, Number(seconds || 10.5) / Number(maxSec || 15)));
+  const dash = (circ * frac).toFixed(1);
+  const ticks = Array.from({ length: 12 }, (_, idx) => {
+    const ang = (idx * 30 - 90) * (Math.PI / 180);
+    const r1 = r - 12, r2 = r + 4;
+    return `<line x1="${(c + Math.cos(ang) * r1).toFixed(1)}" y1="${(c + Math.sin(ang) * r1).toFixed(1)}" x2="${(c + Math.cos(ang) * r2).toFixed(1)}" y2="${(c + Math.sin(ang) * r2).toFixed(1)}" stroke="rgba(255,255,255,0.45)" stroke-width="${idx % 3 === 0 ? 2.8 : 1.4}"/>`;
+  }).join("");
+
+  return `<svg class="me-dial-svg" viewBox="0 0 ${size} ${size}" aria-hidden="true">
+    <rect x="${c - 22}" y="12" width="44" height="14" rx="4" fill="#1e293b" stroke="rgba(255,255,255,0.35)" stroke-width="1.5"/>
+    <circle cx="${c}" cy="${c}" r="${r}" fill="rgba(16, 20, 27, 0.9)" stroke="rgba(255,255,255,0.22)" stroke-width="3"/>
+    <circle cx="${c}" cy="${c}" r="${r - 44}" fill="rgba(10, 14, 19, 0.96)" stroke="rgba(255,255,255,0.14)" stroke-width="1.5"/>
+    <circle class="me-dial-arc" cx="${c}" cy="${c}" r="${r - 22}" fill="none" stroke="${pal.stroke}" stroke-width="34" stroke-dasharray="${dash} ${circ.toFixed(1)}" transform="rotate(-90 ${c} ${c})" data-circ="${circ.toFixed(1)}" data-dash="${dash}"/>
+    ${splitText ? `<circle cx="${c}" cy="${c}" r="${r - 22}" fill="none" stroke="#10b981" stroke-width="34" stroke-dasharray="28 ${circ.toFixed(1)}" transform="rotate(-90 ${c} ${c})"/>
+      <text x="${c + 52}" y="30" fill="#34d399" font-family="JetBrains Mono, monospace" font-size="22" font-weight="700">${esc(splitText)}</text>` : ""}
+    ${ticks}
+    <text x="${c + r + 26}" y="${c + 6}" text-anchor="middle" fill="#94a3b8" font-family="JetBrains Mono, monospace" font-size="22">5</text>
+    <text x="${c}" y="${c + r + 34}" text-anchor="middle" fill="#94a3b8" font-family="JetBrains Mono, monospace" font-size="22">10</text>
+    <text x="${c - r - 30}" y="${c + 6}" text-anchor="middle" fill="#94a3b8" font-family="JetBrains Mono, monospace" font-size="22">15</text>
+    <text class="me-dial-num" x="${c}" y="${c + 16}" text-anchor="middle" fill="${pal.text}" font-family="JetBrains Mono, monospace" font-size="60" font-weight="800">${countSpan(`${seconds}`, "")}<tspan font-size="28" fill="#94a3b8"> s</tspan></text>
+  </svg>`;
+}
+
 function renderPill(text, colorName = "slate", { mono = false, icon = null, extraClass = "" } = {}) {
   if (!text) return "";
   const pal = resolveColor(colorName, "slate");
@@ -293,6 +359,95 @@ function buildRenderers({ stageAsset }) {
         </div>`;
       }
 
+      if (m.scoreRows?.length) {
+        const rowsHtml = m.scoreRows.map((sr, ri) => {
+          const sp = resolveColor(sr.color, sr.active ? "orange" : "slate");
+          const totalSlots = Math.max(2, Math.min(6, Number(sr.totalSlots || 3)));
+          const okCount = Number(sr.okCount || 0);
+          const slotsHtml = Array.from({ length: totalSlots }, (_, si) => {
+            const isOk = si < okCount;
+            return `<span class="me-score-slot ${isOk ? "is-ok" : ""}">${isOk ? meIcon("check", "#34d399", 22) : ""}</span>`;
+          }).join("");
+          return `<div class="me-score-row ${sr.active ? "is-active" : ""}" data-idx="${ri}">
+            <span style="font-size:28px;font-weight:700;color:${sr.active ? sp.text : "var(--me-ink)"};min-width:170px">${esc(sr.label)}</span>
+            <div class="me-score-slots">${slotsHtml}</div>
+            ${sr.score ? renderPill(sr.score, sr.active ? (sr.color || "orange") : "slate", { mono: true }) : ""}
+          </div>`;
+        }).join("");
+
+        const cm = m.contextMeter;
+        const meterHtml = cm ? (() => {
+          const tot = Math.max(16, Math.min(96, Number(cm.total || 80)));
+          const fil = Math.max(0, Math.min(tot, Number(cm.filled || 56)));
+          const tiles = Array.from({ length: tot }, (_, ti) => `<div class="me-ctx-tile ${ti >= fil ? "is-empty" : ""}"></div>`).join("");
+          const ticks = (cm.ticks || ["0", "filled", "max"]).map((tk) => `<span>${esc(tk)}</span>`).join("");
+          return `<div class="me-ctx-meter">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:14px">
+              <div style="display:flex;align-items:center;gap:12px">
+                ${cm.logo ? `<img src="${esc(stageAsset(cm.logo))}" alt="" style="height:30px;width:auto"/>` : meIcon("layers", "#34d399", 24)}
+                <span style="font-size:26px;font-weight:700">${esc(cm.label || "Context Window")}</span>
+              </div>
+              ${cm.badge ? renderPill(cm.badge, cm.color || "emerald", { mono: true }) : ""}
+            </div>
+            <div class="me-ctx-grid">${tiles}</div>
+            <div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:18px;color:var(--me-dim)">${ticks}</div>
+          </div>`;
+        })() : "";
+
+        return `<div class="me-stage me-stage-bars">
+          ${renderEyebrow(s)}
+          <div class="me-bar-head">${headerLeft}${headerRight}</div>
+          <div class="${meterHtml ? "me-score-layout" : ""}" style="${!meterHtml ? "width:100%;max-width:1080px" : ""}">
+            <div class="me-score-rows">${rowsHtml}</div>
+            ${meterHtml}
+          </div>
+          ${m.bottomPill ? `<div class="me-bottom-pill">${renderPill(m.bottomPill, m.deltaColor || "emerald", { mono: true })}</div>` : ""}
+        </div>`;
+      }
+
+      if (m.orientation === "horizontal") {
+        const pt = m.paperTable;
+        const ptHtml = pt ? `<div class="me-paper-table">
+          <div class="me-pt-head"><span class="me-pill-dot" style="background:#f97316"></span><span>${esc(pt.title || "PAPER TABLE")}</span></div>
+          ${pt.cols?.length ? `<div class="me-pt-cols">${pt.cols.map((c) => `<span>${esc(c)}</span>`).join("")}</div>` : ""}
+          ${(pt.rows || []).map((r) => `<div class="me-pt-row ${r.hot ? "is-hot" : ""}"><span>${esc(r.step)}</span><span>${esc(r.time)}</span></div>`).join("")}
+        </div>` : "";
+        const ratioHtml = m.heroDelta ? `<div class="me-hero-ratio"><span class="me-hero-ratio-num">${esc(m.heroDelta)}</span>${m.heroUnit ? `<span>${esc(m.heroUnit)}</span>` : ""}</div>` : "";
+        const hRows = (m.bars || []).map((b, bi) => {
+          const bp = resolveColor(b.color, bi === 0 ? "orange" : "slate");
+          const pct = Math.max(4, Math.min(92, Number(b.pct || 60)));
+          const segs = (b.segments || []).map((sg, si) => {
+            const sp = resolveColor(sg.color, si === 0 ? "slate" : "orange");
+            return `<div class="me-hbar-seg" style="width:${Math.max(10, Number(sg.pct || 25))}%;background:${sp.solid}">${sg.value ? countSpan(sg.value) : ""}</div>`;
+          }).join("");
+          const barBody = segs || `<div class="me-hbar-seg" style="width:100%;background:linear-gradient(90deg, ${bp.solid}, ${bp.text});color:#05070a">${pct >= 20 ? countSpan(b.value) : ""}</div>`;
+          return `<div class="me-hbar-row" data-idx="${bi}">
+            <div class="me-hbar-name">${esc(b.label)}</div>
+            <div class="me-hbar-track">
+              <div class="me-hbar-caliper"></div>
+              <div class="me-hbar-fill-wrap" style="width:${pct}%">
+                ${barBody}
+              </div>
+              <div class="me-hbar-caliper"></div>
+              ${b.dashedTail ? `<div class="me-hbar-dashed"></div>` : ""}
+              ${(!segs && pct < 20) || b.delta ? `<span class="me-hbar-val-out" style="color:${bp.text}">${countSpan(b.delta || b.value)}</span>` : ""}
+            </div>
+          </div>`;
+        }).join("");
+
+        return `<div class="me-stage me-stage-bars">
+          ${renderEyebrow(s)}
+          <div class="me-hbar-stage">
+            <div class="me-hbar-top">
+              <div>${ptHtml || headerLeft}</div>
+              <div style="display:flex;flex-direction:column;align-items:flex-end;gap:14px">${headerRight}${ratioHtml}</div>
+            </div>
+            <div class="me-hbars-list">${hRows}</div>
+          </div>
+          ${m.bottomPill ? `<div class="me-bottom-pill">${renderPill(m.bottomPill, m.deltaColor || "emerald", { mono: true })}</div>` : ""}
+        </div>`;
+      }
+
       const barsHtml = (m.bars || []).map((b, bi) => {
         const bp = resolveColor(b.color, bi === 0 ? "orange" : "emerald");
         const pct = Math.max(12, Math.min(92, Number(b.pct || 60)));
@@ -393,6 +548,34 @@ function buildRenderers({ stageAsset }) {
     me_stat_split: (s) => {
       const m = s.meta || {};
       const pal = resolveColor(m.color, "orange");
+
+      if (m.mode === "dial") {
+        const badges = (m.badges || []).map((bdg) => {
+          const bp = resolveColor(bdg.color, "emerald");
+          return `<div class="me-logo-badge" style="padding:10px 20px">${bdg.logo ? `<img src="${esc(stageAsset(bdg.logo))}" alt="" style="height:28px"/>` : meIcon(bdg.icon || "server", bp.text, 22)}<span style="font-size:22px;font-weight:700">${esc(bdg.text)}</span></div>`;
+        }).join("");
+        const chips = Array.from({ length: Math.max(8, Math.min(48, Number(m.queueCount || 32))) }, () => `<div class="me-queue-chip"></div>`).join("");
+        return `<div class="me-stage me-stage-split">
+          ${renderEyebrow(s)}
+          <div class="me-dial-stage">
+            ${badges ? `<div class="me-badge-strip">${badges}</div>` : ""}
+            <div class="me-dial-grid">
+              <div class="me-queue-box" style="border-color:${pal.stroke}">
+                <div class="me-queue-head">
+                  <span>${esc(m.queueTitle || s.headline)}</span>
+                  <span style="font-family:var(--mono);color:${pal.text}">${esc(m.queueBadge || m.baseline || "")}</span>
+                </div>
+                <div class="me-queue-docs">${chips}</div>
+              </div>
+              <div class="me-dial-wrap">
+                ${stopwatchDialSvg(m.dialSeconds ?? 10.5, m.dialMax ?? 15, pal, m.dialSplitText || "")}
+              </div>
+            </div>
+          </div>
+          ${m.delta ? `<div class="me-bottom-pill">${renderPill(m.delta, m.color || "orange", { mono: true })}</div>` : ""}
+        </div>`;
+      }
+
       const pct = Math.max(12, Math.min(100, Number(m.pct ?? 78)));
       const sideBars = (m.sideBars || []).map((sb, idx) => {
         const sp = resolveColor(sb.color, idx === 0 ? "orange" : "emerald");
@@ -452,6 +635,73 @@ function buildRenderers({ stageAsset }) {
     me_evidence_card: (s) => {
       const m = s.meta || {};
       const pal = resolveColor(m.color, "orange");
+
+      if (m.speaker) {
+        const sp = m.speaker;
+        const spPal = resolveColor(sp.color, m.color || "orange");
+        const dotsA = Array.from({ length: Math.max(1, Math.min(10, Number(sp.dotsFrom || 4))) }, (_, i) => `<span class="me-dot-cyan ${i >= 3 ? "is-dim" : ""}"></span>`).join("");
+        const dotsB = Array.from({ length: Math.max(1, Math.min(10, Number(sp.dotsTo || 10))) }, (_, i) => `<span class="me-dot-cyan ${i >= 8 ? "is-dim" : ""}"></span>`).join("");
+        const avatarContent = sp.avatar
+          ? `<img src="${esc(stageAsset(sp.avatar))}" alt=""/>`
+          : meIcon("chat", spPal.text, 64);
+        return `<div class="me-stage me-stage-evidence">
+          ${renderEyebrow(s)}
+          <div class="me-quote-split">
+            <div class="me-avatar-col">
+              <div class="me-avatar-ring" style="border-color:${spPal.stroke}">${avatarContent}</div>
+              <div style="font-size:30px;font-weight:700">${esc(sp.name)}</div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:22px">
+              <div class="me-quote-card">
+                <div class="me-quote-mark" style="color:${spPal.text}">“</div>
+                <div class="me-quote-text">${esc(sp.quote)}</div>
+                ${sp.attribution ? `<div style="font-family:var(--mono);font-size:18px;letter-spacing:0.16em;color:${spPal.text}">— ${esc(sp.attribution)}</div>` : ""}
+              </div>
+              <div class="me-dots-delta">
+                <div class="me-dots-box">
+                  <div style="font-family:var(--mono);font-size:22px;color:#38bdf8">${Number(sp.dotsFrom || 4)}</div>
+                  <div class="me-dots-row">${dotsA}</div>
+                </div>
+                <span style="font-family:var(--mono);font-size:24px;color:var(--me-dim)">to</span>
+                <div class="me-dots-box">
+                  <div style="font-family:var(--mono);font-size:22px;color:#38bdf8">${Number(sp.dotsTo || 10)}</div>
+                  <div class="me-dots-row">${dotsB}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>`;
+      }
+
+      if (m.claim) {
+        const cl = m.claim;
+        const cp = resolveColor(cl.color, "emerald");
+        const chkCount = Math.max(1, Math.min(7, Number(cl.checks || 5)));
+        const checksHtml = Array.from({ length: chkCount }, () => `<div class="me-check-circle">${meIcon("check", "#34d399", 24)}</div>`).join("");
+        const miniGrid = Array.from({ length: 16 }, () => `<div style="width:18px;height:18px;border-radius:3px;background:#f59e0b"></div>`).join("");
+        const rightWin = m.image
+          ? renderBrowserFrame(stageAsset(m.image), m.browserUrl || m.source, m.browserTab)
+          : `<div class="me-paper-card" style="height:100%"><h3 class="me-paper-title">${esc(m.title || s.headline)}</h3><div class="me-paper-body">${esc(m.body || "")}</div></div>`;
+        return `<div class="me-stage me-stage-evidence">
+          ${renderEyebrow(s)}
+          <div class="me-claim-split">
+            <div class="me-claim-card">
+              <div style="font-family:var(--mono);font-size:15px;letter-spacing:0.18em;color:var(--me-dim)">${esc(cl.eyebrow || "CLAIM")}</div>
+              ${cl.pill ? renderPill(cl.pill, "slate", { mono: false }) : ""}
+              <div style="display:flex;align-items:center;gap:16px">
+                <div style="display:grid;grid-template-columns:repeat(4,18px);gap:4px">${miniGrid}</div>
+                <div style="width:32px;height:32px;border-radius:50%;border:2px solid #f97316;display:flex;align-items:center;justify-content:center;color:#fb923c;font-weight:700">&gt;</div>
+                <div style="display:flex;flex-direction:column;gap:7px;width:96px">${Array.from({ length: 5 }, () => `<div style="height:7px;border-radius:4px;background:rgba(255,255,255,0.18)"></div>`).join("")}</div>
+              </div>
+              <div style="font-size:30px;font-weight:700">${esc(cl.statement || s.headline)}</div>
+              <div class="me-check-row">${checksHtml}</div>
+              ${cl.footLabel ? `<div style="font-size:26px;font-weight:700;color:${cp.text}">${esc(cl.footLabel)}</div>` : ""}
+            </div>
+            ${rightWin}
+          </div>
+        </div>`;
+      }
+
       const rawBody = esc(m.body || s.subline || "");
       let bodyHtml = rawBody;
       if (m.highlight && rawBody.includes(esc(m.highlight))) {
@@ -466,6 +716,11 @@ function buildRenderers({ stageAsset }) {
           <span class="me-schema-val">${esc(obj.text)}</span>
         </div>`;
       }).join("");
+      const imgHtml = m.image
+        ? ((m.browserUrl || /[./]/.test(m.source || ""))
+          ? renderBrowserFrame(stageAsset(m.image), m.browserUrl || m.source, m.browserTab)
+          : `<img src="${esc(stageAsset(m.image))}" alt="" style="max-height:440px;width:100%;object-fit:contain;border-radius:10px;border:1px solid var(--me-border)"/>`)
+        : "";
 
       return `<div class="me-stage me-stage-evidence">
         ${renderEyebrow(s)}
@@ -483,7 +738,7 @@ function buildRenderers({ stageAsset }) {
             </div>
             ${m.title ? `<h3 class="me-paper-title">${esc(m.title)}</h3>` : ""}
             ${bodyHtml ? `<div class="me-paper-body">${bodyHtml}</div>` : ""}
-            ${m.image ? `<img src="${esc(stageAsset(m.image))}" alt="" style="max-height:380px;width:100%;object-fit:contain;border-radius:10px;border:1px solid var(--me-border)"/>` : ""}
+            ${imgHtml}
             ${ptsHtml ? `<div style="display:flex;flex-direction:column;gap:10px">${ptsHtml}</div>` : ""}
           </div>
           ${m.callout ? renderPill(m.callout, m.color || "orange", { icon: "spark" }) : ""}
@@ -678,6 +933,35 @@ function buildRenderers({ stageAsset }) {
     me_decision_gate: (s) => {
       const m = s.meta || {};
       const pal = resolveColor(m.color, "emerald");
+
+      if (m.tiers?.length) {
+        const tierRows = m.tiers.map((tr, idx) => {
+          const tp = resolveColor(tr.color, tr.active ? "orange" : "slate");
+          let visHtml = "";
+          if (tr.visual === "grid") {
+            visHtml = `<div style="display:grid;grid-template-columns:repeat(4,24px);gap:5px">${Array.from({ length: 16 }, () => `<div style="width:24px;height:24px;border-radius:4px;background:#f59e0b"></div>`).join("")}</div>`;
+          } else if (tr.visual === "dashed") {
+            visHtml = `<div style="width:320px;height:78px;border-radius:12px;border:1.5px dashed rgba(255,255,255,0.3);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:18px;color:var(--me-dim)">${esc(tr.detail || "")}</div>`;
+          } else if (tr.visual === "stack") {
+            visHtml = `<div style="display:flex;flex-direction:column;gap:5px">${Array.from({ length: 5 }, () => `<div style="width:88px;height:12px;border-radius:4px;border:1.5px solid rgba(255,255,255,0.35);background:rgba(255,255,255,0.06)"></div>`).join("")}</div>`;
+          } else if (tr.detail) {
+            visHtml = `<span style="font-family:var(--mono);font-size:20px;color:var(--me-dim)">${esc(tr.detail)}</span>`;
+          }
+          return `<div class="me-tier-row ${tr.active ? "is-active" : ""} ${tr.dashed ? "is-dim" : ""}" data-idx="${idx}" style="${tr.active ? `border-color:${tp.stroke}` : ""}">
+            <span>${esc(tr.label)}</span>
+            ${visHtml}
+          </div>`;
+        }).join("");
+        return `<div class="me-stage me-stage-gate">
+          ${renderEyebrow(s)}
+          <div class="me-tier-layout">
+            <div>${curlyBraceSvg(Math.max(260, m.tiers.length * 112), pal.stroke)}</div>
+            <div class="me-tier-list">${tierRows}</div>
+          </div>
+          ${(m.resultPill || m.bottomPill) ? `<div class="me-bottom-pill">${renderPill(m.resultPill || m.bottomPill, m.color || "orange", { icon: "play" })}</div>` : ""}
+        </div>`;
+      }
+
       const choicesHtml = (m.choices || []).map((ch, idx) => {
         const obj = typeof ch === "string" ? { text: ch } : ch;
         return `<span class="me-gate-choice ${obj.active ? "is-active" : ""}" data-idx="${idx}">${esc(obj.text)}</span>`;
@@ -729,6 +1013,98 @@ function buildRenderers({ stageAsset }) {
             ${gatesHtml ? `<div class="me-gates-row">${gatesHtml}</div>` : ""}
           </div>
         </div>
+      </div>`;
+    },
+
+    me_token_grid: (s) => {
+      const m = s.meta || {};
+      const pal = resolveColor(m.color, "amber");
+      const mode = m.mode || (m.layers?.length ? "layers" : m.callout || m.tokenCount ? "bus" : "compress");
+
+      if (mode === "layers") {
+        const layersHtml = (m.layers || []).map((ly, idx) => {
+          const ticks = Array.from({ length: 14 }, (_, ti) => {
+            const h = 10 + ((ti * 7 + idx * 5) % 18);
+            return `<span style="width:2.5px;height:${h}px;border-radius:2px;background:rgba(226,232,240,0.42);display:inline-block"></span>`;
+          }).join("");
+          return `<div class="me-layer-row" data-idx="${idx}">
+            ${attentionArcSvg(idx)}
+            <div style="display:flex;align-items:center;justify-content:center;gap:8px">${ticks}</div>
+            <div style="display:flex;align-items:center;justify-content:center">${ly.ok !== false ? meIcon("check", "#34d399", 22) : meIcon("cross", "#f87171", 22)}</div>
+          </div>`;
+        }).join("");
+
+        return `<div class="me-stage me-stage-schema">
+          ${renderEyebrow(s)}
+          <div class="me-bus-frame">
+            <div class="me-bus-head">
+              <div style="display:flex;align-items:center;gap:18px">
+                <span style="font-size:44px;font-weight:800">${esc(m.boxTitle || s.headline)}</span>
+                ${m.frozenBadge ? renderPill(m.frozenBadge, "emerald", { mono: true }) : ""}
+              </div>
+              ${m.locked !== false ? `<div style="display:flex;align-items:center;gap:12px">${meIcon("lock", "#f97316", 34)}</div>` : ""}
+            </div>
+            <div class="me-layer-list">${layersHtml}</div>
+          </div>
+          ${m.bottomPill ? `<div class="me-bottom-pill">${renderPill(m.bottomPill, m.color || "emerald", { mono: true })}</div>` : ""}
+        </div>`;
+      }
+
+      if (mode === "bus") {
+        const tc = Math.max(8, Math.min(20, Number(m.tokenCount || 16)));
+        const tilesHtml = Array.from({ length: tc }, (_, ti) => `<div class="me-bus-tile" data-idx="${ti}">${waveformBarsSvg()}</div>`).join("");
+        const pop = m.callout ? `<div class="me-predict-pop" style="align-self:flex-end">
+          <div style="font-size:15px;color:var(--me-dim)">${esc(m.callout.title || "token decode")}</div>
+          ${m.callout.input ? `<div style="font-size:24px;color:#38bdf8">${esc(m.callout.input)}</div>` : ""}
+          <div style="font-size:26px;font-weight:700;color:#7dd3fc">${esc(m.callout.output)}</div>
+        </div>` : "";
+        return `<div class="me-stage me-stage-schema">
+          ${renderEyebrow(s)}
+          <div class="me-bus-frame">
+            <div class="me-bus-head">
+              <div style="display:flex;align-items:center;gap:12px">
+                ${m.locked ? meIcon("lock", "#f97316", 24) : meIcon("layers", pal.text, 24)}
+                <span style="font-family:var(--mono);font-size:24px;color:var(--me-ink)">${esc(m.boxTitle || s.headline)}</span>
+              </div>
+              ${pop}
+            </div>
+            <div class="me-bus-row-wrap">
+              <div class="me-bus-row">${tilesHtml}</div>
+              ${m.bracketLabel ? `<div class="me-bus-bracket"><div class="me-bus-bracket-line"></div><div style="font-family:var(--mono);font-size:24px;font-weight:700;color:#fbbf24">${esc(m.bracketLabel)}</div></div>` : ""}
+            </div>
+          </div>
+          ${m.bottomPill ? `<div class="me-bottom-pill">${renderPill(m.bottomPill, m.color || "amber", { mono: true })}</div>` : ""}
+        </div>`;
+      }
+
+      const gridCount = Math.max(20, Math.min(80, Number(m.sourceCount || 60)));
+      const glyphs = Array.from({ length: gridCount }, (_, gi) => `<div class="me-glyph-cell" data-idx="${gi}">${meIcon("chat", "rgba(226,232,240,0.45)", 16)}</div>`).join("");
+      const tgts = Array.from({ length: Math.max(4, Math.min(16, Number(m.targetCount || 16))) }, (_, ti) => `<div class="me-amber-cell" data-idx="${ti}"></div>`).join("");
+      const statsHtml = (m.stats || []).map((st) => `<div style="display:flex;flex-direction:column;gap:4px">
+        <div style="font-size:48px;font-weight:800;color:${resolveColor(st.color, "orange").text}">${countSpan(st.value)}</div>
+        <div style="font-size:20px;color:var(--me-dim)">${esc(st.label)}</div>
+      </div>`).join("");
+
+      return `<div class="me-stage me-stage-pipeline">
+        ${renderEyebrow(s)}
+        <div class="me-tok-compress">
+          <div style="display:flex;flex-direction:column;gap:18px">
+            <div style="display:flex;align-items:center;gap:20px">
+              ${m.logo ? `<div class="me-logo-badge"><img src="${esc(stageAsset(m.logo))}" alt=""/></div>` : ""}
+              ${m.avatar ? `<div class="me-avatar-ring" style="width:74px;height:74px"><img src="${esc(stageAsset(m.avatar))}" alt=""/></div>` : ""}
+              ${m.sourceLabel ? `<div style="font-size:28px;font-weight:700">${esc(m.sourceLabel)}</div>` : ""}
+            </div>
+            ${statsHtml ? `<div style="display:flex;gap:36px">${statsHtml}</div>` : ""}
+            <div class="me-glyph-grid">${glyphs}</div>
+          </div>
+          <div style="display:flex;justify-content:center">${curvedArrowSvg(110, 80, pal)}</div>
+          <div class="me-prompt-box" style="border-color:${pal.stroke}">
+            <div class="me-prompt-tag">prompt</div>
+            <div class="me-amber-4x4">${tgts}</div>
+            <div style="font-family:var(--mono);font-size:32px;font-weight:700;color:#fbbf24">${esc(m.targetLabel || "16 tokens")}</div>
+          </div>
+        </div>
+        ${m.bottomPill ? `<div class="me-bottom-pill">${renderPill(m.bottomPill, m.color || "amber", { mono: true })}</div>` : ""}
       </div>`;
     },
 

@@ -41,8 +41,8 @@ rather than copying arbitrary transcription segment pairs.
 | `cta` | string | no | Outro CTA button label (e.g. `Subscribe`). Only rendered when explicitly authored. |
 | `ctaSub` | string | no | Outro CTA detail / handle. Only rendered when explicitly authored. |
 | `defaultAccent` | string | no | `#rrggbb` fallback when neither the scene nor its act has an accent. |
-| `style` | string | no | Optional visual/motion/SFX preset: `"default"` (omit) or `"chalkboard-explainer"` (alias `"chalkboad-explainer"`). See `docs/styles/chalkboard-explainer.md`. |
-| `enableMascot` | boolean | no | Opt-in flag for presets like `chalkboard-explainer` where mascot overlays are disabled by default. |
+| `style` | string | no | Optional visual/motion/SFX preset: `"default"` (omit), `"chalkboard-explainer"` (alias `"chalkboad-explainer"`), or `"motion-explainer"`. See `docs/styles/chalkboard-explainer.md` and `docs/styles/motion-explainer.md`. |
+| `enableMascot` | boolean | no | Opt-in flag for presets like `chalkboard-explainer` or `motion-explainer` where mascot overlays are disabled by default. |
 | `aspect` | string | no | `"16:9"` (default, 1920x1080) or `"9:16"` (1080x1920 portrait for YouTube Shorts, Reels, TikTok). When set to `"9:16"`, the engine automatically configures 1080x1920 resolution, mobile safe zones, single-column stacked grids, and vertical mascot positioning. |
 | `aspectRatio` | string | no | Alias for `aspect` (e.g. `"9:16"`). |
 | `composition` | object | no | `{ "width": 1920, "height": 1080, "fps": 30 }` (or `{ "width": 1080, "height": 1920, "fps": 30 }` for 9:16). Automatically defaulted by `aspect`. |

@@ -546,7 +546,114 @@ test('motion-explainer renders dedicated me_* scenes in 16:9 with zero Cyber-Tec
     assert.equal(visualClean.gateRollouts, 0, 'me_decision_gate must not render hardcoded rollout squares by default');
     assert.equal(visualClean.gateCubes, 0, 'me_decision_gate must not render hardcoded cube by default');
     assert.equal(visualClean.gateSolo, 1);
+
+    // Verify sfx_track.json is chronologically sorted and deduped (>= 75ms apart)
+    const sfxTrack = JSON.parse(await fs.readFile(path.join(WS_ME, 'build/sfx_track.json'), 'utf8'));
+    assert.ok(sfxTrack.length >= 10, 'expected substantial SFX cues across 22 scenes');
+    for (let si = 1; si < sfxTrack.length; si++) {
+      assert.ok(sfxTrack[si].at >= sfxTrack[si - 1].at, `sfx_track.json must be chronological at index ${si}`);
+      assert.ok(sfxTrack[si].at - sfxTrack[si - 1].at >= 0.074, `sfx_track.json cues too close at index ${si}: ${sfxTrack[si - 1].at} vs ${sfxTrack[si].at}`);
+    }
+
+    // Verify late-scene timeline & line-chart cues sync beyond the old 2.6s cap
+    const s13 = scenesJson[9]; // me_line_chart: 18.36 -> 21.70
+    const s11 = scenesJson[11]; // me_timeline: ROUND 1, ROUND 10, ROUND 40
+    const syncCheck = await compPage.evaluate(({ s13, s11, compId }) => {
+      const tl = window.__timelines[compId];
+      // Check me_timeline node 2 (ROUND 40) is hidden early at +1.0s and visible at end
+      tl.seek(s11.start + 0.9, false);
+      const r40Early = Number(getComputedStyle(document.querySelectorAll('#s012 .me-tl-node')[2]).opacity);
+      tl.seek(s11.end - 0.35, false);
+      const r40End = Number(getComputedStyle(document.querySelectorAll('#s012 .me-tl-node')[2]).opacity);
+      // Check me_line_chart dots settle cleanly before cut
+      tl.seek(s13.end - 0.35, false);
+      const lineDots = Array.from(document.querySelectorAll('#s010 .me-line-dot')).map((d) => Number(getComputedStyle(d).opacity));
+      return { r40Early, r40End, lineDots };
+    }, { s13, s11, compId: project.compositionId });
+    assert.ok(syncCheck.r40Early < 0.2, 'late timeline milestone should wait until spoken (~4s+), got opacity ' + syncCheck.r40Early);
+    assert.ok(syncCheck.r40End > 0.99, 'late timeline milestone must settle before cut: ' + syncCheck.r40End);
+    assert.ok(syncCheck.lineDots.every((v) => v > 0.99), 'line chart dots must settle before cut: ' + JSON.stringify(syncCheck.lineDots));
     await compPage.close();
+
+    // Verify unordered bar cues & duplicate sequential gate choices in an isolated browser harness
+    const syncPage = await browser.newPage();
+    await syncPage.setContent(`
+      <div id="root" data-style="motion-explainer">
+        <section id="s001" class="clip sc sc-me_bar_compare">
+          <div class="sc-in">
+            <div class="me-eyebrow">BARS</div>
+            <div class="me-bar-head"></div>
+            <div class="me-chart-panel">
+              <div class="me-bars-row">
+                <div class="me-bar-col"><div class="me-bar-fill"></div><div class="me-bar-label">Alpha</div></div>
+                <div class="me-bar-col"><div class="me-bar-fill"></div><div class="me-bar-label">Beta</div></div>
+              </div>
+            </div>
+          </div>
+        </section>
+        <section id="s002" class="clip sc sc-me_decision_gate">
+          <div class="sc-in">
+            <div class="me-eyebrow">GATE</div>
+            <div class="me-modal-card">
+              <div class="me-gate-choices">
+                <span class="me-gate-choice">yes</span>
+                <span class="me-gate-choice">yes</span>
+                <span class="me-gate-choice">yes</span>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    `);
+    await syncPage.addScriptTag({ path: require.resolve('gsap/dist/gsap.min.js') });
+    await syncPage.evaluate(() => {
+      window.__SCENES__ = [
+        {
+          start: 0, end: 6.0, speechStart: 0.2, speechEnd: 5.7, type: 'me_bar_compare',
+          meta: { bars: [{ label: 'Alpha', value: '10', pct: 40 }, { label: 'Beta', value: '80', pct: 80 }] },
+          wordTimings: [
+            { w: 'Beta', t: 0.7, d: 0.3 },
+            { w: 'leads', t: 1.1, d: 0.3 },
+            { w: 'while', t: 2.5, d: 0.3 },
+            { w: 'Alpha', t: 3.8, d: 0.3 },
+            { w: 'trails', t: 4.2, d: 0.3 },
+          ],
+        },
+        {
+          start: 6.0, end: 13.0, speechStart: 6.25, speechEnd: 12.6, type: 'me_decision_gate',
+          meta: { choices: [{ text: 'yes' }, { text: 'yes' }, { text: 'yes', active: true }] },
+          wordTimings: [
+            { w: 'First', t: 0.4, d: 0.2 }, { w: 'yes', t: 0.9, d: 0.2 },
+            { w: 'then', t: 2.4, d: 0.2 }, { w: 'yes', t: 3.1, d: 0.2 },
+            { w: 'and', t: 4.5, d: 0.2 }, { w: 'yes', t: 5.2, d: 0.2 },
+          ],
+        },
+      ];
+      window.__TOTAL__ = 13.0;
+    });
+    await syncPage.addScriptTag({ content: await fs.readFile(path.join(ROOT, 'engine/presets/motion-explainer/anim.js'), 'utf8') });
+    const harness = await syncPage.evaluate(() => {
+      const tl = window.__timelines['__COMPOSITION_ID__'];
+      tl.seek(1.5, false);
+      const barsAt15 = Array.from(document.querySelectorAll('#s001 .me-bar-col')).map((c) => Number(getComputedStyle(c).opacity));
+      tl.seek(8.0, false);
+      const chAt80 = Array.from(document.querySelectorAll('#s002 .me-gate-choice')).map((c) => Number(getComputedStyle(c).opacity));
+      tl.seek(9.6, false);
+      const chAt96 = Array.from(document.querySelectorAll('#s002 .me-gate-choice')).map((c) => Number(getComputedStyle(c).opacity));
+      tl.seek(11.6, false);
+      const chAt116 = Array.from(document.querySelectorAll('#s002 .me-gate-choice')).map((c) => Number(getComputedStyle(c).opacity));
+      const sfx = window.__SFX_EVENTS__.slice();
+      return { barsAt15, chAt80, chAt96, chAt116, sfx };
+    });
+    // Beta (index 1) spoken at 0.7s must be visible at 1.5s while Alpha (index 0) spoken at 3.8s is still hidden!
+    assert.ok(harness.barsAt15[1] > 0.95 && harness.barsAt15[0] < 0.05, 'unordered bars must follow actual speech order: ' + JSON.stringify(harness.barsAt15));
+    // Sequential duplicate "yes" choices must pop at 0.9s (6.9), 3.1s (9.1), 5.2s (11.2)
+    assert.ok(harness.chAt80[0] > 0.95 && harness.chAt80[1] < 0.05 && harness.chAt80[2] < 0.05, 'choice 0 only at +2.0s: ' + JSON.stringify(harness.chAt80));
+    assert.ok(harness.chAt96[1] > 0.95 && harness.chAt96[2] < 0.05, 'choice 0 & 1 at +3.6s: ' + JSON.stringify(harness.chAt96));
+    assert.ok(harness.chAt116[2] > 0.95, 'all 3 choices visible after +5.6s: ' + JSON.stringify(harness.chAt116));
+    // Scene 2 transition whoosh/swipe should fire near speech onset (6.25s)
+    assert.ok(harness.sfx.some((e) => e.at >= 6.0 && e.at <= 6.3 && (e.type === 'whoosh' || e.type === 'swipe')), 'transition SFX near voiceover onset: ' + JSON.stringify(harness.sfx));
+    await syncPage.close();
 
     const page = await browser.newPage();
     await page.setContent('<div id="root" data-style="motion-explainer"></div>');

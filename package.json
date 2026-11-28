@@ -32,6 +32,8 @@
     "eval:asr:local": "python tests/eval_asr/run_benchmark.py --local-optimized",
     "qa:frames": "node scripts/qa_frames.mjs",
     "qa:sheets": "python scripts/qa_sheets.py",
+    "style:list": "python scripts/ralph_style.py styles",
+    "style:loop": "python scripts/ralph_style.py",
     "fetch:logo": "python scripts/fetch_logo.py",
     "capture:webref": "node scripts/capture_webref.mjs",
     "sfx": "python engine/sfx_mixer.py",

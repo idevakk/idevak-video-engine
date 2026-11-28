@@ -3,7 +3,7 @@
 import fs from "node:fs/promises";
 import fsSync, { readFileSync } from "node:fs";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { createRequire } from "node:module";
 import { bakeSFX } from "./audio.mjs";
 import { defaultAudioRel, popProjectArg, resolveProjectDir } from "./workspace.mjs";
@@ -85,10 +85,22 @@ const STYLE_ALIASES = {
   "chalkboad-explainer": "chalkboard-explainer",
   "motion-explainer": "motion-explainer",
 };
+const PRESETS_DIR = path.resolve(ENGINE_ROOT, "engine/presets");
+if (fsSync.existsSync(PRESETS_DIR)) {
+  for (const entry of fsSync.readdirSync(PRESETS_DIR, { withFileTypes: true })) {
+    if (entry.isDirectory() && fsSync.existsSync(path.join(PRESETS_DIR, entry.name, "renderer.mjs"))) {
+      const k = entry.name.toLowerCase();
+      if (!STYLE_ALIASES[k]) STYLE_ALIASES[k] = k;
+    }
+  }
+}
 const rawStyle = String(project.style || "").trim().toLowerCase();
 const styleId = STYLE_ALIASES[rawStyle] || (rawStyle || "default");
 const isChalkboard = styleId === "chalkboard-explainer";
 const isMotionExplainer = styleId === "motion-explainer";
+const dynamicPresetRenderer = (!isChalkboard && !isMotionExplainer && styleId !== "default")
+  ? path.join(PRESETS_DIR, styleId, "renderer.mjs")
+  : null;
 
 const require = createRequire(import.meta.url);
 const gsapJS = await fs.readFile(require.resolve("gsap/dist/gsap.min.js"), "utf8");
@@ -1435,6 +1447,28 @@ if (isChalkboard) {
     fontsCss,
     gsapJS,
     stageAsset,
+  });
+} else if (dynamicPresetRenderer && fsSync.existsSync(dynamicPresetRenderer)) {
+  const mod = await import(pathToFileURL(dynamicPresetRenderer).href);
+  const renderFn = mod.renderPresetDocument || mod.renderDocument || mod.default;
+  if (typeof renderFn !== "function") {
+    throw new Error(`Preset renderer ${dynamicPresetRenderer} must export renderPresetDocument()`);
+  }
+  html = await renderFn({
+    project,
+    scenes,
+    total,
+    compositionId,
+    width,
+    height,
+    isPortrait,
+    fps,
+    audio,
+    title,
+    fontsCss,
+    gsapJS,
+    stageAsset,
+    resolveLocalPath,
   });
 } else {
 const CSS = await readEngine("engine/style.css");

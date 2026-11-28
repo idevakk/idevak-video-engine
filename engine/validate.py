@@ -65,6 +65,11 @@ STYLE_ALIASES = {
     "chalkboad-explainer": "chalkboard-explainer",
     "motion-explainer": "motion-explainer",
 }
+_PRESETS_DIR = ROOT / "engine/presets"
+if _PRESETS_DIR.is_dir():
+    for _pdir in sorted(_PRESETS_DIR.iterdir()):
+        if _pdir.is_dir() and ((_pdir / "renderer.mjs").is_file() or (_pdir / "schema.py").is_file()):
+            STYLE_ALIASES.setdefault(_pdir.name.lower(), _pdir.name.lower())
 
 
 def resolve(path: str | Path) -> Path:
@@ -618,7 +623,8 @@ def main() -> None:
     sfield(data, "ghost", "video", errors)
     style_val = sfield(data, "style", "video", errors)
     if style_val is not None and style_val.strip().lower() not in STYLE_ALIASES:
-        warnings.append(f"video.style: unknown '{style_val}'; supported styles are 'default', 'chalkboard-explainer', and 'motion-explainer'")
+        supported = ", ".join(sorted(set(STYLE_ALIASES.values())))
+        warnings.append(f"video.style: unknown '{style_val}'; supported styles are {supported}")
     sfield(data, "defaultAccent", "video", errors)
     if "defaultAccent" in data:
         accent = data["defaultAccent"]
@@ -707,6 +713,11 @@ def main() -> None:
 
     cb_schema = _load_preset_schema("chalkboard_schema", "engine/presets/chalkboard-explainer/schema.py") if norm_style == "chalkboard-explainer" else None
     me_schema = _load_preset_schema("motion_explainer_schema", "engine/presets/motion-explainer/schema.py") if norm_style == "motion-explainer" else None
+    dyn_schema = None
+    if norm_style and norm_style not in ("default", "chalkboard-explainer", "motion-explainer"):
+        dyn_path = ROOT / "engine/presets" / norm_style / "schema.py"
+        if dyn_path.is_file():
+            dyn_schema = _load_preset_schema(f"preset_{norm_style.replace('-', '_')}_schema", str(dyn_path.relative_to(ROOT)))
 
     for i, scene in enumerate(scenes):
         if not isinstance(scene, dict):
@@ -721,6 +732,9 @@ def main() -> None:
         elif me_schema and stype in me_schema.ME_TYPES:
             type_counts[stype] += 1
             me_schema.validate_motion_explainer_scene(scene, i, acts, errors, warnings, project_dir=project_dir)
+        elif dyn_schema and hasattr(dyn_schema, "PRESET_TYPES") and stype in dyn_schema.PRESET_TYPES:
+            type_counts[stype] += 1
+            dyn_schema.validate_preset_scene(scene, i, acts, errors, warnings, project_dir=project_dir)
         else:
             if stype in TYPES:
                 type_counts[stype] += 1
@@ -728,8 +742,10 @@ def main() -> None:
 
     if me_schema and hasattr(me_schema, "validate_motion_explainer_project"):
         me_schema.validate_motion_explainer_project(scenes, warnings)
+    if dyn_schema and hasattr(dyn_schema, "validate_preset_project"):
+        dyn_schema.validate_preset_project(scenes, warnings)
 
-    if scenes and norm_style not in ("chalkboard-explainer", "motion-explainer"):
+    if scenes and norm_style in ("", "default"):
         first = scenes[0]
         if isinstance(first, dict) and first.get("type") != "cold":
             warnings.append("video.scenes[0]: the first scene is usually 'cold'")

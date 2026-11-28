@@ -53,9 +53,9 @@ if missing using the exact commands in `docs/DAYTONA.md`. This policy is repo-lo
    - Always create or target an isolated workspace under `workspaces/<slug>/`
      (`npm run project:new -- <slug>` and `--project <slug>` or
      `npm run project:use -- <slug>`). Every project's `video.json`, voiceover,
-     `notes/`, `assets/` (`logos/`, `webref/`, `SOURCES.md`), `build/`,
-     `index.html`, `hyperframes.json`, and `renders/` live strictly inside that
-     workspace folder.
+     `notes/`, `assets/` (`logos/`, `webref/`, `SOURCES.md`), `thumbnails/`,
+     `build/`, `index.html`, `hyperframes.json`, and `renders/` live strictly
+     inside that workspace folder.
    - When improving the video engine (`engine/`, `scripts/`, `tests/`, `docs/`),
      do not touch or overwrite files inside user `workspaces/<slug>/` folders.
      Use `npm test`, `npm run test:py`, or a disposable `workspaces/_test-*`
@@ -109,6 +109,17 @@ if missing using the exact commands in `docs/DAYTONA.md`. This policy is repo-lo
     Fix any issue immediately in source, rebuild, and repeat permitted headless
     checks at affected timestamps. Preview-server launch and video rendering
     still require permission; keep any unperformed playback/export QA pending.
+12. Optional thumbnail generation:
+    - Activate ONLY when the user explicitly asks to generate a thumbnail (or A/B
+      thumbnail variants). Read `prompts/skills/thumbnail-generator/SKILL.md`,
+      `docs/thumbnail-samples-notes.md`, and `docs/THUMBNAIL.md`.
+    - Match the video's aspect ratio from `workspaces/<slug>/video.json`
+      (`16:9` -> `1280x720`, `9:16` -> `1080x1920`) unless explicitly overridden.
+    - Default to the motion-explainer 3D-cube/pedestal dark-carbon aesthetic,
+      source real logos via `scripts/fetch_logo.py`, and use native image
+      generation when available or `npm run thumbnail` (HTML/CSS + Playwright)
+      as fallback. Generate A/B title variants sequentially one by one without
+      mixing concepts or hallucinating claims.
 
 ## Multi-Agent Delegation Architecture
 

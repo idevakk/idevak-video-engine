@@ -29,6 +29,19 @@ source quotations or evidence.
   orbital rings, grouped/delta bar charts, IDE/schema cards, mascot and karaoke
   subtitles off by default, no BGM by default, and the digital UI SFX pack).
 
+### Optional thumbnail generation (`thumbnail-generator`)
+
+- ONLY when the user explicitly asks to generate a thumbnail (or A/B variants for
+  titles), read `prompts/skills/thumbnail-generator/SKILL.md`,
+  `docs/thumbnail-samples-notes.md`, and `docs/THUMBNAIL.md`.
+- Match the video's aspect ratio (`16:9` -> `1280x720` or `9:16` -> `1080x1920`)
+  from `workspaces/<slug>/video.json` unless explicitly overridden, default to
+  the motion-explainer 3D-cube/pedestal aesthetic, fetch real brand logos via
+  `scripts/fetch_logo.py`, use native image generation when available or
+  `npm run thumbnail` (HTML/CSS + Playwright) as fallback, and save A/B variants
+  sequentially one by one under `workspaces/<slug>/thumbnails/` without mixing
+  concepts or inventing ungrounded claims.
+
 ### Isolated project workspaces
 
 - Every new video and ad-hoc test must live in its own gitignored workspace

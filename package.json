@@ -36,6 +36,7 @@
     "style:loop": "python scripts/ralph_style.py",
     "fetch:logo": "python scripts/fetch_logo.py",
     "capture:webref": "node scripts/capture_webref.mjs",
+    "thumbnail": "node scripts/generate_thumbnail.mjs",
     "sfx": "python engine/sfx_mixer.py",
     "tts": "python scripts/generate_tts.py",
     "render:hq": "node scripts/project.mjs hf render --quality delivery --output renders/video.mp4",

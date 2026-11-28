@@ -444,6 +444,11 @@ def main() -> None:
         "chalkboad-explainer": "chalkboard-explainer",
         "motion-explainer": "motion-explainer",
     }
+    presets_dir = ROOT / "engine/presets"
+    if presets_dir.is_dir():
+        for pdir in sorted(presets_dir.iterdir()):
+            if pdir.is_dir() and ((pdir / "renderer.mjs").is_file() or (pdir / "schema.py").is_file()):
+                style_aliases.setdefault(pdir.name.lower(), pdir.name.lower())
     raw_style = str(video.get("style") or "").strip().lower()
     norm_style = style_aliases.get(raw_style, raw_style) if raw_style else ""
 

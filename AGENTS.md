@@ -88,6 +88,15 @@ if missing using the exact commands in `docs/DAYTONA.md`. This policy is repo-lo
     A generic request to generate a video is not that permission; an explicit
     request to start preview or render is. Reuse permission already granted for
     the action instead of asking again, or give commands for the user to run.
+    Exception: when the user explicitly invokes the **Ralph Style Loop**
+    (`prompts/ralph-style-loop.md` / `scripts/ralph_style.py`) with a reference
+    video or YouTube URL, that request grants standing permission for headless
+    `--quality draft` renders strictly inside the isolated `workspaces/_ralph-<slug>/`
+    loop workspace for dissection and comparison.
+    Before starting a Ralph Style Loop, check `python scripts/ralph_style.py styles`:
+    if mode (`new` vs `enhance`) is unmentioned, ask the user and list all
+    available styles; if a named style does not exist, refuse to hallucinate a
+    fallback and ask the user to choose from the live list or create a new style.
 11. Every QA round must check available playback and frame sequences for text
     jitter, flicker, font/layout jumps, shifting counters, and unstable overlays
     or transitions.

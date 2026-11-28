@@ -91,6 +91,15 @@ secure credentials, commands, exported playback review, and cleanup details.
   tool, subagent, test, wrapper, or lifecycle hook. General video-generation
   requests are not permission to launch preview or render. An explicit request
   to start preview or render grants permission for that action; do not ask again.
+  To run an automated **Ralph Style Loop** from a reference video or YouTube URL
+  (create a new style preset or enhance an existing style to >=97% clone
+  fidelity via `yt-dlp`, `rea-video stems/decompose/compare`, and headless draft
+  renders inside `workspaces/_ralph-<slug>/`), read and follow
+  `prompts/ralph-style-loop.md` and `scripts/ralph_style.py`. Invoking that loop
+  grants standing permission for headless `--quality draft` renders inside the
+  isolated loop workspace only. Always validate the mode and style against
+  `python scripts/ralph_style.py styles` first without hallucinating missing
+  style names.
 - Finish setup, builds, and permitted QA before asking to start preview or
   render. If permission is missing, report completed checks, ask for the specific
   action, and optionally provide exact commands for the user to run. Keep only

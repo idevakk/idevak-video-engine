@@ -87,7 +87,7 @@ function cmdNew(args) {
     process.exit(1);
   }
 
-  for (const sub of ["notes", "assets/logos", "assets/webref", "build", "renders"]) {
+  for (const sub of ["notes", "assets/logos", "assets/webref", "thumbnails", "build", "renders"]) {
     fs.mkdirSync(path.join(wsDir, sub), { recursive: true });
   }
 
@@ -284,6 +284,9 @@ function cmdRun(task, rawArgs) {
       break;
     case "capture:webref":
       runCmd(process.execPath, ["scripts/capture_webref.mjs", "--project", targetDir, ...extra], env);
+      break;
+    case "thumbnail":
+      runCmd(process.execPath, ["scripts/generate_thumbnail.mjs", "--project", targetDir, ...extra], env);
       break;
     case "daytona":
       runCmd(PYTHON, ["scripts/daytona_video.py", "--project", targetDir, ...extra], env);

@@ -32,7 +32,6 @@ from tests.eval_asr.evaluate import evaluate_sample, print_evaluation_summary
 
 DATASET_FILE = Path(__file__).resolve().parent / "dataset.json"
 RESULTS_DIR = Path(__file__).resolve().parent / "results"
-SECRET_KEY_FILE = Path(r"C:\Users\atulk\.t3\userdata\secrets\files\3fe6af57238e20616047733bf8da4fdd")
 
 RESULTS_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -40,9 +39,10 @@ RESULTS_DIR.mkdir(parents=True, exist_ok=True)
 def get_deepgram_api_key() -> str:
     if os.environ.get("DEEPGRAM_API_KEY"):
         return os.environ["DEEPGRAM_API_KEY"].strip()
-    if SECRET_KEY_FILE.exists():
-        return SECRET_KEY_FILE.read_text(encoding="utf-8").strip()
-    raise RuntimeError("DEEPGRAM_API_KEY not found in environment or secret file")
+    key_file = os.environ.get("DEEPGRAM_API_KEY_FILE")
+    if key_file and Path(key_file).exists():
+        return Path(key_file).read_text(encoding="utf-8").strip()
+    raise RuntimeError("DEEPGRAM_API_KEY not found in environment or DEEPGRAM_API_KEY_FILE")
 
 
 def run_deepgram_baseline(dataset: list[dict], api_key: str) -> dict[int, str]:

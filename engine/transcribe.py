@@ -43,17 +43,19 @@ from engine.workspace import (  # noqa: E402
 
 DEFAULT_PROJECT = ROOT / "content/video.json"
 DEFAULT_OUT = ROOT / "build/vo.json"
-SECRET_KEY_FILE = Path(r"C:\Users\atulk\.t3\userdata\secrets\files\3fe6af57238e20616047733bf8da4fdd")
 
 
 def find_deepgram_key() -> str | None:
     if os.environ.get("DEEPGRAM_API_KEY"):
         return os.environ["DEEPGRAM_API_KEY"].strip()
-    if SECRET_KEY_FILE.exists():
-        try:
-            return SECRET_KEY_FILE.read_text(encoding="utf-8").strip()
-        except Exception:
-            pass
+    key_file = os.environ.get("DEEPGRAM_API_KEY_FILE")
+    if key_file:
+        p = Path(key_file)
+        if p.exists():
+            try:
+                return p.read_text(encoding="utf-8").strip()
+            except Exception:
+                pass
     return None
 
 

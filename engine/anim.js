@@ -546,11 +546,6 @@
     },
 
     stat: function (el, s, at, dur) {
-      var stage = el.querySelector(".stat-stage");
-      if (stage) {
-        tl.fromTo(stage, { scale: 0.985 }, { scale: 1.015, duration: dur, ease: "none" }, at);
-      }
-
       fade(el.querySelector(".eyebrow"), at, { y: 12, dur: 0.55 });
       var num = el.querySelector(".stat-number");
       var suffix = el.querySelector(".stat-suffix");
@@ -616,7 +611,7 @@
       var bead = el.querySelector(".stat-ruler-bead");
       if (bead) {
         tl.fromTo(bead, { left: "0%", opacity: 0 }, { left: "100%", opacity: 1, duration: 1.4, ease: "power2.inOut" }, at + 0.5);
-        tl.to(bead, { scale: 1.5, opacity: 0.4, yoyo: true, repeat: -1, duration: 0.6, ease: "sine.inOut" }, at + 1.9);
+        tl.to(bead, { scale: 1.35, opacity: 0.65, yoyo: true, repeat: 1, duration: 0.35, ease: "sine.inOut" }, at + 1.9);
       }
 
       var ghost = el.querySelector(".stat-ghost");
@@ -629,7 +624,7 @@
     dateline: function (el, s, at, dur) {
       var grid = el.querySelector(".dl-grid");
       if (grid) {
-        tl.fromTo(grid, { scale: 0.985 }, { scale: 1.015, duration: dur, ease: "none" }, at);
+        tl.fromTo(grid, { scale: 0.985 }, { scale: 1, duration: Math.min(1.0, dur * 0.25), ease: E.expo }, at);
       }
 
       var ghost = el.querySelector(".dl-ghost");
@@ -733,7 +728,7 @@
         );
       }
       if (laserDot) {
-        tl.to(laserDot, { opacity: 0.4, scale: 0.8, yoyo: true, repeat: -1, duration: 0.6, ease: "sine.inOut" }, lockTime + 0.3);
+        tl.to(laserDot, { opacity: 0.55, scale: 0.85, yoyo: true, repeat: 1, duration: 0.35, ease: "sine.inOut" }, lockTime + 0.3);
       }
 
       fade(el.querySelector(".eyebrow"), at + 0.15, { y: 12, dur: 0.55 });
@@ -747,7 +742,7 @@
       var bead = el.querySelector(".dl-rail-bead");
       if (bead) {
         tl.fromTo(bead, { left: "0%", opacity: 0 }, { left: "100%", opacity: 1, duration: 1.5, ease: "power2.inOut" }, at + 0.3);
-        tl.to(bead, { scale: 1.6, opacity: 0.3, yoyo: true, repeat: -1, duration: 0.7, ease: "sine.inOut" }, at + 1.8);
+        tl.to(bead, { scale: 1.4, opacity: 0.55, yoyo: true, repeat: 1, duration: 0.35, ease: "sine.inOut" }, at + 1.8);
       }
 
       queueSFX("thud", at + 0.05, { vol: 0.8 });
@@ -1926,7 +1921,7 @@
     outro: function (el, s, at, dur) {
       var wrap = el.querySelector(".out-wrap");
       if (wrap) {
-        tl.fromTo(wrap, { scale: 0.985 }, { scale: 1.015, duration: dur, ease: "none" }, at);
+        tl.fromTo(wrap, { scale: 0.985 }, { scale: 1, duration: Math.min(1.0, dur * 0.25), ease: E.expo }, at);
       }
 
       var ghost = el.querySelector(".out-ghost");

@@ -112,7 +112,13 @@ secure credentials, commands, exported playback review, and cleanup details.
   freely, but never manufacture narration to fit a visual.
 - With an idea but no voiceover, research, author a proposed script, and prepare
   a draft storyboard. Request the user's recording before final audio alignment
-  and delivery. Do not generate TTS or silently reuse a previous video's audio.
+  and delivery. Do not generate TTS or silently reuse a previous video's audio
+  by default. Only when no voiceover is supplied and the user explicitly opts
+  into Gemini TTS generation, follow `docs/GEMINI_TTS.md` (`scripts/generate_tts.py`):
+  use a provided raw phonetic TTS script as-is, convert a provided normal script
+  into phonetic TTS, or research and author an accurate phonetic TTS script when
+  none is given; request a missing `GEMINI_API_KEY` via `request_secret` (never
+  in plain chat), then run the rest of the pipeline unchanged.
 - Default to 16:9 landscape at 1920x1080 and 30 fps unless the user specifies
   another format. Preserve the existing design system and scene types.
 - Plan coherent narration beats. Do not split by arbitrary transcription

@@ -12,8 +12,9 @@ local encoding still need separate permission. Install the missing Daytona
 skill/SDK using the commands in that guide; do not change global instructions.
 Keep Node, FFmpeg, Playwright, and Chromium in the sandboxes for this workflow.
 The host only needs Python/SDK/credentials/network/storage. Prompt for missing
-`DAYTONA_API_KEY` and `DEEPGRAM_API_KEY` (for transcription) using private
-secret input (`request_secret`); never ask in plain chat. Inspect downloaded
+`DAYTONA_API_KEY`, `DEEPGRAM_API_KEY` (for transcription), and `GEMINI_API_KEY`
+(for optional Gemini TTS voiceover generation, see `docs/GEMINI_TTS.md`) using
+private secret input (`request_secret`); never ask in plain chat. Inspect downloaded
 preparation reports and frames; fix source and repeat preparation before render.
 
 ## Short version

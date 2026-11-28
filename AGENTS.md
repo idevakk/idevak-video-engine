@@ -41,6 +41,10 @@ if missing using the exact commands in `docs/DAYTONA.md`. This policy is repo-lo
    `docs/GEMINI_TTS.md` and `scripts/generate_tts.py` (using a raw phonetic
    TTS script as-is, converting a normal script to phonetic TTS, or researching
    and authoring an accurate phonetic TTS script when no script is given;
+   using `Sadaltager` (male, default for 16:9 landscape) or `Aoede` (female,
+   default for 9:16 portrait) unless the user specifies male/female, never
+   randomly picking another persona, and clearly reporting rate-limit or
+   unavailable voice/model errors with a best-available suggestion;
    requesting missing `GEMINI_API_KEY` privately via `request_secret`, just
    like Daytona keys). Keep the rest of the pipeline unchanged.
 4. Keep the existing design system and the 21 scene types. The look is the

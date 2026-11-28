@@ -161,6 +161,79 @@ class TestGeminiTts(unittest.TestCase):
             self.assertEqual(captured["voice"], "Sadaltager")
             self.assertEqual(captured["text"], "## Transcript:\nS-three outage... zero-X nine-C.")
 
+    def test_voice_defaults_by_aspect_and_strict_allowlist(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            ws = Path(tmp)
+            notes = ws / "notes"
+            notes.mkdir()
+            (notes / "phonetic_tts_script.txt").write_text("Test line.", encoding="utf-8")
+
+            # 16:9 landscape -> Sadaltager
+            (ws / "video.json").write_text(json.dumps({"aspect": "16:9"}), encoding="utf-8")
+            self.assertEqual(generate_tts.resolve_voice(None, ws), "Sadaltager")
+
+            # 9:16 portrait via aspect -> Aoede
+            (ws / "video.json").write_text(json.dumps({"aspect": "9:16"}), encoding="utf-8")
+            self.assertEqual(generate_tts.resolve_voice(None, ws), "Aoede")
+
+            # 9:16 portrait via composition dimensions -> Aoede
+            (ws / "video.json").write_text(
+                json.dumps({"composition": {"width": 1080, "height": 1920}}),
+                encoding="utf-8",
+            )
+            self.assertEqual(generate_tts.resolve_voice(None, ws), "Aoede")
+
+            # Explicit aliases
+            self.assertEqual(generate_tts.resolve_voice("male", ws), "Sadaltager")
+            self.assertEqual(generate_tts.resolve_voice("female", ws), "Aoede")
+            self.assertEqual(generate_tts.resolve_voice("Aoede", ws), "Aoede")
+            self.assertEqual(generate_tts.resolve_voice("Sadaltager", ws), "Sadaltager")
+
+            # Unapproved persona rejected
+            with self.assertRaises(SystemExit) as ctx:
+                generate_tts.resolve_voice("Puck", ws)
+            self.assertIn("Only 'Sadaltager' (male) and 'Aoede' (female) are allowed", str(ctx.exception))
+
+    def test_rate_limit_reports_clearly_without_random_fallback(self) -> None:
+        class FailingModels:
+            def generate_content_stream(self, **kwargs):
+                raise RuntimeError("429 RESOURCE_EXHAUSTED: Quota exceeded")
+
+        class FailingClient:
+            def __init__(self, *, api_key: str, http_options=None) -> None:
+                self.models = FailingModels()
+
+        fake_types = types.ModuleType("google.genai.types")
+        fake_types.HttpOptions = lambda **kw: kw
+        fake_types.Content = lambda **kw: types.SimpleNamespace(**kw)
+        fake_types.Part = types.SimpleNamespace(from_text=lambda text: types.SimpleNamespace(text=text))
+        fake_types.GenerateContentConfig = lambda **kw: types.SimpleNamespace(**kw)
+        fake_types.SpeechConfig = lambda **kw: types.SimpleNamespace(**kw)
+        fake_types.VoiceConfig = lambda **kw: types.SimpleNamespace(**kw)
+        fake_types.PrebuiltVoiceConfig = lambda **kw: types.SimpleNamespace(**kw)
+
+        fake_genai = types.ModuleType("google.genai")
+        fake_genai.Client = FailingClient
+        fake_genai.types = fake_types
+
+        fake_google = types.ModuleType("google")
+        fake_google.genai = fake_genai
+
+        with tempfile.TemporaryDirectory() as tmp:
+            out_wav = Path(tmp) / "voiceover.wav"
+            with mock.patch.dict(sys.modules, {"google": fake_google, "google.genai": fake_genai, "google.genai.types": fake_types}):
+                with self.assertRaises(SystemExit) as ctx:
+                    generate_tts.generate_voiceover(
+                        "Test script",
+                        out_wav,
+                        api_key="test-key",
+                        voice_name="Aoede",
+                    )
+            msg = str(ctx.exception)
+            self.assertIn("rate limit or quota hit", msg)
+            self.assertIn("Aoede", msg)
+            self.assertIn("Ask the user how to proceed", msg)
+
 
 if __name__ == "__main__":
     unittest.main()

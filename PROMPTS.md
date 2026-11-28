@@ -130,8 +130,12 @@ secure credentials, commands, exported playback review, and cleanup details.
   into Gemini TTS generation, follow `docs/GEMINI_TTS.md` (`scripts/generate_tts.py`):
   use a provided raw phonetic TTS script as-is, convert a provided normal script
   into phonetic TTS, or research and author an accurate phonetic TTS script when
-  none is given; request a missing `GEMINI_API_KEY` via `request_secret` (never
-  in plain chat), then run the rest of the pipeline unchanged.
+  none is given; use `Sadaltager` (male, default for 16:9 landscape) or `Aoede`
+  (female, default for 9:16 portrait) unless the user specifies otherwise, never
+  using any other random persona, and clearly report rate-limit or unavailable
+  voice/model errors with a best-available suggestion; request a missing
+  `GEMINI_API_KEY` via `request_secret` (never in plain chat), then run the
+  rest of the pipeline unchanged.
 - Default to 16:9 landscape at 1920x1080 and 30 fps unless the user specifies
   another format. Preserve the existing design system and scene types.
 - Plan coherent narration beats. Do not split by arbitrary transcription

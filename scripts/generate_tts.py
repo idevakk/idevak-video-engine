@@ -24,8 +24,17 @@ from engine.workspace import (  # noqa: E402
 )
 
 DEFAULT_MODEL = "gemini-3.8-flash-tts"
-DEFAULT_VOICE = "Sadaltager"
+MALE_VOICE = "Sadaltager"
+FEMALE_VOICE = "Aoede"
+DEFAULT_VOICE = MALE_VOICE
 DEFAULT_TEMPERATURE = 1.0
+
+VOICE_ALIASES = {
+    "sadaltager": MALE_VOICE,
+    "male": MALE_VOICE,
+    "aoede": FEMALE_VOICE,
+    "female": FEMALE_VOICE,
+}
 
 
 def parse_audio_mime_type(mime_type: str) -> dict[str, int]:
@@ -78,6 +87,38 @@ def convert_to_wav(audio_data: bytes, mime_type: str) -> bytes:
         data_size,
     )
     return header + audio_data
+
+
+def _detect_aspect_from_project(project_dir: Path) -> str:
+    vjson = project_json_path(project_dir, ROOT)
+    if vjson.is_file():
+        try:
+            data = json.loads(vjson.read_text(encoding="utf-8"))
+            if str(data.get("aspect", "")).strip() == "9:16":
+                return "9:16"
+            comp = data.get("composition")
+            if isinstance(comp, dict):
+                w = comp.get("width")
+                h = comp.get("height")
+                if isinstance(w, (int, float)) and isinstance(h, (int, float)) and h > w:
+                    return "9:16"
+        except (OSError, json.JSONDecodeError):
+            pass
+    return "16:9"
+
+
+def resolve_voice(voice_arg: str | None, project_dir: Path) -> str:
+    """Resolve the Gemini TTS voice persona strictly to Sadaltager (male) or Aoede (female)."""
+    if voice_arg is not None and voice_arg.strip():
+        key = voice_arg.strip().lower()
+        if key in VOICE_ALIASES:
+            return VOICE_ALIASES[key]
+        raise SystemExit(
+            f"Error: Unsupported Gemini TTS voice '{voice_arg}'. "
+            f"Only '{MALE_VOICE}' (male) and '{FEMALE_VOICE}' (female) are allowed."
+        )
+    aspect = _detect_aspect_from_project(project_dir)
+    return FEMALE_VOICE if aspect == "9:16" else MALE_VOICE
 
 
 def _resolve_output_path(project_dir: Path, out_arg: str | None) -> Path:
@@ -218,20 +259,46 @@ def generate_voiceover(
 
     audio_data = bytearray()
     mime_type = ""
-    for chunk in client.models.generate_content_stream(
-        model=model,
-        contents=contents,
-        config=config,
-    ):
-        if not getattr(chunk, "parts", None):
-            continue
-        first_part = chunk.parts[0]
-        inline_data = getattr(first_part, "inline_data", None)
-        if inline_data and getattr(inline_data, "data", None):
-            audio_data.extend(inline_data.data)
-            mime_type = inline_data.mime_type or mime_type
-        elif getattr(chunk, "text", None):
-            print(chunk.text)
+    try:
+        for chunk in client.models.generate_content_stream(
+            model=model,
+            contents=contents,
+            config=config,
+        ):
+            if not getattr(chunk, "parts", None):
+                continue
+            first_part = chunk.parts[0]
+            inline_data = getattr(first_part, "inline_data", None)
+            if inline_data and getattr(inline_data, "data", None):
+                audio_data.extend(inline_data.data)
+                mime_type = inline_data.mime_type or mime_type
+            elif getattr(chunk, "text", None):
+                print(chunk.text)
+    except Exception as exc:
+        err_msg = str(exc)
+        lower_err = err_msg.lower()
+        alt_voice = FEMALE_VOICE if voice_name == MALE_VOICE else MALE_VOICE
+        if "429" in lower_err or "rate" in lower_err or "quota" in lower_err or "resource_exhausted" in lower_err:
+            raise SystemExit(
+                f"Error: Gemini TTS rate limit or quota hit for model '{model}' with voice '{voice_name}'.\n"
+                f"Details: {err_msg}\n"
+                f"Action needed: Do not switch to an unapproved voice persona. Ask the user how to proceed "
+                f"(e.g., retry after cooldown, use an available Gemini TTS model such as gemini-2.5-flash-preview-tts "
+                f"or gemini-2.5-pro-preview-tts, or supply a recorded voiceover)."
+            ) from exc
+        if "voice" in lower_err or "not found" in lower_err or "404" in lower_err or "invalid" in lower_err:
+            raise SystemExit(
+                f"Error: Gemini TTS model '{model}' or voice persona '{voice_name}' is unavailable.\n"
+                f"Details: {err_msg}\n"
+                f"Action needed: Do not randomly pick another voice persona. Ask the user how to proceed "
+                f"(e.g., switch to '{alt_voice}', try an available Gemini TTS model such as gemini-2.5-flash-preview-tts "
+                f"or gemini-2.5-pro-preview-tts, or supply a recorded voiceover)."
+            ) from exc
+        raise SystemExit(
+            f"Error: Gemini TTS synthesis failed for model '{model}' with voice '{voice_name}'.\n"
+            f"Details: {err_msg}\n"
+            f"Action needed: Report this failure to the user and ask how to proceed (do not randomly switch voices)."
+        ) from exc
 
     if not audio_data:
         raise SystemExit("Error: Gemini TTS returned no audio data.")
@@ -271,8 +338,11 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--voice",
-        default=DEFAULT_VOICE,
-        help=f"Prebuilt voice name (default: {DEFAULT_VOICE}).",
+        default=None,
+        help=(
+            f"Voice persona: '{MALE_VOICE}' (male, default for 16:9 landscape) or "
+            f"'{FEMALE_VOICE}' (female, default for 9:16 portrait). Aliases: 'male', 'female'."
+        ),
     )
     parser.add_argument(
         "--temperature",
@@ -294,6 +364,7 @@ def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(rest)
 
     project_dir = resolve_project_dir(project_spec)
+    voice_name = resolve_voice(args.voice, project_dir)
     script_arg = args.script or args.script_pos
     script_text, script_source = _resolve_script_text(project_dir, script_arg, args.text)
     out_path = _resolve_output_path(project_dir, args.out)
@@ -302,7 +373,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"[tts] Dry run OK: project={project_dir}")
         print(f"[tts] Script source: {script_source} ({len(script_text)} chars)")
         print(f"[tts] Output target: {out_path}")
-        print(f"[tts] Model={args.model} Voice={args.voice} Temperature={args.temperature}")
+        print(f"[tts] Model={args.model} Voice={voice_name} Temperature={args.temperature}")
         return 0
 
     api_key = os.environ.get("GEMINI_API_KEY", "").strip()
@@ -320,7 +391,7 @@ def main(argv: list[str] | None = None) -> int:
         out_path,
         api_key=api_key,
         model=args.model,
-        voice_name=args.voice,
+        voice_name=voice_name,
         temperature=args.temperature,
     )
     print(f"[tts] Voiceover saved to: {saved_path}")

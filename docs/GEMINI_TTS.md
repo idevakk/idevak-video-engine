@@ -58,16 +58,50 @@ word match.
      `workspaces/<slug>/notes/phonetic_tts_script.txt`, then synthesize
      `workspaces/<slug>/voiceover.wav` with `scripts/generate_tts.py`.
 
+## Voice selection (strict persona policy)
+
+Only two Gemini AI Studio voice personas are permitted:
+
+- **`Sadaltager`** (male voice) - **default for `16:9` landscape** videos.
+- **`Aoede`** (female voice) - **default for `9:16` portrait** videos.
+
+How to instruct voice selection:
+
+- By default, `scripts/generate_tts.py` inspects `video.json` (`aspect` or
+  `composition.height > composition.width`) and selects `Sadaltager` for
+  landscape (`16:9`) or `Aoede` for portrait (`9:16`).
+- If the user explicitly requests a male or female voice (e.g., "use female
+  voice", "use male voice", "use Aoede", or "use Sadaltager"), override the
+  aspect default with `--voice male` / `--voice Sadaltager` or
+  `--voice female` / `--voice Aoede`.
+- **Do not** randomly pick or fall back to any other Gemini AI Studio voice
+  persona. `scripts/generate_tts.py` rejects any voice other than `Sadaltager`
+  and `Aoede`.
+
+## Rate limits or unavailable voice / model handling
+
+If Gemini TTS fails due to a rate limit / quota error, or if `Sadaltager`,
+`Aoede`, or the configured TTS model (`gemini-3.8-flash-tts`) is unavailable:
+
+- **Do not** silently switch to another random Gemini voice persona.
+- Clearly report the exact error to the user and ask how they want to proceed,
+  suggesting the best available option for their video project (for example:
+  retrying after cooldown, switching to the other approved persona
+  `Sadaltager` / `Aoede` if only one persona is unavailable, using an available
+  Gemini TTS model such as `gemini-2.5-flash-preview-tts` or
+  `gemini-2.5-pro-preview-tts`, or supplying a recorded voiceover).
+
 ## Commands
 
 ```bash
-# Synthesize workspaces/<slug>/voiceover.wav from notes/phonetic_tts_script.txt
+# Synthesize workspaces/<slug>/voiceover.wav (auto-selects Sadaltager for 16:9, Aoede for 9:16)
 python scripts/generate_tts.py --project <slug>
 # Or via npm script with an explicit script path:
 npm run tts -- --project <slug> --script notes/phonetic_tts_script.txt
-# Optional voice/model overrides (defaults: gemini-3.8-flash-tts, Sadaltager):
-python scripts/generate_tts.py --project <slug> --voice Sadaltager --model gemini-3.8-flash-tts
-# Dry run (validates paths and script without calling the API):
+# Explicit male or female voice override:
+python scripts/generate_tts.py --project <slug> --voice male
+python scripts/generate_tts.py --project <slug> --voice female
+# Dry run (validates paths, script, and resolved voice without calling the API):
 python scripts/generate_tts.py --project <slug> --dry-run
 ```
 

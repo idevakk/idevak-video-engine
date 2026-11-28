@@ -35,8 +35,14 @@ if missing using the exact commands in `docs/DAYTONA.md`. This policy is repo-lo
    visual idea.
 2. Display text can be rewritten. `headline`, `subline`, `eyebrow`, and `meta`
    do not have to match the narration.
-3. Do not add TTS, generate a synthetic voice, or replace the user's audio.
-   The user supplies the voiceover.
+3. Do not add TTS, generate a synthetic voice, or replace the user's audio
+   by default. The user supplies the voiceover. Only when no voiceover is
+   supplied and the user explicitly opts into Gemini TTS generation, follow
+   `docs/GEMINI_TTS.md` and `scripts/generate_tts.py` (using a raw phonetic
+   TTS script as-is, converting a normal script to phonetic TTS, or researching
+   and authoring an accurate phonetic TTS script when no script is given;
+   requesting missing `GEMINI_API_KEY` privately via `request_secret`, just
+   like Daytona keys). Keep the rest of the pipeline unchanged.
 4. Keep the existing design system and the 21 scene types. The look is the
    product. Add a new type only when the story cannot be told with an existing
    one, and then add the renderer, CSS, animation, and schema together.
